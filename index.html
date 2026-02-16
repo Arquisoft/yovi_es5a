@@ -460,10 +460,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#section-solution-strategy">4. Solution Strategy</a></li>
-<li><a href="#section-building-block-view">5. Vista de bloques de construcción</a>
+<li><a href="#section-building-block-view">5. Building Block View</a>
 <ul class="sectlevel2">
-<li><a href="#_visión_general_del_sistema">5.1. Visión general del sistema</a></li>
-<li><a href="#_nivel_2_del_sistema">5.2. Nivel 2 del sistema</a></li>
+<li><a href="#_whitebox_overall_system">5.1. Whitebox Overall System</a></li>
+<li><a href="#_level_2">5.2. Level 2</a></li>
+<li><a href="#_level_3">5.3. Level 3</a></li>
 </ul>
 </li>
 <li><a href="#section-runtime-view">6. Runtime View</a>
@@ -885,7 +886,7 @@ Refer to details in the following sections.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-building-block-view">5. Vista de bloques de construcción</h2>
+<h2 id="section-building-block-view">5. Building Block View</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -933,7 +934,7 @@ Thus it contains the white box description of selected building blocks of level 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_visión_general_del_sistema">5.1. Visión general del sistema</h3>
+<h3 id="_whitebox_overall_system">5.1. Whitebox Overall System</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -972,46 +973,25 @@ In the best case you will get away with examples or simple signatures.</p>
 </div>
 </div>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="./images/Vision%20general.png" alt="Vision general" width="443" height="94">
-</div>
+<div class="paragraph">
+<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
 </div>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">Motivación</dt>
+<dt class="hdlist1">Motivation</dt>
 <dd>
-<p><em>Visión general del sistema donde el usuario interactua con la aplicación. Esta hace uso del módulo gamey para validar movimientos y detemrinar cuando finaliza el juego.</em></p>
+<p><em>&lt;text explanation&gt;</em></p>
 </dd>
-<dt class="hdlist1">Componentes</dt>
+<dt class="hdlist1">Contained Building Blocks</dt>
+<dd>
+<p><em>&lt;Description of contained building block (black boxes)&gt;</em></p>
+</dd>
+<dt class="hdlist1">Important Interfaces</dt>
+<dd>
+<p><em>&lt;Description of important interfaces&gt;</em></p>
+</dd>
 </dl>
 </div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 66.6667%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top"><strong>Nombre</strong></th>
-<th class="tableblock halign-left valign-top"><strong>Responsabilidad</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">User</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Interactua con la aplicación.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>WebApp</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Gestiona la interacción del usuario con el sistema.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Gamey</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Gestiona la lògica del juego, el bot, los movimientos, &#8230;&#8203;</em></p></td>
-</tr>
-</tbody>
-</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1049,72 +1029,8 @@ Its headline is the name of the black box.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_nivel_2_del_sistema">5.2. Nivel 2 del sistema</h3>
-<div class="paragraph">
-<p><em>Visión específica del módulo Yovi del sistema y las responsabilidades de los distintos subsistemas existentes en este.</em></p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="./images/Nivel%202.png" alt="Nivel 2" width="1156" height="319">
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Componentes</dt>
-</dl>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 66.6667%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top"><strong>Nombre</strong></th>
-<th class="tableblock halign-left valign-top"><strong>Responsabilidad</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usuario</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Interactua con la aplicación.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>WebApp</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Expone una interfaz de usuario para que el usuario interacciona con el sistema.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>OpenApi</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Comunica el front-end (WebApp) con el back-end (Users).</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Users</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Gestiona la interacción del usuario.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>DataBase</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Almacena un historial de los usuarios registrados, partidas realizadas, puntuaciones obtenidas, &#8230;&#8203;</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Contiene la lógica relacionada con el bot.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>BotServer</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Permite la interacción del back-end con el bot.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Core</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Contiene la lógica del juego (tablero, coordenadas, acciones disponibles, &#8230;&#8203;).</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notation</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>Incluye toda la lógica sobre la notación YEN.</em></p></td>
-</tr>
-</tbody>
-</table>
+<div class="sect3">
+<h4 id="_name_black_box_1">5.1.1. &lt;Name black box 1&gt;</h4>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1145,6 +1061,50 @@ according the the following black box template:</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p><em>&lt;Purpose/Responsibility&gt;</em></p>
+</div>
+<div class="paragraph">
+<p><em>&lt;Interface(s)&gt;</em></p>
+</div>
+<div class="paragraph">
+<p><em>&lt;(Optional) Quality/Performance Characteristics&gt;</em></p>
+</div>
+<div class="paragraph">
+<p><em>&lt;(Optional) Directory/File Location&gt;</em></p>
+</div>
+<div class="paragraph">
+<p><em>&lt;(Optional) Fulfilled Requirements&gt;</em></p>
+</div>
+<div class="paragraph">
+<p><em>&lt;(optional) Open Issues/Problems/Risks&gt;</em></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_name_black_box_2">5.1.2. &lt;Name black box 2&gt;</h4>
+<div class="paragraph">
+<p><em>&lt;black box template&gt;</em></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_name_black_box_n">5.1.3. &lt;Name black box n&gt;</h4>
+<div class="paragraph">
+<p><em>&lt;black box template&gt;</em></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_name_interface_1">5.1.4. &lt;Name interface 1&gt;</h4>
+<div class="paragraph">
+<p>&#8230;&#8203;</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_name_interface_m">5.1.5. &lt;Name interface m&gt;</h4>
+
+</div>
+</div>
+<div class="sect2">
+<h3 id="_level_2">5.2. Level 2</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1157,6 +1117,8 @@ Leave out normal, simple, boring or standardized parts of your system</p>
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_white_box_building_block_1">5.2.1. White Box <em>&lt;building block 1&gt;</em></h4>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1164,6 +1126,28 @@ Leave out normal, simple, boring or standardized parts of your system</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p><em>&lt;white box template&gt;</em></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_white_box_building_block_2">5.2.2. White Box <em>&lt;building block 2&gt;</em></h4>
+<div class="paragraph">
+<p><em>&lt;white box template&gt;</em></p>
+</div>
+<div class="paragraph">
+<p>&#8230;&#8203;</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_white_box_building_block_m">5.2.3. White Box <em>&lt;building block m&gt;</em></h4>
+<div class="paragraph">
+<p><em>&lt;white box template&gt;</em></p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_level_3">5.3. Level 3</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1175,6 +1159,8 @@ part of arc42 for additional levels.</p>
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_white_box_building_block_x_1">5.3.1. White Box &lt;_building block x.1_&gt;</h4>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1182,7 +1168,23 @@ part of arc42 for additional levels.</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p><em>&lt;white box template&gt;</em></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_white_box_building_block_x_2">5.3.2. White Box &lt;_building block x.2_&gt;</h4>
+<div class="paragraph">
+<p><em>&lt;white box template&gt;</em></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_white_box_building_block_y_1">5.3.3. White Box &lt;_building block y.1_&gt;</h4>
+<div class="paragraph">
+<p><em>&lt;white box template&gt;</em></p>
+</div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 </div>
@@ -1802,7 +1804,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-05 09:53:32 +0100
+Last updated 2026-02-16 22:28:59 +0100
 </div>
 </div>
 </body>

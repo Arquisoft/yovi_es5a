@@ -24,6 +24,14 @@ cargo build --release
 cargo run
 ```
 
+Para lanzar en modo servidor
+```sh
+cargo run -- --mode server --port 4000
+```
+
+
+
+
 ## Test
 
 ```sh
@@ -55,3 +63,5 @@ Generate and open the documentation:
 ```sh
 cargo doc --open
 ```
+
+

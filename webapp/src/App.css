@@ -93,3 +93,19 @@
 .submit-button:hover {
   background-color: #0056b3;
 }
+
+.health-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  background-color: #28a745;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.health-button:hover {
+  background-color: #218838;
+}
+

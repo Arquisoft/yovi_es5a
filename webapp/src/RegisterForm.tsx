@@ -41,6 +41,21 @@ const RegisterForm: React.FC = () => {
     }
   };
 
+  const handleHealthCheck = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+      const res = await fetch(`${API_URL}/status`);
+
+      if (res.ok) {
+        setResponseMessage('GameY is healthy!');
+      } else {
+        setError('Health check failed');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Network error');
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="register-form">
       <div className="form-group">
@@ -55,6 +70,10 @@ const RegisterForm: React.FC = () => {
       </div>
       <button type="submit" className="submit-button" disabled={loading}>
         {loading ? 'Entering...' : 'Lets go!'}
+      </button>
+
+      <button type="button" onClick={handleHealthCheck} className="health-button">
+        Check GameY Health
       </button>
 
       {responseMessage && (

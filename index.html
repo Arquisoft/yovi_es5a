@@ -452,14 +452,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_stakeholders">1.3. Stakeholders</a></li>
 </ul>
 </li>
-<li><a href="#section-architecture-constraints">2. Architecture Constraints</a></li>
+<li><a href="#section-architecture-constraints">2. Restricciones de Arquitectura</a>
+<ul class="sectlevel2">
+<li><a href="#_restricciones_técnicas_y_estructurales">2.1. Restricciones Técnicas y Estructurales</a></li>
+<li><a href="#_restricciones_organizativas">2.2. Restricciones Organizativas</a></li>
+</ul>
+</li>
 <li><a href="#section-context-and-scope">3. Context and Scope</a>
 <ul class="sectlevel2">
 <li><a href="#_business_context">3.1. Business Context</a></li>
 <li><a href="#_technical_context">3.2. Technical Context</a></li>
 </ul>
 </li>
-<li><a href="#section-solution-strategy">4. Solution Strategy</a></li>
+<li><a href="#section-solution-strategy">4. Estrategia de Solución</a>
+<ul class="sectlevel2">
+<li><a href="#_decisiones_tecnológicas">4.1. Decisiones Tecnológicas</a></li>
+<li><a href="#_decisiones_para_lograr_los_requisitos_de_calidad">4.2. Decisiones para lograr los requisitos de calidad</a></li>
+<li><a href="#_decisiones_organizativas">4.3. Decisiones Organizativas</a></li>
+</ul>
+</li>
 <li><a href="#section-building-block-view">5. Building Block View</a>
 <ul class="sectlevel2">
 <li><a href="#_whitebox_overall_system">5.1. Whitebox Overall System</a></li>
@@ -710,7 +721,7 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-architecture-constraints">2. Architecture Constraints</h2>
+<h2 id="section-architecture-constraints">2. Restricciones de Arquitectura</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -736,7 +747,76 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>En este apartado se describen las restricciones de arquitectura que afectan a este proyecto. Estas restricciones pueden ser técnicas u organizativas y pueden incluir convenciones como directrices de programación, versionado, documentación o nomenclatura.</p>
+</div>
+<div class="sect2">
+<h3 id="_restricciones_técnicas_y_estructurales">2.1. Restricciones Técnicas y Estructurales</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Restricción</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Control de Versiones</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Git y GitHub para el control de versiones del proyecto</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Documentación</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La documentación del proyecto estará basada en el formato arc42 y se alojará en GitHub Pages</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Lenguajes de Programación</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El proyecto se desarrollará principalmente en JavaScript, utilizando Node.js para el backend y React para el frontend. Además el motor del juego estará en Rust</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Testing</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Se utilizará Jest para testing unitario y Cypress para testing end-to-end</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Apis Creadas</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Se necesitarán APIs para la comunicación entre el frontend y el backend</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Deployment</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El despliegue del proyecto se hará en una máquina Linux con docker instalado creando un contenedor por cada módulo</em></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_restricciones_organizativas">2.2. Restricciones Organizativas</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Restricción</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Reuniones</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nos reuniremos todas las semanas los jueves de 10:00-11:00</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>GitHub issues</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Los issues de GitHub se usarán para gestionar tareas y problemas del proyecto</em></p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -839,7 +919,7 @@ together with a mapping table showing the relationships between channels and inp
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-solution-strategy">4. Solution Strategy</h2>
+<h2 id="section-solution-strategy">4. Estrategia de Solución</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -882,7 +962,94 @@ Refer to details in the following sections.</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>En este apartado se describen las decisiones fundamentales y estrategias de solución que dan forma a la arquitectura del sistema. Estas decisiones incluyen:</p>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_tecnológicas">4.1. Decisiones Tecnológicas</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decisión</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos MySQL debido a su compatibilidad con el entorno de desarrollo y su robustez para manejar datos estructurados. Además, es una base de datos ampliamente utilizada y entendida por el equipo de desarrollo.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Visual Studio Code</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Visual Studio Code como editor de código principal para su compatibilidad con el entorno de desarrollo y su extensibilidad.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Express</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Express como framework para el backend debido a su simplicidad.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>PlantUML</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos PlantUML para la creación de diagramas de arquitectura debido a su facilidad de uso y su capacidad para integrarse con otras herramientas.</em></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_para_lograr_los_requisitos_de_calidad">4.2. Decisiones para lograr los requisitos de calidad</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decisión</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usabilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La usabilidad del sistema se logrará mediante una interfaz intuitiva y fácil de usar, siguiendo buenas prácticas de diseño de experiencia de usuario.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Accesibilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La accesibilidad del sistema se logrará mediante el cumplimiento de estándares de accesibilidad web, garantizando que todos los usuarios puedan interactuar con el sistema sin barreras.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Rendimiento</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El rendimiento del sistema se logrará mediante el uso de tecnologías eficientes y optimización del código, asegurando una respuesta rápida y fluida del sistema.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Disponibilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La disponibilidad del sistema se logrará mediante la implementación de mecanismos de redundancia y recuperación ante fallos, garantizando que el sistema esté disponible para los usuarios en todo momento.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Seguridad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La seguridad del sistema se logrará mediante la implementación de medidas de seguridad robustas, como autenticación y autorización adecuadas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Interoperabilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La interoperabilidad del sistema se logrará mediante el uso de estándares abiertos y protocolos de comunicación comunes, facilitando la integración con otros sistemas.</em></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_organizativas">4.3. Decisiones Organizativas</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Los miembros del grupo, ademas de las reuniones semanales que se celebren, mantendrán una comunicación constante a través de whatsapp y se podrán realizar reuniones adicionales si se considera necesario.</p>
+</li>
+</ul>
+</div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 <div class="sect1">

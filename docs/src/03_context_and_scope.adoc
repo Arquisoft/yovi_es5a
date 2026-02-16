@@ -1,7 +1,7 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-context-and-scope]]
-== Context and Scope
+== Contexto y Alcanze
 
 
 ifdef::arc42help[]
@@ -30,8 +30,9 @@ See https://docs.arc42.org/section-3/[Context and Scope] in the arc42 documentat
 ****
 endif::arc42help[]
 
-=== Business Context
+=== Contexto de Negocio
 
+Micrati quiere lanzar YOVI, una conunto de juegos basados en el juego Y, accesibles desde la web. El sistema debe permitir que personas jueguen partidas del juego Y desde un frontend web, incluyendo al menos la versión clásica (humano vs máquina) con tamaño de tablero variable. Además, el juego contra la computadora debe ofrecer más de una estrategia seleccionable por el usuario.
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -55,7 +56,7 @@ endif::arc42help[]
 
 **<optionally: Explanation of external domain interfaces>**
 
-=== Technical Context
+=== Contexto Técnico
 
 ifdef::arc42help[]
 [role="arc42help"]

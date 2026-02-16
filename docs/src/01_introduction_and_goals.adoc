@@ -1,7 +1,12 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-introduction-and-goals]]
-== Introduction and Goals
+== Introducción y Metas
+Y es un juego de tablero abstracto para dos personas, jugado sobre un tablero triangular formado por casillas hexagonales. El objetivo es que, por turnos, cada jugador coloque fichas de su color hasta conseguir una cadena conectada de sus fichas que toque los tres lados del triángulo.Para lograr este objetivo se ha propuesto una solucion que consta de dos partes:
+
+* Una aplicación Web que ofrecerá a los usuarios la posibilidad de jugar a diferentes juegos Y, que estará implementada en Typescript. Esta aplicación también ofrecerá un API externo que permitirá que sea utilizada por bots.
+
+* Un módulo implementado en Rust que permitirá chequear si una partida ha sido ganada o no, así como sugerir el siguiente movimiento. Este módulo ofrecerá un interfaz de servicio web básico para que pueda ser invocado por la aplicación web. 
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -17,7 +22,91 @@ These include
 ****
 endif::arc42help[]
 
-=== Requirements Overview
+=== Vista general de los requisitos
+Construir una plataforma web para jugar partidas del juego Y con soporte de usuarios, historial y una API para bots, apoyada por un módulo de lógica en Rust para validar formato YEN y verificar victoria.
+
+==== MÓDULO 1: APLICACIÓN WEB (TYPESCRIPT)
+
+===== RF01 - Gestión de Usuarios.
+
+* RF01.1: El sistema permitirá el registro de nuevos usuarios con email y contraseña.
+
+* RF01.2: El sistema permitirá el inicio de sesión de usuarios registrados.
+
+* RF01.3: El sistema mantendrá sesiones activas del usuario durante el uso.
+
+* RF01.4: El sistema permitirá a los usuarios cerrar sesión.
+
+===== RF02 - Interfaz de Juego
+
+* RF02.1: El sistema proporcionará una interfaz web interactiva para jugar partidas de juegos tipo Y.
+
+* RF02.2: La interfaz mostrará el tablero de juego actualizado en tiempo real.
+
+* RF02.3: El sistema permitirá a los usuarios realizar movimientos mediante clics en el tablero.
+
+* RF02.4: La interfaz mostrará el turno actual del jugador.
+
+* RF02.5: El sistema notificará visualmente el resultado de la partida (victoria/derrota/empate).
+
+===== RF03 - Historial de Partidas
+
+* RF03.1: El sistema almacenará el historial de partidas completadas por cada usuario.
+
+* RF03.2: El sistema permitirá a los usuarios consultar sus partidas anteriores.
+
+* RF03.3: El sistema mostrará estadísticas básicas
+
+** RF03.3.1: El sistema mostrará las partidas ganadas
+
+** RF03.3.2: El sistema mostrará las partidas perdidas
+
+** RF03.3.3: El sistema mostrará las partidas empatadas
+
+** RF03.3.4: El sistema mostrará el tiempo total de juego
+
+
+===== RF04 - API Externa para Bots
+
+* RF04.1: El sistema expondrá una interfaz para permitir la integración con bots
+
+* RF04.2: La API requerirá autenticación para las peticiones de los bots.
+
+* RF04.3: La API permitirá crear nuevas partidas como bot.
+
+* RF04.4: La API permitirá realizar movimientos en partidas existentes.
+
+* RF04.5: La API devolverá el estado actual de la partida en formato YEN.
+
+==== MÓDULO 2: MÓDULO DE LÓGICA (RUST)
+
+===== RF05 - Verificación de Victoria
+
+* RF05.1: El módulo recibirá una representación de partida en formato YEN y determinará si existe un ganador.
+
+* RF05.2: El módulo identificará qué jugador ha ganado la partida.
+
+* RF05.3: El módulo detectará condiciones de empate o tablas.
+
+* RF05.4: La respuesta incluirá el estado del juego en formato JSON.
+
+* RF06 - Servicio Web
+
+** RF06.1: El módulo ofrecerá un mecanismo de comunicación remota para ser invocado por otros subsistemas.
+
+** RF06.2: El módulo permitirá verificar si una partida ha sido ganada.
+
+** RF06.3: El módulo proporcionará un mecanismo para verificar su disponibilidad operativa.
+
+** RF06.4: Todas las respuestas del servicio serán en formato JSON.
+
+===== RF07 - Procesamiento de Formato YEN
+
+* RF07.1: El módulo interpretará correctamente las partidas codificadas según la notación YEN.
+
+* RF07.2: El módulo validará que la notación YEN recibida sea correcta sintácticamente.
+
+* RF07.3: El módulo rechazará peticiones con formato YEN inválido con código de error apropiado.
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -45,7 +134,19 @@ See https://docs.arc42.org/section-1/[Introduction and Goals] in the arc42 docum
 ****
 endif::arc42help[]
 
-=== Quality Goals
+=== Requisitos de Calidad
+[options="header",cols="1,2"]
+|===
+|Atributo de calidad|Motivación
+|Rendimiento (RNF01)|El sistema deberá responder a las peticiones de juego en menos de 500ms y soportar al menos 500 usuarios concurrentes.
+|Seguridad (RNF02)|Las comunicaciones entre módulos y con clientes deberán ir cifradas mediante HTTPS, y las contraseñas se almacenarán con hash seguro.
+|Disponibilidad (RNF03)|El sistema deberá tener una disponibilidad mínima del 99% en horario de operación.
+|Mantenibilidad (RNF04)|El código de ambos módulos deberá incluir pruebas unitarias con cobertura mínima del 70% y estar adecuadamente documentado.
+|Usabilidad (RNF05)|La interfaz web deberá ser responsive y funcionar correctamente en dispositivos móviles y desktop.
+|Interoperabilidad (RNF06)|La comunicación entre módulos deberá realizarse exclusivamente mediante JSON siguiendo la notación YEN.
+|===
+
+
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -92,10 +193,13 @@ These stakeholders determine the extent and the level of detail of your work and
 Table with role names, person names, and their expectations with respect to the architecture and its documentation.
 ****
 endif::arc42help[]
+=== Stakeholders
 
-[options="header",cols="1,2,2"]
+[options="header",cols="1,2"]
 |===
-|Role/Name|Contact|Expectations
-| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
-| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+|Nombre|Metas
+|Micrati|Empresa involucrada en el proyecto. Busca un producto final estable y mantenible, alineado con los requisitos acordados y con una integración correcta entre módulos.
+|Usuarios|Personas que usan la aplicación. Quieren una experiencia de juego fluida y clara, partidas fiables y acceso sencillo a su historial y estadísticas.
+|Equipo de desarrolladores|Desarrolladores encargados de construir y mantener el sistema. Buscan una arquitectura robusta, fácil de probar y evolucionar, con buen rendimiento y documentación que facilite el trabajo.
+|Profesores|Supervisores/asesores académicos del proyecto. Esperan una solución bien justificada y documentada, con buenas prácticas y cumplimiento verificable de los requisitos.
 |===

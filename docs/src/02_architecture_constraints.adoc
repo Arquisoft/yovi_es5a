@@ -1,7 +1,7 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-architecture-constraints]]
-== Architecture Constraints
+== Restricciones de Arquitectura
 
 
 ifdef::arc42help[]
@@ -27,3 +27,27 @@ See https://docs.arc42.org/section-2/[Architecture Constraints] in the arc42 doc
 
 ****
 endif::arc42help[]
+En este apartado se describen las restricciones de arquitectura que afectan a este proyecto. Estas restricciones pueden ser técnicas u organizativas y pueden incluir convenciones como directrices de programación, versionado, documentación o nomenclatura.
+
+=== Restricciones Técnicas y Estructurales
+
+[options="header",cols="1,2"]
+|===
+|Restricción|Descripción
+| _Control de Versiones_ | _Usaremos Git y GitHub para el control de versiones del proyecto_
+| _Documentación_ | _La documentación del proyecto estará basada en el formato arc42 y se alojará en GitHub Pages_
+| _Lenguajes de Programación_ | _El proyecto se desarrollará principalmente en JavaScript, utilizando Node.js para el backend y React para el frontend. Además el motor del juego estará en Rust_
+| _Testing_ | _Se utilizará Jest para testing unitario y Cypress para testing end-to-end_
+| _Apis Creadas_ | _Se necesitarán APIs para la comunicación entre el frontend y el backend_
+| _Deployment_ | _El despliegue del proyecto se hará en una máquina Linux con docker instalado creando un contenedor por cada módulo_
+|===
+
+=== Restricciones Organizativas
+
+[options="header",cols="1,2"]
+|===
+|Restricción|Descripción
+| _Reuniones_ | _Nos reuniremos todas las semanas los jueves de 10:00-11:00_
+| _GitHub issues_ | _Los issues de GitHub se usarán para gestionar tareas y problemas del proyecto_
+|===
+

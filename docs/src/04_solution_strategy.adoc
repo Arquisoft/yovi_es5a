@@ -1,7 +1,7 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-solution-strategy]]
-== Solution Strategy
+== Estrategia de Solución
 
 
 ifdef::arc42help[]
@@ -32,3 +32,34 @@ See https://docs.arc42.org/section-4/[Solution Strategy] in the arc42 documentat
 
 ****
 endif::arc42help[]
+En este apartado se describen las decisiones fundamentales y estrategias de solución que dan forma a la arquitectura del sistema. Estas decisiones incluyen:
+
+=== Decisiones Tecnológicas
+
+[options="header",cols="1,2"]
+|===
+|Decisión|Descripción
+| _Base de datos_ | _Usaremos MySQL debido a su compatibilidad con el entorno de desarrollo y su robustez para manejar datos estructurados. Además, es una base de datos ampliamente utilizada y entendida por el equipo de desarrollo._
+| _Visual Studio Code_ | _Usaremos Visual Studio Code como editor de código principal para su compatibilidad con el entorno de desarrollo y su extensibilidad._
+| _Express_ | _Usaremos Express como framework para el backend debido a su simplicidad._
+| _PlantUML_ | _Usaremos PlantUML para la creación de diagramas de arquitectura debido a su facilidad de uso y su capacidad para integrarse con otras herramientas._
+|===
+
+=== Decisiones para lograr los requisitos de calidad
+[options="header",cols="1,2"]
+|===
+|Decisión|Descripción
+| _Usabilidad_ | _La usabilidad del sistema se logrará mediante una interfaz intuitiva y fácil de usar, siguiendo buenas prácticas de diseño de experiencia de usuario._
+| _Accesibilidad_ | _La accesibilidad del sistema se logrará mediante el cumplimiento de estándares de accesibilidad web, garantizando que todos los usuarios puedan interactuar con el sistema sin barreras._
+| _Rendimiento_ | _El rendimiento del sistema se logrará mediante el uso de tecnologías eficientes y optimización del código, asegurando una respuesta rápida y fluida del sistema._
+| _Disponibilidad_ | _La disponibilidad del sistema se logrará mediante la implementación de mecanismos de redundancia y recuperación ante fallos, garantizando que el sistema esté disponible para los usuarios en todo momento._
+| _Seguridad_ | _La seguridad del sistema se logrará mediante la implementación de medidas de seguridad robustas, como autenticación y autorización adecuadas._
+| _Interoperabilidad_ | _La interoperabilidad del sistema se logrará mediante el uso de estándares abiertos y protocolos de comunicación comunes, facilitando la integración con otros sistemas._
+|===
+
+=== Decisiones Organizativas
+
+* Los miembros del grupo, ademas de las reuniones semanales que se celebren, mantendrán una comunicación constante a través de whatsapp y se podrán realizar reuniones adicionales si se considera necesario.
+* Se usará github con diferentes ramas para el desarrollo del proyecto, cada miembro del grupo se encargará de una parte del proyecto, aunque se fomentará la colaboración entre todos los miembros para asegurar la calidad del código y la integración de las diferentes partes del proyecto.
+
+

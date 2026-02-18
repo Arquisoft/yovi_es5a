@@ -1,67 +1,80 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-runtime-view]]
-== Runtime View
+== Vista de Ejecución (Runtime View)
+
+=== Resumen 
+
+Este documento describe los escenarios de ejecución más relevantes del sistema YOVI y las interacciones entre sus subsistemas principales: la Aplicación Web (Typescript) y el módulo de lógica en Rust (gamey). El intercambio entre ambos usa JSON en notación YEN para representar posiciones y movimientos. El fichero actualizado es [docs/src/06_runtime_view.adoc](docs/src/06_runtime_view.adoc).
 
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-The runtime view describes concrete behavior and interactions of the system’s building blocks in form of scenarios from the following areas:
+=== Escenario 1 — Usuario humano juega contra la máquina (flujo principal)
 
-* important use cases or features: how do building blocks execute them?
-* interactions at critical external interfaces: how do building blocks cooperate with users and neighboring systems?
-* operation and administration: launch, start-up, stop
-* error and exception scenarios
+Propósito: mostrar la interacción típica cuando un usuario desde la web juega contra un bot.
 
-Remark: The main criterion for the choice of possible scenarios (sequences, workflows) is their *architectural relevance*. It is *not* important to describe a large number of scenarios. You should rather document a representative selection.
-
-.Motivation
-You should understand how (instances of) building blocks of your system perform their job and communicate at runtime.
-You will mainly capture scenarios in your documentation to communicate your architecture to stakeholders that are less willing or able to read and understand the static models (building block view, deployment view).
-
-.Form
-There are many notations for describing scenarios, e.g.
-
-* numbered list of steps (in natural language)
-* activity diagrams or flow charts
-* sequence diagrams
-* BPMN or EPCs (event process chains)
-* state machines
-* ...
+Actores:
+- Usuario (navegador)
+- Webapp — `webapp/src/App.tsx`
+- Servicio de bots / lógica (Rust) — `gamey`
 
 
-.Further Information
+Flujo (pasos):
+1. Usuario inicia una partida en la UI y selecciona "Jugar vs Máquina" y la estrategia (ej. `random`).
+2. La web prepara la posición inicial en notación YEN y la mantiene como estado local.
+3. Usuario hace un movimiento; la web lo muestra en el tablero y el usuario confirma el fin de turno.
+4. Webapp manda un post con body JSON con la notación YEN del nuevo estado.
+5. El servicio Rust recibe el YEN, lo parsea a `GameY` y valida la posición.
+6. Se invoca al bot y se calcula la respuesta.
+7. El servicio devuelve el movimiento en notación YEN; la web lo aplica al tablero y los datos de partida.
+8. Se repite 3-7 hasta que se finaliza el juego. Una vez se finaliza, muestra el resultado al jugador y se guardan las estadísticas del juego
 
-See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
-
-****
-endif::arc42help[]
-
-=== <Runtime Scenario 1>
 
 
-* _<insert runtime diagram or textual description of the scenario>_
-* _<insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.>_
 
-It is possible to use a sequence diagram:
+=== Escenario 2 — Bot externo invoca API "play" (integración con terceros, se juega una partida en otro servidor con nuestro bot)
 
-[plantuml,"Sequence diagram",png]
-----
-actor Alice
-actor Bob
-database Pod as "Bob's Pod"
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-Alice  --> Pod: Store route
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
-----
+Propósito: describir cómo clientes externos (bots/servicios) usan la API pública para solicitar movimientos.
 
-=== <Runtime Scenario 2>
+Actores:
+- Cliente bot externo 
+- API de comunicación
+- GameY 
 
-=== ...
+Flujo:
+1. Cliente prepara un JSON en notación YEN describiendo la posición y parámetros (p.ej. `strategy`, `difficulty`) y hace POST la API de nuestro servidor
+2. El endpoint valida la versión de API y los parámetros.
+3. Se envía la notación YEN a GameY; si es válido se invoca al bot para que calcule el proximo movimiento.
+4. Respuesta: En formato YEN en JSON. Contiene el estado del tablero tras realizar el movimiento.
 
-=== <Runtime Scenario n>
+Flujo altenativo 1:
+3* YEN inválido → Se devuelve la peticion en estado de  error y con cuerpo explicativo 
+
+Flujo alternativo 2:
+2* Bot solicitado no reconocido → Se devuelve la peticion en estado de  error y con cuerpo explicativo 
+
+
+=== Escenario 3 — Humano vs Humano (partida local por turnos)
+
+Propósito: describir la interacción típica cuando dos jugadores comparten la misma instancia de la Webapp y juegan por turnos en el mismo dispositivo o en la misma sesión del navegador.
+
+Actores:
+- Jugador A (navegador)
+- Jugador B (mismo navegadors)
+- Webapp 
+- GameY
+
+Flujo (pasos):
+1. Un jugador crea o inicia una partida local en la web y define el tamaño del tablero y opciones 
+2. La web inicializa la posición en notación YEN y la mantiene como estado compartido entre turnos.
+3. Jugador A realiza su movimiento en el tablero; la web serializa la posición resultante a notación YEN y envía una petición POST al servicio `GameY` para validar/aplicar la jugada (p. ej. `POST /v1/game/move`).
+4. El servicio Rust (`GameY`) recibe el YEN, valida la jugada con las reglas completas y devuelve la respuesta al frontend
+5. La web, al recibir la confirmación, aplica el estado devuelto al tablero y muestra que es el turno del Jugador B; la web no aplica reglas complejas por su cuenta.
+6. Jugador B realiza su jugada y se repite 3–5 alternando hasta que se detecta una condición de victoria o empate.
+7. Al finalizar la partida, la web envía el resultado al backend para persistencia y estadísticas 
+
+Flujo alternativo:
+4* El servicio Rust no valida la jugada por no ser válida. Se devuelve esta respuesta al frontend
+5* El frontend informa al jugador, deshace la jugada y vuelve a 3.
+
+
+

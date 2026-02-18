@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-deployment-view]]
 
 
-== Deployment View
+== Diagrama de despliegue
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -44,7 +44,7 @@ See https://docs.arc42.org/section-7/[Deployment View] in the arc42 documentatio
 ****
 endif::arc42help[]
 
-=== Infrastructure Level 1
+=== Nivel de infraestructura 1
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -60,21 +60,70 @@ For multiple environments or alternative deployments please copy and adapt this 
 ****
 endif::arc42help[]
 
-_**<Overview Diagram>**_
+[plantuml,"Diagrama de despliegue",png]
+----
+@startuml
+skinparam monochrome true
+left to right direction
+
+actor Usuario
+
+node "Azure VM (Linux Ubuntu 24.04)" {
+
+    node "Docker" {
+
+        node "WebApp\n(React Front-end)" as WebApp
+        
+        node "Users\n(Node Back-end)" as Users
+        
+        node "Gamey\n(Rust Game Engine)" as Gamey
+        
+        node "Database" as Database
+    }
+}
+
+Usuario <--> WebApp : Interacción UI
+
+WebApp <--> Users : HTTP/JSON
+
+Users <--> Gamey : Lógica juego / Bot
+
+Users <--> Database : Persistencia datos
+@enduml
+----
 
 Motivation::
 
-_<explanation in text form>_
+La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. El usuario interactua con el sistema a través de una interfaz diseñada con React. Está se comunica con el back-end mediante OpenApi. A su vez, el back-end se comunica con la base de datos con la api mencionada anteriormente.
+El back-end también se comunica con el módulo de juego mediante el módulo Rust Bot-server.
 
-Quality and/or Performance Features::
+Características de calidad/rendimiento::
 
-_<explanation in text form>_
+El hecho de emplear Docker para encapsular cada uno de los módulos del sistema en distintos contenedores permite que el sistema sea escalable y portable. Además, la separación de las distintas partes en distintos contenedores
+facilita el mantenimiento y la extensibilidad. Además,  aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
+continuo de nuestra aplicación.
 
-Mapping of Building Blocks to Infrastructure::
-_<description of the mapping>_
+Mapeo de los bloques de construcción a infraestructura::
 
+[cols="1,2" options="header"]
+|===
 
-=== Infrastructure Level 2
+| **Nombre** | **Descripción**
+
+| Azure | Servicio con el servidor en el que se encuentra la aplicación.
+
+| Docker | Genera cada uno de los contenedores para almacenar cada uno de los módulos de la aplicación.
+
+| WebApp | Front-end diseñado con React para la interacción con el usuario.
+
+| Users | Back-end diseñado con Node para gestionar la lógica de la aplicación. 
+
+| Gamey | Módulo Rust con la lógica del juego y del bot.
+
+| Database | Almacena un registro de los usuarios de la aplicación, las partidas realizadas, los usuarios obtenidos, ...
+
+|===
+
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -84,17 +133,3 @@ Here you can include the internal structure of (some) infrastructure elements fr
 Please copy the structure from level 1 for each selected element.
 ****
 endif::arc42help[]
-
-==== _<Infrastructure Element 1>_
-
-_<diagram + explanation>_
-
-==== _<Infrastructure Element 2>_
-
-_<diagram + explanation>_
-
-...
-
-==== _<Infrastructure Element n>_
-
-_<diagram + explanation>_

@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-building-block-view]]
 
 
-== Building Block View
+== Vista de bloques de construcción
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -42,7 +42,7 @@ See https://docs.arc42.org/section-5/[Building Block View] in the arc42 document
 ****
 endif::arc42help[]
 
-=== Whitebox Overall System
+=== Visión general del sistema
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -67,18 +67,59 @@ In the best case you will get away with examples or simple signatures.
 ****
 endif::arc42help[]
 
-_**<Overview Diagram>**_
+[plantuml,"Vision general",png]
+----
+@startuml
+skinparam monochrome true
+left to right direction
 
-Motivation::
+actor User
 
-_<text explanation>_
+node "App" {
+}
 
+node "Gamey" {
+}
 
-Contained Building Blocks::
-_<Description of contained building block (black boxes)>_
+"User" <--> "App" : Interactúa
+"App" <--> "Gamey" : Gestiona lógica\nmovimientos y bot
+@enduml
+----
 
-Important Interfaces::
-_<Description of important interfaces>_
+Motivación::
+
+Visión general del sistema donde el usuario interactua con la aplicación. Esta hace uso del módulo gamey para validar movimientos y detemrinar cuando finaliza el juego.
+La separación entre WebApp y Gamey permite desacoplar la interfaz de usuario de la lógica del juego y del bot, facilitando el mantenimiento, extensión y reutilización de cada componente.
+
+Componentes::
+
+[cols="1,2" options="header"]
+|===
+
+| **Nombre** | **Responsabilidad**
+
+| User | Interactua con la aplicación.
+
+| WebApp | Gestiona la interacción del usuario con el sistema.
+
+| Gamey | Gestiona la lògica del juego, el bot, los movimientos, ...
+
+|===
+  
+*OpenApi*
+
+Comunica el front-end con el back-end siguiendo el protocolo HTTP y con el formato JSON. Las principales operaciones que contempla son :
+
+  - Registro de usuarios.
+  - Inicio de partidas.
+  - Realización de movimientos.
+  - Consulta de puntuaciones.
+  ...
+
+*BotServer*
+
+Comunica el bot con el resto de la aplicación siguiendo el protocolo HTTP y con el formato JSON. La única operación que contempla es la realización de movimientos
+por parte del bot.
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -102,7 +143,72 @@ Its headline is the name of the black box.
 ****
 endif::arc42help[]
 
-==== <Name black box 1>
+=== Nivel 2 del sistema
+
+Visión específica del módulo Yovi del sistema y las responsabilidades de los distintos subsistemas existentes en este.
+
+[plantuml,"Nivel 2",png]
+----
+@startuml
+skinparam monochrome true
+left to right direction
+
+actor Usuario
+
+frame "App" {
+  node "WebApp"
+  node "OpenApi"
+  node "Users"
+}
+
+node "Database"
+
+frame "Game Engine" {
+  node "Bot"
+  node "BotServer"
+  node "Core"
+  node "Notation"
+}
+
+"Usuario" <--> "WebApp" : Interactúa
+"WebApp" <--> "OpenApi" : Comunicarse con el back
+"OpenApi" <--> "Users" : Comunicarse con el front
+
+"Users" <--> "Database" : Almacena\extrae
+"Users" <--> "BotServer" : Comunicarse con el juego
+"Core" <--> "Notation" : Usa YEN
+"Core" <--> "Bot" : Comunicarse con el bot
+"Core" <--> "BotServer" : Comunicarse con el núcleo del juego
+
+@enduml
+----
+
+Componentes::
+
+[cols="1,2" options="header"]
+|===
+
+| **Nombre** | **Responsabilidad**
+
+| Usuario | Interactua con la aplicación.
+
+| WebApp | Expone una interfaz de usuario para que el usuario interacciona con el sistema.
+
+| OpenApi | Comunica el front-end (WebApp) con el back-end (Users).
+
+| Users | Gestiona la interacción del usuario.
+
+| Database | Almacena un historial de los usuarios registrados, partidas realizadas, puntuaciones obtenidas, ...
+
+| Bot | Contiene la lógica relacionada con el bot.
+
+| BotServer | Permite la interacción del back-end con el bot.
+
+| Core | Contiene la lógica del juego y gestiona el estado del mismo y la validación de movimientos y reglas.
+
+| Notation | Incluye toda la lógica sobre la notación YEN.
+
+|===
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -120,40 +226,6 @@ according the the following black box template:
 ****
 endif::arc42help[]
 
-_<Purpose/Responsibility>_
-
-_<Interface(s)>_
-
-_<(Optional) Quality/Performance Characteristics>_
-
-_<(Optional) Directory/File Location>_
-
-_<(Optional) Fulfilled Requirements>_
-
-_<(optional) Open Issues/Problems/Risks>_
-
-
-
-
-==== <Name black box 2>
-
-_<black box template>_
-
-==== <Name black box n>
-
-_<black box template>_
-
-
-==== <Name interface 1>
-
-...
-
-==== <Name interface m>
-
-
-
-=== Level 2
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -165,32 +237,12 @@ Leave out normal, simple, boring or standardized parts of your system
 ****
 endif::arc42help[]
 
-==== White Box _<building block 1>_
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
 ...describes the internal structure of _building block 1_.
 ****
 endif::arc42help[]
-
-_<white box template>_
-
-==== White Box _<building block 2>_
-
-
-_<white box template>_
-
-...
-
-==== White Box _<building block m>_
-
-
-_<white box template>_
-
-
-
-=== Level 3
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -202,24 +254,9 @@ part of arc42 for additional levels.
 ****
 endif::arc42help[]
 
-==== White Box <_building block x.1_>
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
 Specifies the internal structure of _building block x.1_.
 ****
 endif::arc42help[]
-
-_<white box template>_
-
-
-==== White Box <_building block x.2_>
-
-_<white box template>_
-
-
-
-==== White Box <_building block y.1_>
-
-_<white box template>_

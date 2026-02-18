@@ -121,7 +121,7 @@ jobs:
           workdir: webapp
           buildargs: |
             VITE_API_URL=http://${{ secrets.DEPLOY_HOST }}:3000
-            GAMEY_URL=http://${{ secrets.DEPLOY_HOST }}:4000
+            VITE_GAMEY_URL=http://${{ secrets.DEPLOY_HOST }}:4000
  
 
   docker-push-gamey:

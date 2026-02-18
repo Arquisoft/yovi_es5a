@@ -445,40 +445,50 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#section-introduction-and-goals">1. Introduction and Goals</a>
+<li><a href="#section-introduction-and-goals">1. Introducción y Metas</a>
 <ul class="sectlevel2">
-<li><a href="#_requirements_overview">1.1. Requirements Overview</a></li>
-<li><a href="#_quality_goals">1.2. Quality Goals</a></li>
+<li><a href="#_vista_general_de_los_requisitos">1.1. Vista general de los requisitos</a></li>
+<li><a href="#_requisitos_de_calidad">1.2. Requisitos de Calidad</a></li>
 <li><a href="#_stakeholders">1.3. Stakeholders</a></li>
+<li><a href="#_stakeholders_2">1.4. Stakeholders</a></li>
 </ul>
 </li>
-<li><a href="#section-architecture-constraints">2. Architecture Constraints</a></li>
-<li><a href="#section-context-and-scope">3. Context and Scope</a>
+<li><a href="#section-architecture-constraints">2. Restricciones de Arquitectura</a>
 <ul class="sectlevel2">
-<li><a href="#_business_context">3.1. Business Context</a></li>
-<li><a href="#_technical_context">3.2. Technical Context</a></li>
+<li><a href="#_restricciones_técnicas_y_estructurales">2.1. Restricciones Técnicas y Estructurales</a></li>
+<li><a href="#_restricciones_organizativas">2.2. Restricciones Organizativas</a></li>
 </ul>
 </li>
-<li><a href="#section-solution-strategy">4. Solution Strategy</a></li>
-<li><a href="#section-building-block-view">5. Building Block View</a>
+<li><a href="#section-context-and-scope">3. Contexto y Alcanze</a>
 <ul class="sectlevel2">
-<li><a href="#_whitebox_overall_system">5.1. Whitebox Overall System</a></li>
-<li><a href="#_level_2">5.2. Level 2</a></li>
-<li><a href="#_level_3">5.3. Level 3</a></li>
+<li><a href="#_contexto_de_negocio">3.1. Contexto de Negocio</a></li>
+<li><a href="#_contexto_técnico">3.2. Contexto Técnico</a></li>
 </ul>
 </li>
-<li><a href="#section-runtime-view">6. Runtime View</a>
+<li><a href="#section-solution-strategy">4. Estrategia de Solución</a>
 <ul class="sectlevel2">
-<li><a href="#_runtime_scenario_1">6.1. &lt;Runtime Scenario 1&gt;</a></li>
-<li><a href="#_runtime_scenario_2">6.2. &lt;Runtime Scenario 2&gt;</a></li>
-<li><a href="#">6.3. &#8230;&#8203;</a></li>
-<li><a href="#_runtime_scenario_n">6.4. &lt;Runtime Scenario n&gt;</a></li>
+<li><a href="#_decisiones_tecnológicas">4.1. Decisiones Tecnológicas</a></li>
+<li><a href="#_decisiones_para_lograr_los_requisitos_de_calidad">4.2. Decisiones para lograr los requisitos de calidad</a></li>
+<li><a href="#_decisiones_organizativas">4.3. Decisiones Organizativas</a></li>
 </ul>
 </li>
-<li><a href="#section-deployment-view">7. Deployment View</a>
+<li><a href="#section-building-block-view">5. Vista de bloques de construcción</a>
 <ul class="sectlevel2">
-<li><a href="#_infrastructure_level_1">7.1. Infrastructure Level 1</a></li>
-<li><a href="#_infrastructure_level_2">7.2. Infrastructure Level 2</a></li>
+<li><a href="#_visión_general_del_sistema">5.1. Visión general del sistema</a></li>
+<li><a href="#_nivel_2_del_sistema">5.2. Nivel 2 del sistema</a></li>
+</ul>
+</li>
+<li><a href="#section-runtime-view">6. Vista de Ejecución (Runtime View)</a>
+<ul class="sectlevel2">
+<li><a href="#_resumen">6.1. Resumen</a></li>
+<li><a href="#_escenario_1_usuario_humano_juega_contra_la_máquina_flujo_principal">6.2. Escenario 1 — Usuario humano juega contra la máquina (flujo principal)</a></li>
+<li><a href="#_escenario_2_bot_externo_invoca_api_play_integración_con_terceros_se_juega_una_partida_en_otro_servidor_con_nuestro_bot">6.3. Escenario 2 — Bot externo invoca API "play" (integración con terceros, se juega una partida en otro servidor con nuestro bot)</a></li>
+<li><a href="#_escenario_3_humano_vs_humano_partida_local_por_turnos">6.4. Escenario 3 — Humano vs Humano (partida local por turnos)</a></li>
+</ul>
+</li>
+<li><a href="#section-deployment-view">7. Diagrama de despliegue</a>
+<ul class="sectlevel2">
+<li><a href="#_nivel_de_infraestructura_1">7.1. Nivel de infraestructura 1</a></li>
 </ul>
 </li>
 <li><a href="#section-concepts">8. Cross-cutting Concepts</a>
@@ -550,8 +560,21 @@ For documentation of your own system you use better the <em>plain</em> version.<
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-introduction-and-goals">1. Introduction and Goals</h2>
+<h2 id="section-introduction-and-goals">1. Introducción y Metas</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>Y es un juego de tablero abstracto para dos personas, jugado sobre un tablero triangular formado por casillas hexagonales. El objetivo es que, por turnos, cada jugador coloque fichas de su color hasta conseguir una cadena conectada de sus fichas que toque los tres lados del triángulo.Para lograr este objetivo se ha propuesto una solucion que consta de dos partes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Una aplicación Web que ofrecerá a los usuarios la posibilidad de jugar a diferentes juegos Y, que estará implementada en Typescript. Esta aplicación también ofrecerá un API externo que permitirá que sea utilizada por bots.</p>
+</li>
+<li>
+<p>Un módulo implementado en Rust que permitirá chequear si una partida ha sido ganada o no, así como sugerir el siguiente movimiento. Este módulo ofrecerá un interfaz de servicio web básico para que pueda ser invocado por la aplicación web.</p>
+</li>
+</ul>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -580,7 +603,163 @@ These include</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_requirements_overview">1.1. Requirements Overview</h3>
+<h3 id="_vista_general_de_los_requisitos">1.1. Vista general de los requisitos</h3>
+<div class="paragraph">
+<p>Construir una plataforma web para jugar partidas del juego Y con soporte de usuarios, historial y una API para bots, apoyada por un módulo de lógica en Rust para validar formato YEN y verificar victoria.</p>
+</div>
+<div class="sect3">
+<h4 id="_módulo_1_aplicación_web_typescript">1.1.1. MÓDULO 1: APLICACIÓN WEB (TYPESCRIPT)</h4>
+<div class="sect4">
+<h5 id="_rf01_gestión_de_usuarios">RF01 - Gestión de Usuarios.</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>RF01.1: El sistema permitirá el registro de nuevos usuarios con email y contraseña.</p>
+</li>
+<li>
+<p>RF01.2: El sistema permitirá el inicio de sesión de usuarios registrados.</p>
+</li>
+<li>
+<p>RF01.3: El sistema mantendrá sesiones activas del usuario durante el uso.</p>
+</li>
+<li>
+<p>RF01.4: El sistema permitirá a los usuarios cerrar sesión.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_rf02_interfaz_de_juego">RF02 - Interfaz de Juego</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>RF02.1: El sistema proporcionará una interfaz web interactiva para jugar partidas de juegos tipo Y.</p>
+</li>
+<li>
+<p>RF02.2: La interfaz mostrará el tablero de juego actualizado en tiempo real.</p>
+</li>
+<li>
+<p>RF02.3: El sistema permitirá a los usuarios realizar movimientos mediante clics en el tablero.</p>
+</li>
+<li>
+<p>RF02.4: La interfaz mostrará el turno actual del jugador.</p>
+</li>
+<li>
+<p>RF02.5: El sistema notificará visualmente el resultado de la partida (victoria/derrota/empate).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_rf03_historial_de_partidas">RF03 - Historial de Partidas</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>RF03.1: El sistema almacenará el historial de partidas completadas por cada usuario.</p>
+</li>
+<li>
+<p>RF03.2: El sistema permitirá a los usuarios consultar sus partidas anteriores.</p>
+</li>
+<li>
+<p>RF03.3: El sistema mostrará estadísticas básicas</p>
+<div class="ulist">
+<ul>
+<li>
+<p>RF03.3.1: El sistema mostrará las partidas ganadas</p>
+</li>
+<li>
+<p>RF03.3.2: El sistema mostrará las partidas perdidas</p>
+</li>
+<li>
+<p>RF03.3.3: El sistema mostrará las partidas empatadas</p>
+</li>
+<li>
+<p>RF03.3.4: El sistema mostrará el tiempo total de juego</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_rf04_api_externa_para_bots">RF04 - API Externa para Bots</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>RF04.1: El sistema expondrá una interfaz para permitir la integración con bots</p>
+</li>
+<li>
+<p>RF04.2: La API requerirá autenticación para las peticiones de los bots.</p>
+</li>
+<li>
+<p>RF04.3: La API permitirá crear nuevas partidas como bot.</p>
+</li>
+<li>
+<p>RF04.4: La API permitirá realizar movimientos en partidas existentes.</p>
+</li>
+<li>
+<p>RF04.5: La API devolverá el estado actual de la partida en formato YEN.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_módulo_2_módulo_de_lógica_rust">1.1.2. MÓDULO 2: MÓDULO DE LÓGICA (RUST)</h4>
+<div class="sect4">
+<h5 id="_rf05_verificación_de_victoria">RF05 - Verificación de Victoria</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>RF05.1: El módulo recibirá una representación de partida en formato YEN y determinará si existe un ganador.</p>
+</li>
+<li>
+<p>RF05.2: El módulo identificará qué jugador ha ganado la partida.</p>
+</li>
+<li>
+<p>RF05.3: El módulo detectará condiciones de empate o tablas.</p>
+</li>
+<li>
+<p>RF05.4: La respuesta incluirá el estado del juego en formato JSON.</p>
+</li>
+<li>
+<p>RF06 - Servicio Web</p>
+<div class="ulist">
+<ul>
+<li>
+<p>RF06.1: El módulo ofrecerá un mecanismo de comunicación remota para ser invocado por otros subsistemas.</p>
+</li>
+<li>
+<p>RF06.2: El módulo permitirá verificar si una partida ha sido ganada.</p>
+</li>
+<li>
+<p>RF06.3: El módulo proporcionará un mecanismo para verificar su disponibilidad operativa.</p>
+</li>
+<li>
+<p>RF06.4: Todas las respuestas del servicio serán en formato JSON.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_rf07_procesamiento_de_formato_yen">RF07 - Procesamiento de Formato YEN</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>RF07.1: El módulo interpretará correctamente las partidas codificadas según la notación YEN.</p>
+</li>
+<li>
+<p>RF07.2: El módulo validará que la notación YEN recibida sea correcta sintácticamente.</p>
+</li>
+<li>
+<p>RF07.3: El módulo rechazará peticiones con formato YEN inválido con código de error apropiado.</p>
+</li>
+</ul>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -609,8 +788,48 @@ If requirements documents exist this overview should refer to these documents.</
 </div>
 </div>
 </div>
+</div>
+</div>
 <div class="sect2">
-<h3 id="_quality_goals">1.2. Quality Goals</h3>
+<h3 id="_requisitos_de_calidad">1.2. Requisitos de Calidad</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Atributo de calidad</th>
+<th class="tableblock halign-left valign-top">Motivación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rendimiento (RNF01)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El sistema deberá responder a las peticiones de juego en menos de 500ms y soportar al menos 500 usuarios concurrentes.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Seguridad (RNF02)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Las comunicaciones entre módulos y con clientes deberán ir cifradas mediante HTTPS, y las contraseñas se almacenarán con hash seguro.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Disponibilidad (RNF03)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El sistema deberá tener una disponibilidad mínima del 99% en horario de operación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mantenibilidad (RNF04)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El código de ambos módulos deberá incluir pruebas unitarias con cobertura mínima del 70% y estar adecuadamente documentado.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usabilidad (RNF05)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La interfaz web deberá ser responsive y funcionar correctamente en dispositivos móviles y desktop.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interoperabilidad (RNF06)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La comunicación entre módulos deberá realizarse exclusivamente mediante JSON siguiendo la notación YEN.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -679,29 +898,36 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_stakeholders_2">1.4. Stakeholders</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 20%;">
-<col style="width: 40%;">
-<col style="width: 40%;">
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Role/Name</th>
-<th class="tableblock halign-left valign-top">Contact</th>
-<th class="tableblock halign-left valign-top">Expectations</th>
+<th class="tableblock halign-left valign-top">Nombre</th>
+<th class="tableblock halign-left valign-top">Metas</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Role-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Contact-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Expectation-1&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Micrati</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Empresa involucrada en el proyecto. Busca un producto final estable y mantenible, alineado con los requisitos acordados y con una integración correcta entre módulos.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Role-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Contact-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Expectation-2&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuarios</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Personas que usan la aplicación. Quieren una experiencia de juego fluida y clara, partidas fiables y acceso sencillo a su historial y estadísticas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Equipo de desarrolladores</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Desarrolladores encargados de construir y mantener el sistema. Buscan una arquitectura robusta, fácil de probar y evolucionar, con buen rendimiento y documentación que facilite el trabajo.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Profesores</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supervisores/asesores académicos del proyecto. Esperan una solución bien justificada y documentada, con buenas prácticas y cumplimiento verificable de los requisitos.</p></td>
 </tr>
 </tbody>
 </table>
@@ -710,7 +936,7 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-architecture-constraints">2. Architecture Constraints</h2>
+<h2 id="section-architecture-constraints">2. Restricciones de Arquitectura</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -736,11 +962,80 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>En este apartado se describen las restricciones de arquitectura que afectan a este proyecto. Estas restricciones pueden ser técnicas u organizativas y pueden incluir convenciones como directrices de programación, versionado, documentación o nomenclatura.</p>
+</div>
+<div class="sect2">
+<h3 id="_restricciones_técnicas_y_estructurales">2.1. Restricciones Técnicas y Estructurales</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Restricción</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Control de Versiones</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Git y GitHub para el control de versiones del proyecto</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Documentación</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La documentación del proyecto estará basada en el formato arc42 y se alojará en GitHub Pages</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Lenguajes de Programación</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El proyecto se desarrollará principalmente en JavaScript, utilizando Node.js para el backend y React para el frontend. Además el motor del juego estará en Rust</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Testing</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Se utilizará Jest para testing unitario y Cypress para testing end-to-end</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Apis Creadas</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Se necesitarán APIs para la comunicación entre el frontend y el backend</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Deployment</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El despliegue del proyecto se hará en una máquina Linux con docker instalado creando un contenedor por cada módulo</em></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_restricciones_organizativas">2.2. Restricciones Organizativas</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Restricción</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Reuniones</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nos reuniremos todas las semanas los jueves de 10:00-11:00</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>GitHub issues</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Los issues de GitHub se usarán para gestionar tareas y problemas del proyecto</em></p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="section-context-and-scope">3. Context and Scope</h2>
+<h2 id="section-context-and-scope">3. Contexto y Alcanze</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -777,7 +1072,39 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_business_context">3.1. Business Context</h3>
+<h3 id="_contexto_de_negocio">3.1. Contexto de Negocio</h3>
+<div class="paragraph">
+<p>Micrati quiere lanzar YOVI, una conunto de juegos basados en el juego Y, accesibles desde la web. El sistema debe permitir que personas jueguen partidas del juego Y desde un frontend web, incluyendo al menos la versión clásica (humano vs máquina) con tamaño de tablero variable. Además, el juego contra la computadora debe ofrecer más de una estrategia seleccionable por el usuario.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/03_Diagrama_de_contexto.png" alt="Diagrama de contexto de negocio">
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Actor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cómo interactúa</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuarios</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Acceden a YOVI desde la aplicación web para jugar y registrarse.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bots</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Invocan la API externa de YOVI enviando la posición en JSON y reciben el siguiente movimiento en YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplicación YOVI</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recibe peticiones de Usuarios y Bots llama al servicio de lógica en Rust y persiste/consulta datos en la base de datos para histórico/estadísticas.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -799,15 +1126,9 @@ The title of the table is the name of your system, the three columns contain the
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>&lt;Diagram or Table&gt;</strong></p>
-</div>
-<div class="paragraph">
-<p><strong>&lt;optionally: Explanation of external domain interfaces&gt;</strong></p>
-</div>
 </div>
 <div class="sect2">
-<h3 id="_technical_context">3.2. Technical Context</h3>
+<h3 id="_contexto_técnico">3.2. Contexto Técnico</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -825,21 +1146,49 @@ together with a mapping table showing the relationships between channels and inp
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>&lt;Diagram or Table&gt;</strong></p>
+<div class="imageblock">
+<div class="content">
+<img src="./images/03_Diagrama_de_contexto_tecnico.png" alt="Diagrama de contexto técnico">
 </div>
-<div class="paragraph">
-<p><strong>&lt;optionally: Explanation of technical interfaces&gt;</strong></p>
 </div>
-<div class="paragraph">
-<p><strong>&lt;Mapping Input/Output to Channels&gt;</strong></p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Actor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cómo interactúa</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuario</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Accede a YOVI mediante la UI Web para jugar y registrarse.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bot</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Consume el API de YOVI puede jugar contra la aplicación invocando play(position) y recibiendo el movimiento en notación YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplicación YOVI</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recibe peticiones del Usuario y del Bot, invoca al Servicio de lógica por HTTP/HTTPS intercambiando JSON (partida en YEN) y gestiona persistencia contra la base de datos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Servicio de lógica</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Expone un servicio web básico invocado por YOVI, verifica si la partida está ganada y sugiere el siguiente movimiento, usando JSON en notación YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de datos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Almacena usuarios, partidas e histórico y recibe operaciones de lectura/escritura desde YOVI para persistir y consultar histórico/estadísticas.</p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-solution-strategy">4. Solution Strategy</h2>
+<h2 id="section-solution-strategy">4. Estrategia de Solución</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -882,11 +1231,101 @@ Refer to details in the following sections.</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>En este apartado se describen las decisiones fundamentales y estrategias de solución que dan forma a la arquitectura del sistema. Estas decisiones incluyen:</p>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_tecnológicas">4.1. Decisiones Tecnológicas</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decisión</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos MySQL debido a su compatibilidad con el entorno de desarrollo y su robustez para manejar datos estructurados. Además, es una base de datos ampliamente utilizada y entendida por el equipo de desarrollo.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Visual Studio Code</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Visual Studio Code como editor de código principal para su compatibilidad con el entorno de desarrollo y su extensibilidad.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Express</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Express como framework para el backend debido a su simplicidad.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>PlantUML</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos PlantUML para la creación de diagramas de arquitectura debido a su facilidad de uso y su capacidad para integrarse con otras herramientas.</em></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_para_lograr_los_requisitos_de_calidad">4.2. Decisiones para lograr los requisitos de calidad</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decisión</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usabilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La usabilidad del sistema se logrará mediante una interfaz intuitiva y fácil de usar, siguiendo buenas prácticas de diseño de experiencia de usuario.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Accesibilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La accesibilidad del sistema se logrará mediante el cumplimiento de estándares de accesibilidad web, garantizando que todos los usuarios puedan interactuar con el sistema sin barreras.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Rendimiento</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El rendimiento del sistema se logrará mediante el uso de tecnologías eficientes y optimización del código, asegurando una respuesta rápida y fluida del sistema.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Disponibilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La disponibilidad del sistema se logrará mediante la implementación de mecanismos de redundancia y recuperación ante fallos, garantizando que el sistema esté disponible para los usuarios en todo momento.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Seguridad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La seguridad del sistema se logrará mediante la implementación de medidas de seguridad robustas, como autenticación y autorización adecuadas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Interoperabilidad</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>La interoperabilidad del sistema se logrará mediante el uso de estándares abiertos y protocolos de comunicación comunes, facilitando la integración con otros sistemas.</em></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_organizativas">4.3. Decisiones Organizativas</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Los miembros del grupo, ademas de las reuniones semanales que se celebren, mantendrán una comunicación constante a través de whatsapp y se podrán realizar reuniones adicionales si se considera necesario.</p>
+</li>
+<li>
+<p>Se usará github con diferentes ramas para el desarrollo del proyecto, cada miembro del grupo se encargará de una parte del proyecto, aunque se fomentará la colaboración entre todos los miembros para asegurar la calidad del código y la integración de las diferentes partes del proyecto.</p>
+</li>
+</ul>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="section-building-block-view">5. Building Block View</h2>
+<h2 id="section-building-block-view">5. Vista de bloques de construcción</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -934,7 +1373,7 @@ Thus it contains the white box description of selected building blocks of level 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_whitebox_overall_system">5.1. Whitebox Overall System</h3>
+<h3 id="_visión_general_del_sistema">5.1. Visión general del sistema</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -973,24 +1412,76 @@ In the best case you will get away with examples or simple signatures.</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Vision%20general.png" alt="Vision general" width="443" height="94">
+</div>
 </div>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">Motivation</dt>
+<dt class="hdlist1">Motivación</dt>
 <dd>
-<p><em>&lt;text explanation&gt;</em></p>
+<p>Visión general del sistema donde el usuario interactua con la aplicación. Esta hace uso del módulo gamey para validar movimientos y detemrinar cuando finaliza el juego.
+La separación entre WebApp y Gamey permite desacoplar la interfaz de usuario de la lógica del juego y del bot, facilitando el mantenimiento, extensión y reutilización de cada componente.</p>
 </dd>
-<dt class="hdlist1">Contained Building Blocks</dt>
-<dd>
-<p><em>&lt;Description of contained building block (black boxes)&gt;</em></p>
-</dd>
-<dt class="hdlist1">Important Interfaces</dt>
-<dd>
-<p><em>&lt;Description of important interfaces&gt;</em></p>
-</dd>
+<dt class="hdlist1">Componentes</dt>
 </dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Nombre</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Responsabilidad</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Interactua con la aplicación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WebApp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Gestiona la interacción del usuario con el sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Gestiona la lògica del juego, el bot, los movimientos, &#8230;&#8203;</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>OpenApi</strong></p>
+</div>
+<div class="paragraph">
+<p>Comunica el front-end con el back-end siguiendo el protocolo HTTP y con el formato JSON. Las principales operaciones que contempla son :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Registro de usuarios.</p>
+</li>
+<li>
+<p>Inicio de partidas.</p>
+</li>
+<li>
+<p>Realización de movimientos.</p>
+</li>
+<li>
+<p>Consulta de puntuaciones.
+&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>BotServer</strong></p>
+</div>
+<div class="paragraph">
+<p>Comunica el bot con el resto de la aplicación siguiendo el protocolo HTTP y con el formato JSON. La única operación que contempla es la realización de movimientos
+por parte del bot.</p>
 </div>
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -1029,8 +1520,72 @@ Its headline is the name of the black box.</p>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_name_black_box_1">5.1.1. &lt;Name black box 1&gt;</h4>
+</div>
+<div class="sect2">
+<h3 id="_nivel_2_del_sistema">5.2. Nivel 2 del sistema</h3>
+<div class="paragraph">
+<p>Visión específica del módulo Yovi del sistema y las responsabilidades de los distintos subsistemas existentes en este.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Nivel%202.png" alt="Nivel 2" width="1156" height="319">
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Componentes</dt>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Nombre</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Responsabilidad</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuario</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Interactua con la aplicación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WebApp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Expone una interfaz de usuario para que el usuario interacciona con el sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenApi</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Comunica el front-end (WebApp) con el back-end (Users).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Gestiona la interacción del usuario.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Database</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Almacena un historial de los usuarios registrados, partidas realizadas, puntuaciones obtenidas, &#8230;&#8203;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bot</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Contiene la lógica relacionada con el bot.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BotServer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Permite la interacción del back-end con el bot.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Core</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Contiene la lógica del juego y gestiona el estado del mismo y la validación de movimientos y reglas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Notation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Incluye toda la lógica sobre la notación YEN.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1061,50 +1616,6 @@ according the the following black box template:</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><em>&lt;Purpose/Responsibility&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;Interface(s)&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Quality/Performance Characteristics&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Directory/File Location&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Fulfilled Requirements&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(optional) Open Issues/Problems/Risks&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_2">5.1.2. &lt;Name black box 2&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;black box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_n">5.1.3. &lt;Name black box n&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;black box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_interface_1">5.1.4. &lt;Name interface 1&gt;</h4>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_interface_m">5.1.5. &lt;Name interface m&gt;</h4>
-
-</div>
-</div>
-<div class="sect2">
-<h3 id="_level_2">5.2. Level 2</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1117,8 +1628,6 @@ Leave out normal, simple, boring or standardized parts of your system</p>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_white_box_building_block_1">5.2.1. White Box <em>&lt;building block 1&gt;</em></h4>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1126,28 +1635,6 @@ Leave out normal, simple, boring or standardized parts of your system</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_2">5.2.2. White Box <em>&lt;building block 2&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_m">5.2.3. White Box <em>&lt;building block m&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_level_3">5.3. Level 3</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1159,8 +1646,6 @@ part of arc42 for additional levels.</p>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_white_box_building_block_x_1">5.3.1. White Box &lt;_building block x.1_&gt;</h4>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1168,129 +1653,102 @@ part of arc42 for additional levels.</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_x_2">5.3.2. White Box &lt;_building block x.2_&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_y_1">5.3.3. White Box &lt;_building block y.1_&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
 </div>
-</div>
 <div class="sect1">
-<h2 id="section-runtime-view">6. Runtime View</h2>
+<h2 id="section-runtime-view">6. Vista de Ejecución (Runtime View)</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
+<div class="sect2">
+<h3 id="_resumen">6.1. Resumen</h3>
 <div class="paragraph">
-<div class="title">Contents</div>
-<p>The runtime view describes concrete behavior and interactions of the system’s building blocks in form of scenarios from the following areas:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>important use cases or features: how do building blocks execute them?</p>
-</li>
-<li>
-<p>interactions at critical external interfaces: how do building blocks cooperate with users and neighboring systems?</p>
-</li>
-<li>
-<p>operation and administration: launch, start-up, stop</p>
-</li>
-<li>
-<p>error and exception scenarios</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Remark: The main criterion for the choice of possible scenarios (sequences, workflows) is their <strong>architectural relevance</strong>. It is <strong>not</strong> important to describe a large number of scenarios. You should rather document a representative selection.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>You should understand how (instances of) building blocks of your system perform their job and communicate at runtime.
-You will mainly capture scenarios in your documentation to communicate your architecture to stakeholders that are less willing or able to read and understand the static models (building block view, deployment view).</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>There are many notations for describing scenarios, e.g.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>numbered list of steps (in natural language)</p>
-</li>
-<li>
-<p>activity diagrams or flow charts</p>
-</li>
-<li>
-<p>sequence diagrams</p>
-</li>
-<li>
-<p>BPMN or EPCs (event process chains)</p>
-</li>
-<li>
-<p>state machines</p>
-</li>
-<li>
-<p>&#8230;&#8203;</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-6/">Runtime View</a> in the arc42 documentation.</p>
-</div>
+<p>Este documento describe los escenarios de ejecución más relevantes del sistema YOVI y las interacciones entre sus subsistemas principales: la Aplicación Web (Typescript) y el módulo de lógica en Rust (gamey). El intercambio entre ambos usa JSON en notación YEN para representar posiciones y movimientos. El fichero actualizado es [docs/src/06_runtime_view.adoc](docs/src/06_runtime_view.adoc).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_runtime_scenario_1">6.1. &lt;Runtime Scenario 1&gt;</h3>
-<div class="ulist">
-<ul>
-<li>
-<p><em>&lt;insert runtime diagram or textual description of the scenario&gt;</em></p>
-</li>
-<li>
-<p><em>&lt;insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.&gt;</em></p>
-</li>
-</ul>
+<h3 id="_escenario_1_usuario_humano_juega_contra_la_máquina_flujo_principal">6.2. Escenario 1 — Usuario humano juega contra la máquina (flujo principal)</h3>
+<div class="paragraph">
+<p>Propósito: mostrar la interacción típica cuando un usuario desde la web juega contra un bot.</p>
 </div>
 <div class="paragraph">
-<p>It is possible to use a sequence diagram:</p>
+<p>Actores:
+- Usuario (navegador)
+- Webapp — <code>webapp/src/App.tsx</code>
+- Servicio de bots / lógica (Rust) — <code>gamey</code></p>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="./images/Sequence%20diagram.png" alt="Sequence diagram" width="332" height="335">
-</div>
+<div class="paragraph">
+<p>Flujo (pasos):
+1. Usuario inicia una partida en la UI y selecciona "Jugar vs Máquina" y la estrategia (ej. <code>random</code>).
+2. La web prepara la posición inicial en notación YEN y la mantiene como estado local.
+3. Usuario hace un movimiento; la web lo muestra en el tablero y el usuario confirma el fin de turno.
+4. Webapp manda un post con body JSON con la notación YEN del nuevo estado.
+5. El servicio Rust recibe el YEN, lo parsea a <code>GameY</code> y valida la posición.
+6. Se invoca al bot y se calcula la respuesta.
+7. El servicio devuelve el movimiento en notación YEN; la web lo aplica al tablero y los datos de partida.
+8. Se repite 3-7 hasta que se finaliza el juego. Una vez se finaliza, muestra el resultado al jugador y se guardan las estadísticas del juego</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_runtime_scenario_2">6.2. &lt;Runtime Scenario 2&gt;</h3>
-
+<h3 id="_escenario_2_bot_externo_invoca_api_play_integración_con_terceros_se_juega_una_partida_en_otro_servidor_con_nuestro_bot">6.3. Escenario 2 — Bot externo invoca API "play" (integración con terceros, se juega una partida en otro servidor con nuestro bot)</h3>
+<div class="paragraph">
+<p>Propósito: describir cómo clientes externos (bots/servicios) usan la API pública para solicitar movimientos.</p>
+</div>
+<div class="paragraph">
+<p>Actores:
+- Cliente bot externo
+- API de comunicación
+- GameY</p>
+</div>
+<div class="paragraph">
+<p>Flujo:
+1. Cliente prepara un JSON en notación YEN describiendo la posición y parámetros (p.ej. <code>strategy</code>, <code>difficulty</code>) y hace POST la API de nuestro servidor
+2. El endpoint valida la versión de API y los parámetros.
+3. Se envía la notación YEN a GameY; si es válido se invoca al bot para que calcule el proximo movimiento.
+4. Respuesta: En formato YEN en JSON. Contiene el estado del tablero tras realizar el movimiento.</p>
+</div>
+<div class="paragraph">
+<p>Flujo altenativo 1:
+3* YEN inválido → Se devuelve la peticion en estado de  error y con cuerpo explicativo</p>
+</div>
+<div class="paragraph">
+<p>Flujo alternativo 2:
+2* Bot solicitado no reconocido → Se devuelve la peticion en estado de  error y con cuerpo explicativo</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="">6.3. &#8230;&#8203;</h3>
-
+<h3 id="_escenario_3_humano_vs_humano_partida_local_por_turnos">6.4. Escenario 3 — Humano vs Humano (partida local por turnos)</h3>
+<div class="paragraph">
+<p>Propósito: describir la interacción típica cuando dos jugadores comparten la misma instancia de la Webapp y juegan por turnos en el mismo dispositivo o en la misma sesión del navegador.</p>
 </div>
-<div class="sect2">
-<h3 id="_runtime_scenario_n">6.4. &lt;Runtime Scenario n&gt;</h3>
+<div class="paragraph">
+<p>Actores:
+- Jugador A (navegador)
+- Jugador B (mismo navegadors)
+- Webapp
+- GameY</p>
+</div>
+<div class="paragraph">
+<p>Flujo (pasos):
+1. Un jugador crea o inicia una partida local en la web y define el tamaño del tablero y opciones
+2. La web inicializa la posición en notación YEN y la mantiene como estado compartido entre turnos.
+3. Jugador A realiza su movimiento en el tablero; la web serializa la posición resultante a notación YEN y envía una petición POST al servicio <code>GameY</code> para validar/aplicar la jugada (p. ej. <code>POST /v1/game/move</code>).
+4. El servicio Rust (<code>GameY</code>) recibe el YEN, valida la jugada con las reglas completas y devuelve la respuesta al frontend
+5. La web, al recibir la confirmación, aplica el estado devuelto al tablero y muestra que es el turno del Jugador B; la web no aplica reglas complejas por su cuenta.
+6. Jugador B realiza su jugada y se repite 3–5 alternando hasta que se detecta una condición de victoria o empate.
+7. Al finalizar la partida, la web envía el resultado al backend para persistencia y estadísticas</p>
+</div>
+<div class="paragraph">
+<p>Flujo alternativo:
+4* El servicio Rust no valida la jugada por no ser válida. Se devuelve esta respuesta al frontend
+5* El frontend informa al jugador, deshace la jugada y vuelve a 3.</p>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-deployment-view">7. Deployment View</h2>
+<h2 id="section-deployment-view">7. Diagrama de despliegue</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -1347,7 +1805,7 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_infrastructure_level_1">7.1. Infrastructure Level 1</h3>
+<h3 id="_nivel_de_infraestructura_1">7.1. Nivel de infraestructura 1</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1374,28 +1832,65 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="934" height="234">
+</div>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Motivation</dt>
 <dd>
-<p><em>&lt;explanation in text form&gt;</em></p>
+<p>La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. El usuario interactua con el sistema a través de una interfaz diseñada con React. Está se comunica con el back-end mediante OpenApi. A su vez, el back-end se comunica con la base de datos con la api mencionada anteriormente.
+El back-end también se comunica con el módulo de juego mediante el módulo Rust Bot-server.</p>
 </dd>
-<dt class="hdlist1">Quality and/or Performance Features</dt>
+<dt class="hdlist1">Características de calidad/rendimiento</dt>
 <dd>
-<p><em>&lt;explanation in text form&gt;</em></p>
+<p>El hecho de emplear Docker para encapsular cada uno de los módulos del sistema en distintos contenedores permite que el sistema sea escalable y portable. Además, la separación de las distintas partes en distintos contenedores
+facilita el mantenimiento y la extensibilidad. Además,  aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
+continuo de nuestra aplicación.</p>
 </dd>
-<dt class="hdlist1">Mapping of Building Blocks to Infrastructure</dt>
-<dd>
-<p><em>&lt;description of the mapping&gt;</em></p>
-</dd>
+<dt class="hdlist1">Mapeo de los bloques de construcción a infraestructura</dt>
 </dl>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_infrastructure_level_2">7.2. Infrastructure Level 2</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Nombre</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Descripción</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Azure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Servicio con el servidor en el que se encuentra la aplicación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Docker</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Genera cada uno de los contenedores para almacenar cada uno de los módulos de la aplicación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WebApp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Front-end diseñado con React para la interacción con el usuario.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Back-end diseñado con Node para gestionar la lógica de la aplicación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Módulo Rust con la lógica del juego y del bot.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Database</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Almacena un registro de los usuarios de la aplicación, las partidas realizadas, los usuarios obtenidos, &#8230;&#8203;</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1406,28 +1901,7 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_infrastructure_element_1">7.2.1. <em>&lt;Infrastructure Element 1&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_2">7.2.2. <em>&lt;Infrastructure Element 2&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_n">7.2.3. <em>&lt;Infrastructure Element n&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
 <div style="page-break-after: always;"></div>
-</div>
 </div>
 </div>
 </div>
@@ -1804,7 +2278,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-16 22:28:59 +0100
+Last updated 2026-02-05 09:53:32 +0100
 </div>
 </div>
 </body>

@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import BoardModel from "../game/BoardModel";
 import KonvaRenderer from "../renderers/KonvaRenderer";
+import Header from "../header/Header";
 
 export default function GameBoard() {
   const board = useMemo(() => new BoardModel(8), []);
@@ -24,7 +25,7 @@ export default function GameBoard() {
 
   function handleNextTurn() {
     if (!selectedId) return;
-    const current = board.getCurrentTurn();
+    const current = board.getCurrentPlayer();
     board.setCellOwner(selectedId, current);
     board.nextTurn();
     setSelectedId(null);
@@ -33,6 +34,11 @@ export default function GameBoard() {
 
   return (
     <div>
+      <Header
+        currentPlayer={board.getCurrentPlayer()}
+        turnNumber={board.getTurnNumber()}
+        playerColors={PLAYER_COLORS}
+      />
       <KonvaRenderer
         cells={board.getCells()}
         onCellClick={handleCellClick}

@@ -4,7 +4,7 @@ export default class BoardModel {
   constructor(size = 8) {
     this.size = size;
     this.cells = this.generateTriangle(size);
-    this.currentTurn = 'player1';
+    this.turnNumber = 1; // numeric turn counter; 1 => player1, 2 => player2, etc.
   }
 
   generateTriangle(size) {
@@ -32,12 +32,21 @@ export default class BoardModel {
     return this.size;
   }
 
+  getTurnNumber() {
+    return this.turnNumber;
+  }
+
+  getCurrentPlayer() {
+    return this.turnNumber % 2 === 1 ? 'player1' : 'player2';
+  }
+
+  // compatibility alias for older callsites
   getCurrentTurn() {
-    return this.currentTurn;
+    return this.getCurrentPlayer();
   }
 
   nextTurn() {
-    this.currentTurn = this.currentTurn === 'player1' ? 'player2' : 'player1';
+    this.turnNumber += 1;
   }
 
   setCellOwner(cellId, player) {

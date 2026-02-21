@@ -1,7 +1,5 @@
-// src/renderers/KonvaRenderer.jsx
-
 import React from "react";
-import { Stage, Layer, Line } from "react-konva";
+import { Stage, Layer, Line, Group } from "react-konva";
 
 const HEX_SIZE = 30;
 
@@ -27,29 +25,47 @@ export default function KonvaRenderer({ board }) {
   const cells = board.getCells();
   const hex = hexPoints(HEX_SIZE);
 
-  // centrar tablero
-  const offsetX = 300;
-  const offsetY = 100;
+  const STAGE_WIDTH = 800;
+  const STAGE_HEIGHT = 600;
+
+  // calcular bounds del tablero en coordenadas de píxel
+  const pixels = cells.map((c) => axialToPixel(c.q, c.r, HEX_SIZE));
+  const xs = pixels.map((p) => p.x);
+  const ys = pixels.map((p) => p.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  // centro del tablero en coordenadas internas
+  const boardCenterX = (minX + maxX) / 2;
+  const boardCenterY = (minY + maxY) / 2;
+
+  // desplazar todo el grupo para que su centro coincida con el centro del Stage
+  const groupX = STAGE_WIDTH / 2 - boardCenterX;
+  const groupY = STAGE_HEIGHT / 2 - boardCenterY;
 
   return (
-    <Stage width={800} height={600}>
+    <Stage width={STAGE_WIDTH} height={STAGE_HEIGHT}>
       <Layer>
-        {cells.map((cell) => {
-          const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE);
+        <Group x={groupX} y={groupY}>
+          {cells.map((cell) => {
+            const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE);
 
-          return (
-            <Line
-              key={cell.id}
-              points={hex}
-              x={x + offsetX}
-              y={y + offsetY}
-              closed
-              stroke="black"
-              strokeWidth={2}
-              fill="#ccc"
-            />
-          );
-        })}
+            return (
+              <Line
+                key={cell.id}
+                points={hex}
+                x={x}
+                y={y}
+                closed
+                stroke="black"
+                strokeWidth={2}
+                fill="#ccc"
+              />
+            );
+          })}
+        </Group>
       </Layer>
     </Stage>
   );

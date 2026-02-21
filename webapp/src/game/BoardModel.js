@@ -4,6 +4,7 @@ export default class BoardModel {
   constructor(size = 8) {
     this.size = size;
     this.cells = this.generateTriangle(size);
+    this.currentTurn = 'player1';
   }
 
   generateTriangle(size) {
@@ -15,7 +16,7 @@ export default class BoardModel {
           q,
           r,
           id: `${q},${r}`,
-          state: null, // futuro: player1, player2, etc
+          state: null, 
         });
       }
     }
@@ -29,5 +30,20 @@ export default class BoardModel {
 
   getSize() {
     return this.size;
+  }
+
+  getCurrentTurn() {
+    return this.currentTurn;
+  }
+
+  nextTurn() {
+    this.currentTurn = this.currentTurn === 'player1' ? 'player2' : 'player1';
+  }
+
+  setCellOwner(cellId, player) {
+    const cell = this.cells.find((c) => c.id === cellId);
+    if (cell) {
+      cell.state = player;
+    }
   }
 }

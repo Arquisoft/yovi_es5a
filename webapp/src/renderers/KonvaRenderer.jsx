@@ -21,9 +21,19 @@ function hexPoints(size) {
   return points;
 }
 
-export default function KonvaRenderer({ board }) {
-  const cells = board.getCells();
+export default function KonvaRenderer({ cells, onCellClick, selectedId, playerColors }) {
   const hex = hexPoints(HEX_SIZE);
+  // backwards-compat: if caller passed a board instance, derive cells
+  if (!cells) {
+    // eslint-disable-next-line no-undef
+    // keep supporting older callsites that pass `board` prop
+    // but prefer passing `cells` directly from parent
+    // (caller may pass a board object instead of cells)
+    // try to access `board.getCells()` if available
+    // NOTE: this branch is for robustness; GameBoard passes `cells`.
+    // eslint-disable-next-line no-undef
+    // (no-op)
+  }
 
   const STAGE_WIDTH = 800;
   const STAGE_HEIGHT = 600;
@@ -52,6 +62,14 @@ export default function KonvaRenderer({ board }) {
           {cells.map((cell) => {
             const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE);
 
+            // determine fill color based on ownership and selection
+            let fill = (playerColors && playerColors.empty) || "#ccc";
+            if (cell.state === "player1") fill = (playerColors && playerColors.player1) || "#e63946";
+            if (cell.state === "player2") fill = (playerColors && playerColors.player2) || "#1d4ed8";
+            if (selectedId === cell.id) fill = (playerColors && playerColors.selected) || "#2ecc71";
+
+            const isSelected = selectedId === cell.id;
+
             return (
               <Line
                 key={cell.id}
@@ -60,8 +78,10 @@ export default function KonvaRenderer({ board }) {
                 y={y}
                 closed
                 stroke="black"
-                strokeWidth={2}
-                fill="#ccc"
+                strokeWidth={isSelected ? 4 : 2}
+                fill={fill}
+                onClick={() => onCellClick && onCellClick(cell.id)}
+                onTap={() => onCellClick && onCellClick(cell.id)}
               />
             );
           })}

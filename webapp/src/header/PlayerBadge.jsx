@@ -9,7 +9,7 @@ export default function PlayerBadge({ label, color = "#ccc", active = false }) {
           height: 40,
           borderRadius: 20,
           background: color,
-          boxShadow: active ? "0 0 0 4px rgba(0,0,0,0.08)" : "none",
+          boxShadow: active ? "0 0 0 4px rgb(255, 255, 255)" : "none",
           opacity: active ? 1 : 0.8,
         }}
       />

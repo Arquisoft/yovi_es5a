@@ -1,16 +1,14 @@
-// src/components/GameBoard.jsx
-
-import React, { useMemo, useState } from "react";
+import React from "react";
 import BoardModel from "../game/BoardModel";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
+import "./GameBoard.css";
 
-export default function GameBoard() {
-  const board = useMemo(() => new BoardModel(8), []);
+export default function GameBoard({ user, difficulty }) {
+  const board = React.useMemo(() => new BoardModel(8), []);
 
-  // estado efímero en React: celda seleccionada y versión para forzar re-render
-  const [selectedId, setSelectedId] = useState(null);
-  const [, setVersion] = useState(0);
+  const [selectedId, setSelectedId] = React.useState(null);
+  const [, setVersion] = React.useState(0);
 
   const PLAYER_COLORS = {
     player1: "#e63946",
@@ -25,7 +23,7 @@ export default function GameBoard() {
 
   function handleNextTurn() {
     if (!selectedId) return;
-    const current = board.getCurrentPlayer();
+    const current = board.getCurrentPlayer(); // "player1" / "player2"
     board.setCellOwner(selectedId, current);
     board.nextTurn();
     setSelectedId(null);
@@ -34,11 +32,15 @@ export default function GameBoard() {
 
   return (
     <div>
+        <p className="dificultad">Dificultad: {difficulty}</p>
+
       <Header
         currentPlayer={board.getCurrentPlayer()}
         turnNumber={board.getTurnNumber()}
         playerColors={PLAYER_COLORS}
+        UserName={user.username}
       />
+
       <KonvaRenderer
         cells={board.getCells()}
         onCellClick={handleCellClick}

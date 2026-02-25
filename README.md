@@ -12,6 +12,8 @@ The project is divided into three main components, each in its own directory:
 
 - `webapp/`: A frontend application built with React, Vite, and TypeScript.
 - `users/`: A backend service for managing users, built with Node.js and Express.
+  - `database/`: Database schema and initialization files.
+  - `scripts/`: Scripts for database setup and maintenance.
 - `gamey/`: A Rust game engine and bot service.
 - `docs/`: Architecture documentation sources following Arc42 template
 
@@ -20,8 +22,77 @@ Each component has its own `package.json` file with the necessary scripts to run
 ## Basic Features
 
 - **User Registration**: The web application provides a simple form to register new users.
-- **User Service**: The user service receives the registration request, simulates some processing, and returns a welcome message.
+- **User Service**: The user service receives the registration request, processes it, and stores users in a MySQL database.
 - **GameY**: A basic Game engine which only chooses a random piece.
+
+## Database Setup
+
+The project now includes a MySQL service that is automatically created when you run `docker-compose up --build` for the first time. The database and users table are initialized automatically through the `users/database/init.sql` script.
+
+### Docker Compose (Recommended for Development)
+
+When you run:
+
+```bash
+docker-compose up --build
+```
+
+The following happens automatically:
+1. MySQL service starts and creates the database `yovi_db` and the `users` table (first run only)
+2. The database persists in `mysql_data` volume (survives container restarts)
+3. Users service connects to MySQL using `DB_HOST=mysql` (the service name in docker-compose.yml)
+
+Subsequent runs of `docker-compose up` will use the existing database (no re-initialization).
+
+### Environment Variables for Docker
+
+Copy `.env.example` to `.env` for custom configuration:
+
+```bash
+cp users/.env.example users/.env
+```
+
+Default values in `docker-compose.yml`:
+- `DB_HOST`: `mysql` (Docker service name)
+- `DB_USER`: `root`
+- `DB_PASSWORD`: `rootpassword`
+- `DB_NAME`: `yovi_db`
+
+For production on Azure VM, update `.env` with:
+- `DB_HOST`: Your Azure VM IP address
+- `DB_PASSWORD`: Your actual MySQL password
+
+### Database Schema
+
+The database is created automatically with:
+
+```sql
+CREATE DATABASE yovi_db;
+USE yovi_db;
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### For Azure VM Deployment
+
+If deploying to Azure VM without Docker:
+
+1. Install MySQL on the VM
+2. Copy `users/scripts/init-db.sh` and `users/database/init.sql` to the VM
+3. Set environment variables and execute:
+
+```bash
+export DB_HOST=localhost
+export DB_USER=root
+export DB_PASSWORD=your_password
+chmod +x users/scripts/init-db.sh
+./users/scripts/init-db.sh
+```
+
+Then update `.env` with your VM credentials before starting the service.
 
 ## Components
 
@@ -39,9 +110,12 @@ The `webapp` is a single-page application (SPA) created with [Vite](https://vite
 
 The `users` service is a simple REST API built with [Node.js](https://nodejs.org/) and [Express](https://expressjs.com/).
 
-- `users-service.js`: The main file for the user service. It defines an endpoint `/createuser` to handle user creation.
+- `users-service.js`: The main file for the user service. It defines an endpoint `/createuser` to handle user creation and stores users in a MySQL database.
 - `package.json`: Contains scripts to start the service.
 - `Dockerfile`: Defines the Docker image for the user service.
+- `database/init.sql`: SQL script to initialize the database and create the users table.
+- `scripts/init-db.sh`: Bash script to run on Azure VM to set up the database.
+- `.env.example`: Template for environment variables (credentials and database host).
 
 ### Gamey
 
@@ -71,7 +145,13 @@ This is the easiest way to get the project running. You need to have [Docker](ht
 docker-compose up --build
 ```
 
-This command will build the Docker images for both the `webapp` and `users` services and start them.
+This command will:
+- Create and start a MySQL database (first run only)
+- Build and start the `users` service (connected to MySQL)
+- Build and start the `webapp` service
+- Build and start the `gamey` and monitoring services
+
+The database initializes automatically on the first run using `users/database/init.sql`.
 
 2.**Access the application:**
 - Web application: [http://localhost](http://localhost)
@@ -85,10 +165,17 @@ To run the project locally without Docker, you will need to run each component i
 #### Prerequisites
 
 * [Node.js](https://nodejs.org/) and npm installed.
+* MySQL server installed and running locally.
 
 #### 1. Running the User Service
 
-Navigate to the `users` directory:
+First, set up the database. You can do this by:
+
+1. Open MySQL client: `mysql -u root -p`
+2. Copy and paste the contents of `users/database/init.sql`
+3. Or, run: `mysql -u root -p < users/database/init.sql`
+
+Then, navigate to the `users` directory:
 
 ```bash
 cd users
@@ -98,6 +185,13 @@ Install dependencies:
 
 ```bash
 npm install
+```
+
+Create a `.env` file from `.env.example` and update with your MySQL credentials:
+
+```bash
+cp .env.example .env
+# Edit .env with your local MySQL connection details
 ```
 
 Run the service:

@@ -5,6 +5,8 @@ const swaggerUi = require('swagger-ui-express');
 const fs = require('node:fs');
 const YAML = require('js-yaml');
 const promBundle = require('express-prom-bundle');
+const { createUser } = require('./services/userService');
+const { getConnection } = require('./db');
 
 const metricsMiddleware = promBundle({includeMethod: true});
 app.use(metricsMiddleware);
@@ -29,21 +31,25 @@ app.use(express.json());
 app.post('/createuser', async (req, res) => {
   const username = req.body && req.body.username;
   try {
-    // Simulate a 1 second delay to mimic processing/network latency
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const message = `Hello ${username}! welcome to the course!`;
+    const message = await createUser(username);
     res.json({ message });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Error:', err.message);
+    res.status(err.message.includes('Username is required') ? 400 : 500).json({ error: err.message });
   }
 });
 
 
 if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`User Service listening at http://localhost:${port}`)
-  })
+  getConnection().then(() => {
+    console.log('Connected to MySQL database');
+    app.listen(port, () => {
+      console.log(`User Service listening at http://localhost:${port}`)
+    });
+  }).catch(err => {
+    console.error('Failed to connect to database:', err);
+    process.exit(1);
+  });
 }
 
 module.exports = app

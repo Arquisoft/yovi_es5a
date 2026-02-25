@@ -1,10 +1,36 @@
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-yovi_db}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./users/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    networks:
+      - monitor-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
   users:
     build: ./users
     container_name: users
     image: ghcr.io/arquisoft/yovi_es5a-users:latest
     ports:
       - "3000:3000"
+    environment:
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-rootpassword}
+      DB_NAME: ${DB_NAME:-yovi_db}
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - monitor-net
 
@@ -54,3 +80,6 @@ services:
 networks:
   monitor-net:
     driver: bridge
+
+volumes:
+  mysql_data:

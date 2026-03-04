@@ -1,14 +1,21 @@
 import React from "react";
-import BoardModel from "../game/BoardModel";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
+import { useBoardStore } from "../store/boardStore";
 import "./GameBoard.css";
 
 export default function GameBoard({ user, difficulty }) {
-  const board = React.useMemo(() => new BoardModel(8), []);
+  const cells = useBoardStore((state) => state.cells);
+  const turnNumber = useBoardStore((state) => state.turnNumber);
+  const currentPlayer = useBoardStore((state) => (state.turnNumber % 2 === 1 ? "player1" : "player2"));
+  const initializeBoard = useBoardStore((state) => state.initializeBoard);
+  const playTurn = useBoardStore((state) => state.playTurn);
 
   const [selectedId, setSelectedId] = React.useState(null);
-  const [, setVersion] = React.useState(0);
+
+  React.useEffect(() => {
+    initializeBoard(8);
+  }, [initializeBoard]);
 
   const PLAYER_COLORS = {
     player1: "#e63946",
@@ -23,11 +30,10 @@ export default function GameBoard({ user, difficulty }) {
 
   function handleNextTurn() {
     if (!selectedId) return;
-    const current = board.getCurrentPlayer(); // "player1" / "player2"
-    board.setCellOwner(selectedId, current);
-    board.nextTurn();
-    setSelectedId(null);
-    setVersion((v) => v + 1);
+    const moved = playTurn(selectedId);
+    if (moved) {
+      setSelectedId(null);
+    }
   }
 
   return (
@@ -35,14 +41,14 @@ export default function GameBoard({ user, difficulty }) {
         <p className="dificultad">Dificultad: {difficulty}</p>
 
       <Header
-        currentPlayer={board.getCurrentPlayer()}
-        turnNumber={board.getTurnNumber()}
+        currentPlayer={currentPlayer}
+        turnNumber={turnNumber}
         playerColors={PLAYER_COLORS}
         UserName={user.username}
       />
 
       <KonvaRenderer
-        cells={board.getCells()}
+        cells={cells}
         onCellClick={handleCellClick}
         selectedId={selectedId}
         playerColors={PLAYER_COLORS}

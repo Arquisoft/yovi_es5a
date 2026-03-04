@@ -4,18 +4,16 @@ import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
 import "./GameBoard.css";
 
-export default function GameBoard({ user, difficulty }) {
+export default function GameBoard() {
   const cells = useBoardStore((state) => state.cells);
   const turnNumber = useBoardStore((state) => state.turnNumber);
   const currentPlayer = useBoardStore((state) => (state.turnNumber % 2 === 1 ? "player1" : "player2"));
-  const initializeBoard = useBoardStore((state) => state.initializeBoard);
   const playTurn = useBoardStore((state) => state.playTurn);
+  const gameMode = useBoardStore((state) => state.gameMode);
+  const difficulty = useBoardStore((state) => state.difficulty);
+  const players = useBoardStore((state) => state.players);
 
   const [selectedId, setSelectedId] = React.useState(null);
-
-  React.useEffect(() => {
-    initializeBoard(8);
-  }, [initializeBoard]);
 
   const PLAYER_COLORS = {
     player1: "#e63946",
@@ -38,13 +36,16 @@ export default function GameBoard({ user, difficulty }) {
 
   return (
     <div>
+      {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
+      ) : null}
 
       <Header
         currentPlayer={currentPlayer}
         turnNumber={turnNumber}
         playerColors={PLAYER_COLORS}
-        UserName={user.username}
+        playerOneName={players.player1Name}
+        playerTwoName={players.player2Name}
       />
 
       <KonvaRenderer

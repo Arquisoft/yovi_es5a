@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PlayerBadge from "./PlayerBadge";
 
-export default function Header({ currentPlayer, turnNumber, playerColors = {},UserName }) {
+export default function Header({ currentPlayer, turnNumber, playerColors = {}, playerOneName, playerTwoName }) {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function Header({ currentPlayer, turnNumber, playerColors = {},Us
       }}
     >
       <div style={{ width: 120 }}>
-        <PlayerBadge label={UserName} color={playerColors.player1} active={currentPlayer === "player1"} />
+        <PlayerBadge label={playerOneName} color={playerColors.player1} active={currentPlayer === "player1"} />
       </div>
 
       <div style={{ textAlign: "center" }}>
@@ -40,7 +40,7 @@ export default function Header({ currentPlayer, turnNumber, playerColors = {},Us
       </div>
 
       <div style={{ width: 120, display: "flex", justifyContent: "flex-end" }}>
-        <PlayerBadge label={"Jugador 2"} color={playerColors.player2} active={currentPlayer === "player2"} />
+        <PlayerBadge label={playerTwoName} color={playerColors.player2} active={currentPlayer === "player2"} />
       </div>
     </div>
   );

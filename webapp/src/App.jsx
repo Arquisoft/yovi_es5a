@@ -1,30 +1,20 @@
 import React from 'react';
 import "./App.css";
 
-import RegisterForm from "./components/RegisterForm";
-import DifficultyMenu from "./components/DifficultyMenu";
+import StartGameForm from "./components/StartGameForm";
 import GameBoard from "./components/GameBoard";
+import { useBoardStore } from "./store/boardStore";
 
 function App() {
-  const [user, setUser] = React.useState(null);
-  const [difficulty, setDifficulty] = React.useState(null);
+  const isConfigured = useBoardStore((state) => state.isConfigured);
 
   return (
     <div className="App">
       <h1>Juego Y</h1>
 
-      {!user ? (
-        <RegisterForm onSubmit={setUser} />
-      ) : !difficulty ? (
-        <DifficultyMenu onSelect={setDifficulty} />
-      ) : (
-        <GameBoard user={user} difficulty={difficulty} />
-      )}
+      {isConfigured ? <GameBoard /> : <StartGameForm />}
     </div>
   );
 }
 
 export default App;
-
-
-//    <RegisterForm /> lo quito para probar <RegisterForm />

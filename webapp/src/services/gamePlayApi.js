@@ -6,33 +6,41 @@ function createPlayUrl() {
 }
 
 export async function validateTwoPlayerMove({ board, selectedCell }) {
-  const response = await fetch(createPlayUrl(), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      board,
-      selectedCell,
-    }),
-  });
-
-  let data = null;
+  //cargaros el try catch cuando este el backend, esto lo hago para mockearlo y probar. Asi ademas sabeis ya que me teneis que devolver
   try {
-    data = await response.json();
-  } catch {
-    data = null;
+    const response = await fetch(createPlayUrl(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        board,
+        selectedCell,
+      }),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(data?.message || "No se pudo validar el movimiento en el servidor.");
+
+    }
+
+    return {
+      isValidMove: Boolean(data?.isValidMove),
+      hasWon: Boolean(data?.hasWon),
+      message: data?.message,
+    };
+  } catch (error) {
+    return {
+      isValidMove: true,
+      hasWon: true,
+      message: "Simulado"
+    }
   }
-
-  if (!response.ok) {
-    throw new Error(data?.message || "No se pudo validar el movimiento en el servidor.");
-    //Esta parte de aqui es solo para comprobar la funcionalidad mientras se desarrolla el backend, eliminar cuando el backend esté listo
-
-  }
-
-  return {
-    isValidMove: Boolean(data?.isValidMove),
-    hasWon: Boolean(data?.hasWon),
-    message: data?.message,
-  };
 }

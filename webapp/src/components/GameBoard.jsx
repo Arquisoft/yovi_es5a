@@ -176,7 +176,7 @@ export default function GameBoard() {
     }
   }
 
-  if (!board) return <div>Cargando tablero...</div>;
+if (!cells?.length) return <div>Cargando tablero...</div>;
 
   return (
     <div>

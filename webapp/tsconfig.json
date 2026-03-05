@@ -20,5 +20,5 @@
     "allowJs": true, // Esta línea permite importar archivos JS/JSX
     "checkJs": false // No verifica tipos en archivos JS
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts", "vitest-setup.js"]
 }

@@ -7,3 +7,9 @@
 	display: inline-block;
 	margin-bottom: 0.75rem;
 }
+
+.turnError {
+	color: #e63946;
+	font-weight: 600;
+	margin-top: 0.6rem;
+}

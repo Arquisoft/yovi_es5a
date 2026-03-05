@@ -1,0 +1,33 @@
+.victoryOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.victoryCard {
+  background: #ffffff;
+  color: #111111;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  min-width: 280px;
+}
+
+.victoryCard h2 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.victoryCard p {
+  margin: 0.35rem 0;
+}
+
+.victoryCard button {
+  margin-top: 1rem;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}

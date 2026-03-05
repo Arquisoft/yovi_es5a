@@ -9,23 +9,27 @@ DB_USER=${DB_USER:-root}
 DB_PASSWORD=${DB_PASSWORD}
 DB_NAME=${DB_NAME:-yovi_db}
 
+SCHEMA_FILE="./schema.sql"
+
 echo "Initializing MySQL database..."
 
-# Create database and table
+
 mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD << EOF
 CREATE DATABASE IF NOT EXISTS $DB_NAME;
-USE $DB_NAME;
-
-CREATE TABLE IF NOT EXISTS users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 EOF
 
+if[ $? -ne 0 ]; then
+    echo "Error creating database $DB_NAME"
+    exit 1
+fi
+
+echo "Database $DB_NAME created or already exists."
+
+mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < $SCHEMA_FILE
+
 if [ $? -eq 0 ]; then
-    echo "Database initialized successfully!"
+    echo "All tables initialized successfully!"
 else
-    echo "Failed to initialize database!"
+    echo "Failed to initialize tables from $SCHEMA_FILE!"
     exit 1
 fi

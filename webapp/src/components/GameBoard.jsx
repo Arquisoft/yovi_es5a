@@ -3,8 +3,8 @@ import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
 import VictoryMenu from "./VictoryMenu";
-import { boardToYen, parseCellId } from "../parsers/yenParser";
-import { validateTwoPlayerMove } from "../services/gamePlayApi";
+import { boardToYen, parseCellId, yenToBoardState } from "../parsers/yenParser";
+import { validateBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
 export default function GameBoard() {
@@ -15,6 +15,7 @@ export default function GameBoard() {
   const playTurn = useBoardStore((state) => state.playTurn);
   const setCellOwner = useBoardStore((state) => state.setCellOwner);
   const nextTurn = useBoardStore((state) => state.nextTurn);
+  const applyBoardSnapshot = useBoardStore((state) => state.applyBoardSnapshot);
   const gameMode = useBoardStore((state) => state.gameMode);
   const difficulty = useBoardStore((state) => state.difficulty);
   const players = useBoardStore((state) => state.players);
@@ -22,7 +23,7 @@ export default function GameBoard() {
   const [selectedId, setSelectedId] = React.useState(null);
   const [isSubmittingTurn, setIsSubmittingTurn] = React.useState(false);
   const [turnError, setTurnError] = React.useState("");
-  const [winnerName, setWinnerName] = React.useState("");
+  const [gameOver, setGameOver] = React.useState(null);
 
   const PLAYER_COLORS = {
     player1: "#e63946",
@@ -40,7 +41,54 @@ export default function GameBoard() {
 
     setTurnError("");
 
-    if (gameMode !== "1vs1") {
+    if (gameMode === "1vs1") {
+      //Modo 2 jugadores
+      const selectedCell = parseCellId(selectedId);
+      if (!selectedCell) {
+        setTurnError("Celda seleccionada inválida.");
+        return;
+      }
+
+      const board = boardToYen({ size, turnNumber, cells });
+      setIsSubmittingTurn(true);
+
+      try {
+        const result = await validateTwoPlayerMove({ board, selectedCell });
+
+        if (!result.isValidMove) {
+          setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
+          return;
+        }
+
+        const moved = setCellOwner(selectedId, currentPlayer);
+        if (!moved) {
+          setTurnError("No se pudo confirmar el movimiento.");
+          return;
+        }
+
+        setSelectedId(null);
+
+        if (result.hasWon) {
+          setGameOver({
+            title: "¡Victoria!",
+            message: `${currentPlayer === "player1" ? players.player1Name : players.player2Name} ha ganado la partida.`,
+            subtitle: "Enhorabuena por esta partida.",
+          });
+          return;
+        }
+
+        nextTurn();
+      } catch (error) {
+        setTurnError(error instanceof Error ? error.message : "Error de comunicación con el servidor.");
+      } finally {
+        setIsSubmittingTurn(false);
+      }
+
+      return;
+    }
+
+    //Por si queremos añadir otro modo para probar simplemente el front como estaba
+    if (gameMode !== "1vsbot") {
       const moved = playTurn(selectedId);
       if (moved) {
         setSelectedId(null);
@@ -48,6 +96,7 @@ export default function GameBoard() {
       return;
     }
 
+    // Modo 1vsBot
     const selectedCell = parseCellId(selectedId);
     if (!selectedCell) {
       setTurnError("Celda seleccionada inválida.");
@@ -58,27 +107,38 @@ export default function GameBoard() {
     setIsSubmittingTurn(true);
 
     try {
-      const result = await validateTwoPlayerMove({ board, selectedCell });
+      const result = await validateBotMove({ board, selectedCell, difficulty });
 
       if (!result.isValidMove) {
         setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
         return;
       }
 
-      const moved = setCellOwner(selectedId, currentPlayer);
-      if (!moved) {
-        setTurnError("No se pudo confirmar el movimiento.");
+      const parsedBoard = yenToBoardState(result.board);
+      if (!parsedBoard) {
+        setTurnError("No se pudo interpretar el tablero devuelto por el servidor.");
         return;
       }
 
+      applyBoardSnapshot(parsedBoard);
       setSelectedId(null);
 
-      if (result.hasWon) {
-        setWinnerName(currentPlayer === "player1" ? players.player1Name : players.player2Name);
+      if (result.hasPlayerWon) {
+        setGameOver({
+          title: "¡Victoria!",
+          message: `${players.player1Name} ha ganado la partida.`,
+          subtitle: "Enhorabuena por esta partida.",
+        });
         return;
       }
 
-      nextTurn();
+      if (result.hasBotWon) {
+        setGameOver({
+          title: "¡Derrota!",
+          message: `${players.player1Name} ha perdido la partida.`,
+          subtitle: "El bot se ha llevado esta ronda.",
+        });
+      }
     } catch (error) {
       setTurnError(error instanceof Error ? error.message : "Error de comunicación con el servidor.");
     } finally {
@@ -88,7 +148,7 @@ export default function GameBoard() {
 
   return (
     <div>
-      {winnerName ? <VictoryMenu playerName={winnerName} /> : null}
+      {gameOver ? <VictoryMenu title={gameOver.title} message={gameOver.message} subtitle={gameOver.subtitle} /> : null}
 
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
@@ -110,7 +170,7 @@ export default function GameBoard() {
       />
 
       <div style={{ textAlign: "center", marginTop: 8 }}>
-        <button disabled={!selectedId || isSubmittingTurn || Boolean(winnerName)} onClick={handleNextTurn}>
+        <button disabled={!selectedId || isSubmittingTurn || Boolean(gameOver)} onClick={handleNextTurn}>
           {isSubmittingTurn ? "Validando..." : "Pasar turno"}
         </button>
         {turnError ? <p className="turnError">{turnError}</p> : null}

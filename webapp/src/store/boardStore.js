@@ -62,6 +62,16 @@ export const useBoardStore = create((set, get) => ({
     set((state) => ({ turnNumber: state.turnNumber + 1 }));
   },
 
+  applyBoardSnapshot: ({ statesById, turnNumber }) => {
+    set((state) => ({
+      cells: state.cells.map((cell) => ({
+        ...cell,
+        state: Object.prototype.hasOwnProperty.call(statesById, cell.id) ? statesById[cell.id] : null,
+      })),
+      turnNumber: typeof turnNumber === "number" ? turnNumber : state.turnNumber,
+    }));
+  },
+
   playTurn: (cellId) => {
     const state = get();
     const currentPlayer = state.turnNumber % 2 === 1 ? "player1" : "player2";

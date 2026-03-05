@@ -176,6 +176,8 @@ export default function GameBoard() {
     }
   }
 
+  if (!board) return <div>Cargando tablero...</div>;
+
   return (
     <div>
       {gameOver ? (
@@ -198,14 +200,12 @@ export default function GameBoard() {
         playerOneName={players.player1Name}
         playerTwoName={players.player2Name}
       />
-
       <KonvaRenderer
         cells={cells}
         onCellClick={handleCellClick}
         selectedId={selectedId}
         playerColors={PLAYER_COLORS}
       />
-
       <div style={{ textAlign: "center", marginTop: 8 }}>
         <button disabled={!selectedId || isSubmittingTurn || Boolean(gameOver)} onClick={handleNextTurn}>
           {isSubmittingTurn ? "Validando..." : "Pasar turno"}

@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import PlayerBadge from "./PlayerBadge";
+import { useBoardStore } from "../store/boardStore";
 
 export default function Header({ currentPlayer, turnNumber, playerColors = {}, playerOneName, playerTwoName }) {
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const secondsElapsed = useBoardStore((state) => state.elapsedSeconds);
+  const incrementElapsedSeconds = useBoardStore((state) => state.incrementElapsedSeconds);
 
   useEffect(() => {
     const id = setInterval(() => {
-      setSecondsElapsed((s) => s + 1);
+      incrementElapsedSeconds();
     }, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [incrementElapsedSeconds]);
 
   function formatTime(sec) {
     const m = Math.floor(sec / 60)

@@ -19,6 +19,7 @@ export default function GameBoard() {
   const gameMode = useBoardStore((state) => state.gameMode);
   const difficulty = useBoardStore((state) => state.difficulty);
   const players = useBoardStore((state) => state.players);
+  const elapsedSeconds = useBoardStore((state) => state.elapsedSeconds);
 
   const [selectedId, setSelectedId] = React.useState(null);
   const [isSubmittingTurn, setIsSubmittingTurn] = React.useState(false);
@@ -69,10 +70,21 @@ export default function GameBoard() {
         setSelectedId(null);
 
         if (result.hasWon) {
+          const winnerName = currentPlayer === "player1" ? players.player1Name : players.player2Name;
+          const loserName = currentPlayer === "player1" ? players.player2Name : players.player1Name;
+
           setGameOver({
             title: "¡Victoria!",
-            message: `${currentPlayer === "player1" ? players.player1Name : players.player2Name} ha ganado la partida.`,
+            message: `${winnerName} ha ganado la partida.`,
             subtitle: "Enhorabuena por esta partida.",
+            matchSummary: {
+              mode: "1vs1",
+              elapsedSeconds,
+              turnNumber,
+              boardSize: size,
+              winnerName,
+              loserName,
+            },
           });
           return;
         }
@@ -128,6 +140,15 @@ export default function GameBoard() {
           title: "¡Victoria!",
           message: `${players.player1Name} ha ganado la partida.`,
           subtitle: "Enhorabuena por esta partida.",
+          matchSummary: {
+            mode: "1vsbot",
+            elapsedSeconds,
+            turnNumber,
+            boardSize: size,
+            playerName: players.player1Name,
+            difficulty: difficulty || "Facil",
+            winner: "player",
+          },
         });
         return;
       }
@@ -137,6 +158,15 @@ export default function GameBoard() {
           title: "¡Derrota!",
           message: `${players.player1Name} ha perdido la partida.`,
           subtitle: "El bot se ha llevado esta ronda.",
+          matchSummary: {
+            mode: "1vsbot",
+            elapsedSeconds,
+            turnNumber,
+            boardSize: size,
+            playerName: players.player1Name,
+            difficulty: difficulty || "Facil",
+            winner: "bot",
+          },
         });
       }
     } catch (error) {
@@ -148,7 +178,14 @@ export default function GameBoard() {
 
   return (
     <div>
-      {gameOver ? <VictoryMenu title={gameOver.title} message={gameOver.message} subtitle={gameOver.subtitle} /> : null}
+      {gameOver ? (
+        <VictoryMenu
+          title={gameOver.title}
+          message={gameOver.message}
+          subtitle={gameOver.subtitle}
+          matchSummary={gameOver.matchSummary}
+        />
+      ) : null}
 
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>

@@ -22,6 +22,7 @@ export const useBoardStore = create((set, get) => ({
   size: 8,
   cells: generateTriangle(8),
   turnNumber: 1,
+  elapsedSeconds: 0,
 
   gameMode: null,
   players: {
@@ -39,6 +40,7 @@ export const useBoardStore = create((set, get) => ({
       size: safeSize,
       cells: generateTriangle(safeSize),
       turnNumber: 1,
+      elapsedSeconds: 0,
     });
   },
 
@@ -60,6 +62,21 @@ export const useBoardStore = create((set, get) => ({
 
   nextTurn: () => {
     set((state) => ({ turnNumber: state.turnNumber + 1 }));
+  },
+
+  setElapsedSeconds: (seconds) => {
+    const parsedSeconds = Number(seconds);
+    set({
+      elapsedSeconds: Number.isNaN(parsedSeconds) ? 0 : Math.max(0, Math.floor(parsedSeconds)),
+    });
+  },
+
+  incrementElapsedSeconds: () => {
+    set((state) => ({ elapsedSeconds: state.elapsedSeconds + 1 }));
+  },
+
+  resetElapsedSeconds: () => {
+    set({ elapsedSeconds: 0 });
   },
 
   applyBoardSnapshot: ({ statesById, turnNumber }) => {
@@ -118,6 +135,7 @@ export const useBoardStore = create((set, get) => ({
       difficulty: null,
       boardSize: 8,
       isConfigured: false,
+      elapsedSeconds: 0,
     });
   },
 }));

@@ -15,6 +15,10 @@ keywords = ["game", "engine"]
 categories = ["games"]
 
 [[bin]]
+name = "main_server"
+path = "src/main_server.rs"
+
+[[bin]]
 path = "src/main.rs"
 name = "gamey"
 
@@ -24,6 +28,7 @@ path = "src/lib.rs"
 
 
 [dependencies]
+hyper = { version = "0.14", features = ["full"] }
 anyhow = "1.0"
 axum = { version = "0.8", features = ["macros"] }
 clap = { version = "4.0", features = ["derive"] }

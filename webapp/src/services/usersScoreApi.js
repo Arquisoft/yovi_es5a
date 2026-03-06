@@ -65,6 +65,7 @@ export async function requestMatchScore(matchSummary) {
       score: parsedScore,
     };
   } catch (error) {
+    console.error("Error calculando score:", error);
     return {
       score: 200
     };

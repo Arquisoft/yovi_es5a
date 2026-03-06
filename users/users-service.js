@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const YAML = require('js-yaml');
 const promBundle = require('express-prom-bundle');
 const { createUser } = require('./services/userService');
+const ScoreService = require('./services/scoreService');
 const { getConnection } = require('./db');
 
 const metricsMiddleware = promBundle({includeMethod: true});
@@ -39,6 +40,21 @@ app.post('/createuser', async (req, res) => {
   }
 });
 
+app.post("/finished-match", (req, res) => {
+  console.log("BODY RECIBIDO:", req.body);
+  const matchSummary = req.body;
+
+  if (!matchSummary) {
+    return res.status(400).json({
+      message: "Datos de partida requeridos"
+    });
+  }
+
+  const score = ScoreService.calculate(matchSummary);
+
+  res.json({ score });
+
+});
 
 if (require.main === module) {
   getConnection().then(() => {

@@ -5,15 +5,15 @@ export default function PlayerBadge({ label, color = "#ccc", active = false }) {
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
+          width: "2.5rem",
+          height: "2.5rem",
+          borderRadius: "1.25rem",
           background: color,
-          boxShadow: active ? "0 0 0 4px rgb(255, 255, 255)" : "none",
-          opacity: active ? 1 : 0.8,
+          boxShadow: active ? "0 6px 14px rgba(100,112,255,0.22)" : "none",
+          opacity: active ? 1 : 0.9,
         }}
       />
-      <div style={{ marginTop: 6, fontSize: 12 }}>{label}</div>
+      <div style={{ marginTop: "0.375rem", fontSize: "0.75rem" }}>{label}</div>
     </div>
   );
 }

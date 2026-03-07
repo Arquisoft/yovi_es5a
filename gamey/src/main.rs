@@ -22,7 +22,7 @@
 use clap::Parser;
 use gamey::{self, CliArgs, Mode, run_bot_server, run_cli_game};
 use tracing_subscriber::prelude::*;
-
+mod main_server;
 /// Main entry point for the GameY application.
 ///
 /// Parses command-line arguments and runs either the CLI game or the HTTP server

@@ -42,6 +42,15 @@ pub enum Cell {
 }
 
 impl GameY {
+        /// Devuelve un iterador sobre el board_map (coordenadas y jugador)
+        pub fn board_map(&self) -> impl Iterator<Item=(&Coordinates, &(SetIdx, PlayerId))> {
+            self.board_map.iter()
+        }
+
+        /// Devuelve un iterador sobre el historial de movimientos
+        pub fn history(&self) -> impl Iterator<Item=&Movement> {
+            self.history.iter()
+        }
     /// Creates a new game with the specified board size and number of players.
     pub fn new(board_size: u32) -> Self {
         let total_cells = (board_size * (board_size + 1)) / 2;

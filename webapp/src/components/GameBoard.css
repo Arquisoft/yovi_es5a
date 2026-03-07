@@ -1,0 +1,15 @@
+.dificultad{
+	font-weight: bold;
+	color: #1d4ed8;
+	background: #f3f4f6;
+	border-radius: 0.375rem;
+	padding: 0.375rem 0.75rem;
+	display: inline-block;
+	margin-bottom: 0.75rem;
+}
+
+.turnError {
+	color: #e63946;
+	font-weight: 600;
+	margin-top: 0.6rem;
+}

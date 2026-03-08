@@ -170,7 +170,7 @@ A table with quality goals and concrete scenarios, ordered by priorities
 ****
 endif::arc42help[]
 
-=== Stakeholders
+
 
 ifdef::arc42help[]
 [role="arc42help"]

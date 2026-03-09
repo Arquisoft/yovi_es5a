@@ -7,8 +7,6 @@ use serde::{Deserialize, Serialize};
 /// It includes context about which API version were involved.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ErrorResponse {
-    /// The API version that was requested, if available.
-    pub api_version: Option<String>,
     /// A human-readable error message describing what went wrong.
     pub message: String,
 }
@@ -19,9 +17,8 @@ impl ErrorResponse {
     /// # Arguments
     /// * `message` - A description of the error
     /// * `api_version` - The API version from the request, if known
-    pub fn error(message: &str, api_version: Option<String>) -> Self {
+    pub fn error(message: &str) -> Self {
         Self {
-            api_version,
             message: message.to_string(),
         }
     }
@@ -40,33 +37,22 @@ mod tests {
     #[test]
     fn test_error_with_all_fields() {
         let err = ErrorResponse::error(
-            "Something went wrong",
-            Some("v1".to_string())
+            "Something went wrong"
         );
         assert_eq!(err.message, "Something went wrong");
-        assert_eq!(err.api_version, Some("v1".to_string()));
     }
 
     #[test]
     fn test_error_with_no_context() {
-        let err = ErrorResponse::error("Generic error", None);
+        let err = ErrorResponse::error("Generic error");
         assert_eq!(err.message, "Generic error");
-        assert_eq!(err.api_version, None);
-    }
-
-    #[test]
-    fn test_error_with_partial_context() {
-        let err = ErrorResponse::error("Version error", Some("v2".to_string()));
-        assert_eq!(err.message, "Version error");
-        assert_eq!(err.api_version, Some("v2".to_string()));
     }
 
     #[test]
     fn test_serialize() {
-        let err = ErrorResponse::error("Test error", Some("v1".to_string()));
+        let err = ErrorResponse::error("Test error");
         let json = serde_json::to_string(&err).unwrap();
         assert!(json.contains("\"message\":\"Test error\""));
-        assert!(json.contains("\"api_version\":\"v1\""));
     }
 
     #[test]
@@ -74,12 +60,11 @@ mod tests {
         let json = r#"{"api_version":"v1","message":"error msg"}"#;
         let err: ErrorResponse = serde_json::from_str(json).unwrap();
         assert_eq!(err.message, "error msg");
-        assert_eq!(err.api_version, Some("v1".to_string()));
     }
 
     #[test]
     fn test_clone() {
-        let err = ErrorResponse::error("Clone test", Some("v1".to_string()));
+        let err = ErrorResponse::error("Clone test");
         let cloned = err.clone();
         assert_eq!(err, cloned);
     }

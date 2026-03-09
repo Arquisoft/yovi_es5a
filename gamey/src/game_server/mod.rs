@@ -1,5 +1,4 @@
 pub mod game_error;
-pub mod version;
 pub mod action;
 
 use crate::{GameYError, game_server::action::place};
@@ -17,7 +16,7 @@ fn create_router() -> axum::Router {
 
 
     axum::Router::new()
-        .route("/{api_version}/game/place/{player_id}", axum::routing::post(place))
+        .route("/game/play", axum::routing::post(place))
         .layer(cors) 
 }
 

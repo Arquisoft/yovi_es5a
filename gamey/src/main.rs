@@ -4,7 +4,7 @@
 //!
 //! - **Human mode** (default): Two players take turns at the terminal
 //! - **Computer mode**: Play against a bot
-//! - **Server mode**: Run as an HTTP server exposing the bot API
+//! - **Server mode**: Run as an HTTP server exposing the game API
 //!
 //! # Usage
 //!
@@ -15,25 +15,22 @@
 //! # Play against the random bot
 //! gamey --mode computer
 //!
-//! # Start the bot server on port 3000
-//! gamey --mode server --port 3000
+//! # Start the game server on port 4000
+//! gamey --mode server --port 4000
 //! ```
 
 use clap::Parser;
-use gamey::{self, CliArgs, Mode, run_bot_server, run_cli_game};
+use gamey::{self, CliArgs, Mode, run_game_server, run_cli_game};
 use tracing_subscriber::prelude::*;
-mod main_server;
+
 /// Main entry point for the GameY application.
-///
-/// Parses command-line arguments and runs either the CLI game or the HTTP server
-/// depending on the selected mode.
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry().init();
     let args = CliArgs::parse();
 
     if args.mode == Mode::Server {
-        if let Err(e) = run_bot_server(args.port).await {
+        if let Err(e) = run_game_server(args.port).await {
             eprintln!("Error: {}", e);
             std::process::exit(1);
         }

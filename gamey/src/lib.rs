@@ -41,3 +41,4 @@ pub use core::*;
 pub use gamey_error::*;
 pub use notation::*;
 pub use bot_server::*;
+pub use game_server::run_game_server; 

@@ -89,12 +89,47 @@ export function yenToBoardState(board) {
     }
   }
 
-  const turnSymbol = board?.turn === "B" ? "B" : board?.turn === "R" ? "R" : null;
+  const turnSymbol =
+    board?.turn === "B" ? "B" : board?.turn === "R" ? "R" : null;
   const turnNumber = turnSymbol === "R" ? 1 : turnSymbol === "B" ? 2 : null;
 
   return {
     size: safeSize,
     turnNumber,
     statesById,
+  };
+}
+export function makeTestTriangleBoard(size, markedIds = [], firstPlayer = "player1") {
+  const safeSize = Number(size);
+  if (Number.isNaN(safeSize) || safeSize <= 0) {
+    throw new Error("Invalid size in makeTestTriangleBoard");
+  }
+
+  // generamos las celdas igual que generateTriangle
+  const cells = [];
+  for (let q = 0; q < safeSize; q += 1) {
+    for (let r = 0; r < safeSize - q; r += 1) {
+      cells.push({ q, r, id: `${q},${r}`, state: null });
+    }
+  }
+
+  // marcamos algunas celdas
+  markedIds.forEach((id) => {
+    const cell = cells.find((c) => c.id === id);
+    if (cell) {
+      cell.state = firstPlayer;
+    }
+  });
+
+  const turnNumber = 1; // turno impar -> "R"
+  const yen = boardToYen({ size: safeSize, turnNumber, cells });
+  console.log(yen);
+  const back = yenToBoardState(yen);
+
+  return {
+    size: safeSize,
+    cells,
+    yen,
+    back,
   };
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseCellId, boardToYen, yenToBoardState } from "../parsers/yenParser";
+import { parseCellId, boardToYen, yenToBoardState,makeTestTriangleBoard } from "../parsers/yenParser";
 
 describe("parseCellId", () => {
   it("devuelve q y r numéricos cuando el id es válido", () => {
@@ -109,5 +109,16 @@ describe("yenToBoardState", () => {
     expect(result.size).toBe(1);
     expect(result.turnNumber).toBeNull();
     expect(result.statesById["0,0"]).toBeNull();
+  });
+  it("serializa y deserializa un triángulo simple", () => {
+    const { yen, back } = makeTestTriangleBoard(4, ["3,0", "2,1", "1,2", "0,3"]);
+
+    expect(yen.layout).toBe("R/.R/..R/...R");
+    expect(yen.turn).toBe("R");
+    expect(back.size).toBe(4);
+    expect(back.statesById["3,0"]).toBe("player1");
+    expect(back.statesById["2,1"]).toBe("player1");
+    expect(back.statesById["1,2"]).toBe("player1");
+    expect(back.statesById["0,3"]).toBe("player1");
   });
 });

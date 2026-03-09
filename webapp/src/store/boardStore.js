@@ -1,12 +1,21 @@
 import { create } from "zustand";
 
-function generateTriangle(size) {
+function generateTriangleInverted(size) {
   const cells = [];
+
   for (let q = 0; q < size; q += 1) {
-    for (let r = 0; r < size - q; r += 1) {
-      cells.push({ q, r, id: `${q},${r}`, state: null });
+    // en lugar de r = 0 .. size - q - 1
+    // empezamos más abajo y vamos hasta size - 1
+    for (let r = size - 1 - q; r < size; r += 1) {
+      cells.push({
+        q,
+        r,
+        id: `${q},${r}`,
+        state: null,
+      });
     }
   }
+
   return cells;
 }
 

@@ -1,12 +1,21 @@
 import { create } from "zustand";
 
-function generateTriangle(size) {
+function generateTriangleInverted(size) {
   const cells = [];
+
   for (let q = 0; q < size; q += 1) {
-    for (let r = 0; r < size - q; r += 1) {
-      cells.push({ q, r, id: `${q},${r}`, state: null });
+    // en lugar de r = 0 .. size - q - 1
+    // empezamos más abajo y vamos hasta size - 1
+    for (let r = size - 1 - q; r < size; r += 1) {
+      cells.push({
+        q,
+        r,
+        id: `${q},${r}`,
+        state: null,
+      });
     }
   }
+
   return cells;
 }
 
@@ -20,7 +29,7 @@ function clampBoardSize(value) {
 
 export const useBoardStore = create((set, get) => ({
   size: 8,
-  cells: generateTriangle(8),
+  cells: generateTriangleInverted(8),
   turnNumber: 1,
   elapsedSeconds: 0,
 
@@ -38,7 +47,7 @@ export const useBoardStore = create((set, get) => ({
     const safeSize = clampBoardSize(size);
     set({
       size: safeSize,
-      cells: generateTriangle(safeSize),
+      cells: generateTriangleInverted(safeSize),
       turnNumber: 1,
       elapsedSeconds: 0,
     });

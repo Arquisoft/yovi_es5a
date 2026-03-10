@@ -16,7 +16,7 @@ fn create_router() -> axum::Router {
 
 
     axum::Router::new()
-        .route("/game/play", axum::routing::post(place))
+        .route("/game/play/", axum::routing::post(place))
         .layer(cors) 
 }
 

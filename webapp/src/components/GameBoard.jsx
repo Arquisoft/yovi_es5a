@@ -50,6 +50,7 @@ export default function GameBoard() {
         return;
       }
 
+      console.log(cells)
       const board = boardToYen({ size, turnNumber, cells });
       setIsSubmittingTurn(true);
 

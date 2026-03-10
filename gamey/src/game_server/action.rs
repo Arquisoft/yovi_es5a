@@ -4,13 +4,30 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BoardDto {
+    pub size: u32,
+    pub turn: u32,
+    pub players: Vec<char>,
+    pub layout: String,
+}
+
+impl From<BoardDto> for YEN {
+    fn from(b: BoardDto) -> Self {
+        YEN::new(b.size, b.turn, b.players, b.layout)
+    }
+}
+
 /// Cuerpo de las peticiones HTTP para realizar una jugada
 #[derive(Deserialize)]
 pub struct PlaceRequest {
     /// Estado actual del juego
-    game: YEN,
+    board: BoardDto,
     /// Coordenadas de la jugada
-    coords: BodyCoords
+    #[serde(rename = "selectedCell")]
+    selected_cell: BodyCoords,
+    /// Modo de juego
+    mode: String
 }
 
 // Coordenadas pasadas en el cuerpo de la petición
@@ -26,8 +43,10 @@ pub struct BodyCoords {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct MoveResponse {
     // Indica si el movimiento es válido o no
+    #[serde(rename = "isValidMove")]
     pub is_valid_move : bool,
     // Indica si el movimiento es para ganar la partida o no
+    #[serde(rename = "hasWon")]
     pub has_won : bool,
     // Mensaje informativo sobre el movimiento realizado
     pub message : String
@@ -37,11 +56,12 @@ pub struct MoveResponse {
 pub async fn place(
     Json(place): Json<PlaceRequest>
 ) -> Result<Json<MoveResponse>, Json<ErrorResponse>> {
+    let yen : YEN = place.board.into();
     // Se extrae el turno actual y el tamaño del tablero
-    let turn = place.game.turn();
-    let size = place.game.size();
+    let turn = yen.turn();
+    let size = yen.size();
     // Se inicializa el tablero a partir de los parámetros recibidos 
-    let mut game_y = match GameY::try_from(place.game) {
+    let mut game_y = match GameY::try_from(yen) {
         Ok(game) => game,
         Err(err) => {
             return Err(Json(ErrorResponse::error(
@@ -52,10 +72,21 @@ pub async fn place(
     let mut is_valid = false;
     let mut has_won = false;
     let message ;
+    println!(
+        "org: ({}, {})",
+        place.selected_cell.q, 
+        place.selected_cell.r
+    );
     let coords = Coordinates::new(
-        size - place.coords.r - 1, 
-        place.coords.q, 
-        size - 1 - ((size - place.coords.r - 1) + place.coords.q)
+        size - 1 - place.selected_cell.r, 
+        size - 1 - place.selected_cell.q, 
+        ( 1 + place.selected_cell.r + place.selected_cell.q ) - size
+    );
+    println!(
+        "coords: ({}, {}, {})",
+        coords.x(),
+        coords.y(),
+        coords.z()
     );
     match game_y.add_move(Movement::Placement {
             player: PlayerId::new(turn),

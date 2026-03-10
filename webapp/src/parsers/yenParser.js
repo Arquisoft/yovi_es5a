@@ -22,7 +22,7 @@ export function parseCellId(cellId) {
 export function boardToYen({ size, turnNumber, cells }) {
   const safeSize = Number(size);
   const safeCells = Array.isArray(cells) ? cells : [];
-  const currentTurn = turnNumber % 2 === 1 ? "R" : "B";
+  // const currentTurn = turnNumber % 2 === 1 ? "R" : "B";
 
   const byId = new Map(safeCells.map((cell) => [cell.id, cell]));
   const rows = [];
@@ -45,7 +45,8 @@ export function boardToYen({ size, turnNumber, cells }) {
 
   return {
     size: safeSize,
-    turn: currentTurn,
+    // turn: currentTurn,
+    turn: turnNumber,
     players: ["B", "R"],
     layout: rows.join("/"),
   };
@@ -96,5 +97,40 @@ export function yenToBoardState(board) {
     size: safeSize,
     turnNumber,
     statesById,
+  };
+}
+
+export function makeTestTriangleBoard(size, markedIds = [], firstPlayer = "player1") {
+  const safeSize = Number(size);
+  if (Number.isNaN(safeSize) || safeSize <= 0) {
+    throw new Error("Invalid size in makeTestTriangleBoard");
+  }
+
+  // generamos las celdas igual que generateTriangle
+  const cells = [];
+  for (let q = 0; q < safeSize; q += 1) {
+    for (let r = 0; r < safeSize - q; r += 1) {
+      cells.push({ q, r, id: `${q},${r}`, state: null });
+    }
+  }
+
+  // marcamos algunas celdas
+  markedIds.forEach((id) => {
+    const cell = cells.find((c) => c.id === id);
+    if (cell) {
+      cell.state = firstPlayer;
+    }
+  });
+
+  const turnNumber = 1; // turno impar -> "R"
+  const yen = boardToYen({ size: safeSize, turnNumber, cells });
+  console.log(yen);
+  const back = yenToBoardState(yen);
+
+  return {
+    size: safeSize,
+    cells,
+    yen,
+    back,
   };
 }

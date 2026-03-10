@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-function generateTriangleInverted(size) {
+function generateTriangle(size) {
   const cells = [];
 
   for (let q = 0; q < size; q += 1) {

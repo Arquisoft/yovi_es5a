@@ -3,16 +3,16 @@ import { create } from "zustand";
 function generateTriangleInverted(size) {
   const cells = [];
 
-  for (let q = 0; q < size; q += 1) {
-    // en lugar de r = 0 .. size - q - 1
-    // empezamos más abajo y vamos hasta size - 1
-    for (let r = size - 1 - q; r < size; r += 1) {
-      cells.push({
-        q,
-        r,
-        id: `${q},${r}`,
-        state: null,
-      });
+  for (let q = size - 1; q >= 0; q--) {
+    const rowIndex = (size - 1) - q;
+
+    if (rowIndex === 0) {
+      // ápex: caso especial, r = 0
+      cells.push({ q, r: 0, id: `${q},0`, state: null });
+    } else {
+      for (let r = 1; r <= rowIndex + 1; r++) {
+        cells.push({ q, r, id: `${q},${r}`, state: null });
+      }
     }
   }
 
@@ -68,6 +68,11 @@ export const useBoardStore = create((set, get) => ({
 
     return changed;
   },
+  
+getCellOwner: (cellId) => {
+  const cell = get().cells.find((cell) => cell.id === cellId);
+  return cell?.state ?? null;
+},
 
   nextTurn: () => {
     set((state) => ({ turnNumber: state.turnNumber + 1 }));

@@ -51,6 +51,39 @@ pub struct MoveResponse {
     // Mensaje informativo sobre el movimiento realizado
     pub message : String
 }
+// transforma las coordenadas q y r al formato (x,y,z) donde 
+//x=distancia con el lado de abajo,y=distancia con el lado de la izquierda, z=distancia con el lado de la derecha
+pub fn axial_to_trilinear(q: u32, r: u32, n: u32) -> Result<(u32, u32, u32), String> {
+    // x = distancia al lado de abajo
+    let x = q;
+
+    // Caso especial: vértice ápex (única celda con r = 0)
+    if r == 0 {
+        if q != n - 1 {
+            return Err(format!(
+                "r=0 solo es válido para el ápex en q={}, recibido q={q}",
+                n - 1
+            ));
+        }
+        return Ok((x, 0, 0));
+    }
+
+    // Validar que r esté dentro del rango [1, n - q]
+    let r_max = n.saturating_sub(q);
+    if r > r_max {
+        return Err(format!(
+            "Coordenadas fuera del triángulo: q={q}, r={r} (máximo r={r_max} para q={q})"
+        ));
+    }
+
+    // z = distancia al lado derecho  → 0 cuando r es máximo (celda más a la derecha)
+    let z = n - q - r; // seguro: r <= n - q garantizado arriba
+
+    // y = distancia al lado izquierdo → 0 cuando r = 1 (celda más a la izquierda)
+    let y = r - 1; // seguro: r >= 1 garantizado arriba
+
+    Ok((x, y, z))
+}
 
 /// Comprueba si la acción realizada por el jugador es válida o no, y si es para ganar.
 pub async fn place(
@@ -77,11 +110,8 @@ pub async fn place(
         place.selected_cell.q, 
         place.selected_cell.r
     );
-    let coords = Coordinates::new(
-        size - 1 - place.selected_cell.r, 
-        size - 1 - place.selected_cell.q, 
-        ( 1 + place.selected_cell.r + place.selected_cell.q ) - size
-    );
+    let (a, b, c) = axial_to_trilinear(place.selected_cell.q, place.selected_cell.r, size).expect("coordenadas transformadas inválidas");
+    let coords = Coordinates::new(a,b,c);
     println!(
         "coords: ({}, {}, {})",
         coords.x(),

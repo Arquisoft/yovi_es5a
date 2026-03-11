@@ -14,6 +14,7 @@ export default function GameBoard() {
   const currentPlayer = useBoardStore((state) => (state.turnNumber % 2 === 1 ? "player1" : "player2"));
   const playTurn = useBoardStore((state) => state.playTurn);
   const setCellOwner = useBoardStore((state) => state.setCellOwner);
+  const getCellOwner = useBoardStore((state) => state.getCellOwner);
   const nextTurn = useBoardStore((state) => state.nextTurn);
   const applyBoardSnapshot = useBoardStore((state) => state.applyBoardSnapshot);
   const gameMode = useBoardStore((state) => state.gameMode);
@@ -33,41 +34,43 @@ export default function GameBoard() {
     empty: "#ccc",
   };
 
-  async function handleCellClick(id) {
-    if (isSubmittingTurn || gameOver) return;
-
+  function handleCellClick(id) {
     setSelectedId(id);
+  }
+
+  async function handleNextTurn() {
+    if (!selectedId) return;
+
     setTurnError("");
 
     if (gameMode === "1vs1") {
-      const selectedCell = parseCellId(id);
+      //Modo 2 jugadores
+      const selectedCell = parseCellId(selectedId);
       if (!selectedCell) {
         setTurnError("Celda seleccionada inválida.");
         return;
       }
       setIsSubmittingTurn(true);
-
+      
       try {
         const board = boardToYen({ size, turnNumber, cells });
         const result = await validateTwoPlayerMove({ board, selectedCell });
-
+        console.log(board);
         if (!result.isValidMove) {
           setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
-          setSelectedId(null);
           return;
         }
-
-        const moved = setCellOwner(id, currentPlayer);
+        const moved = setCellOwner(selectedId, currentPlayer);
         if (!moved) {
           setTurnError("No se pudo confirmar el movimiento.");
           return;
         }
-
         setSelectedId(null);
 
         if (result.hasWon) {
           const winnerName = currentPlayer === "player1" ? players.player1Name : players.player2Name;
           const loserName = currentPlayer === "player1" ? players.player2Name : players.player1Name;
+
           setGameOver({
             title: "¡Victoria!",
             message: `${winnerName} ha ganado la partida.`,
@@ -94,14 +97,17 @@ export default function GameBoard() {
       return;
     }
 
+    //Por si queremos añadir otro modo para probar simplemente el front como estaba
     if (gameMode !== "1vsbot") {
-      const moved = playTurn(id);
-      if (moved) setSelectedId(null);
+      const moved = playTurn(selectedId);
+      if (moved) {
+        setSelectedId(null);
+      }
       return;
     }
 
     // Modo 1vsBot
-    const selectedCell = parseCellId(id);
+    const selectedCell = parseCellId(selectedId);
     if (!selectedCell) {
       setTurnError("Celda seleccionada inválida.");
       return;
@@ -109,12 +115,10 @@ export default function GameBoard() {
     setIsSubmittingTurn(true);
 
     try {
-      const board = boardToYen({ size, turnNumber, cells });
       const result = await validateBotMove({ board, selectedCell, difficulty });
-
+      const board = boardToYen({ size, turnNumber, cells });
       if (!result.isValidMove) {
         setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
-        setSelectedId(null);
         return;
       }
 
@@ -168,21 +172,19 @@ export default function GameBoard() {
     }
   }
 
-  if (!cells?.length) return <div>Cargando tablero...</div>;
-
-  if (gameOver) {
-    return (
-      <VictoryMenu
-        title={gameOver.title}
-        message={gameOver.message}
-        subtitle={gameOver.subtitle}
-        matchSummary={gameOver.matchSummary}
-      />
-    );
-  }
+if (!cells?.length) return <div>Cargando tablero...</div>;
 
   return (
     <div>
+      {gameOver ? (
+        <VictoryMenu
+          title={gameOver.title}
+          message={gameOver.message}
+          subtitle={gameOver.subtitle}
+          matchSummary={gameOver.matchSummary}
+        />
+      ) : null}
+
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
       ) : null}
@@ -200,9 +202,10 @@ export default function GameBoard() {
         selectedId={selectedId}
         playerColors={PLAYER_COLORS}
       />
-      
       <div style={{ textAlign: "center", marginTop: 8 }}>
-        {isSubmittingTurn ? <p>Validando...</p> : null}
+        <button disabled={!selectedId || isSubmittingTurn || Boolean(gameOver)} onClick={handleNextTurn}>
+          {isSubmittingTurn ? "Validando..." : "Pasar turno"}
+        </button>
         {turnError ? <p className="turnError">{turnError}</p> : null}
       </div>
     </div>

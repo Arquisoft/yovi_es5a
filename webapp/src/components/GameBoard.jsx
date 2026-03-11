@@ -26,12 +26,15 @@ export default function GameBoard() {
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
 
+
   const PLAYER_COLORS = {
     player1: "#e63946",
     player2: "#1d4ed8",
     selected: "#2ecc71",
     empty: "#ccc",
   };
+
+  
 
   async function handleCellClick(id) {
     if (isSubmittingTurn || gameOver) return;
@@ -70,7 +73,7 @@ export default function GameBoard() {
           const loserName = currentPlayer === "player1" ? players.player2Name : players.player1Name;
           setGameOver({
             title: "¡Victoria!",
-            message: `${winnerName} ha ganado la partida.`,
+            message: `${loserName} ha ganado la partida.`,
             subtitle: "Enhorabuena por esta partida.",
             matchSummary: {
               mode: "1vs1",

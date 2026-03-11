@@ -18,7 +18,7 @@ mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD << EOF
 CREATE DATABASE IF NOT EXISTS $DB_NAME;
 EOF
 
-if[ $? -ne 0 ]; then
+if [ $? -ne 0 ]; then
     echo "Error creating database $DB_NAME"
     exit 1
 fi

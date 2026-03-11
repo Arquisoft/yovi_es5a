@@ -1,0 +1,61 @@
+.startGameForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  margin: 32px auto;
+  padding: 20px;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #111827;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.2);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 6px;
+}
+
+.startInput {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #ffffff;
+  color: #111827;
+}
+
+.fieldGroup label {
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.startButton {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #6470ff;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(100,112,255,0.22);
+}
+.startButton:hover {
+  background-color: #4e58e6;
+}
+
+/* Ensure inputs/buttons remain readable in light color-scheme */
+@media (prefers-color-scheme: light) {
+  .startGameForm {
+    background-color: #ffffff;
+    color: #0f172a;
+  }
+  .startInput {
+    background: #ffffff;
+    color: #0f172a;
+  }
+}

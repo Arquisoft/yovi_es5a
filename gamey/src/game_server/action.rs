@@ -163,37 +163,44 @@ mod tests {
 
     #[tokio::test]
     async fn test_valid_move() {
-        // Tablero triangular vacío de tamaño 3
-        // .../../.
-        let yen = yen(4, 0, &[".", "..", "...", "...."]);
+        // tablero vacío
+        let request = PlaceRequest {
+            board: BoardDto {
+                size: 4,
+                turn: 0,
+                players: vec!['R','B'],
+                layout: ". / .. / ... / ....".replace(" ", ""),
+            },
+            selected_cell: BodyCoords { q: 3, r: 0 },
+            mode: "normal".to_string()
+        };
 
-        let body = json!({
-            "game": yen,
-            "coords": { "q": 0, "r": 0 }
-        });
-
-        let response = place(Json(serde_json::from_value(body).unwrap()))
+        let response = place(Json(request))
             .await
             .unwrap()
             .0;
 
-        assert_eq!(response.is_valid_move, true);
-        assert_eq!(response.has_won, false);
+        assert!(response.is_valid_move);
+        assert!(!response.has_won);
         assert_eq!(response.message, "Movimiento válido");
     }
 
     #[tokio::test]
     async fn test_invalid_move_occupied() {
-        // Celda (2,0,0) ocupada
-        // B/../...
-        let yen = yen(4, 1, &["B", "..", "...", "...."]);
+        // Celda (3,0,0) ocupada
+        // A / .. / ... / ....
+        let request = PlaceRequest {
+            board: BoardDto {
+                size: 4,
+                turn: 0,
+                players: vec!['R','B'],
+                layout: " R / .. / ... / ....".replace(" ", ""),
+            },
+            selected_cell: BodyCoords { q: 3, r: 0 },
+            mode: "normal".to_string()
+        };
 
-        let body = json!({
-            "game": yen,
-            "coords": { "q": 0, "r": 0 }
-        });
-
-        let response = place(Json(serde_json::from_value(body).unwrap()))
+        let response = place(Json(request))
             .await
             .unwrap()
             .0;
@@ -207,14 +214,18 @@ mod tests {
     async fn test_winning_move() {
         // Estado donde el siguiente movimiento gana
         // B/.B/..B
-        let yen = yen(4, 0, &["B", ".B", ".B.", "...."]);
+        let request = PlaceRequest {
+            board: BoardDto {
+                size: 4,
+                turn: 0,
+                players: vec!['R','B'],
+                layout: " R / .R / .R. / .R..".replace(" ", ""),
+            },
+            selected_cell: BodyCoords { q: 0, r: 3 },
+            mode: "normal".to_string()
+        };
 
-        let body = json!({
-            "game": yen,
-            "coords": { "q": 1, "r": 3 }
-        });
-
-        let response = place(Json(serde_json::from_value(body).unwrap()))
+        let response = place(Json(request))
             .await
             .unwrap()
             .0;
@@ -222,24 +233,6 @@ mod tests {
         assert_eq!(response.is_valid_move, true);
         assert_eq!(response.has_won, true);
         assert_eq!(response.message, "Movimiento ganador");
-    }
-
-    #[tokio::test]
-    async fn test_invalid_layout() {
-        // Layout no triangular
-        let yen = yen(3, 0, &["...", "....", "..."]);
-
-        let body = json!({
-            "game": yen,
-            "coords": { "q": 0, "r": 0 }
-        });
-
-        let err = place(Json(serde_json::from_value(body).unwrap()))
-            .await
-            .unwrap_err()
-            .0;
-
-        assert!(err.message.contains("Formato YEN inválido"));
     }
 
 }

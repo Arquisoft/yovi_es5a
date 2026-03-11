@@ -15,10 +15,6 @@ keywords = ["game", "engine"]
 categories = ["games"]
 
 [[bin]]
-name = "main_server"
-path = "src/main_server.rs"
-
-[[bin]]
 path = "src/main.rs"
 name = "gamey"
 

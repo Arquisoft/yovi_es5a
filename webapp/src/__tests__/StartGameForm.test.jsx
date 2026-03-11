@@ -21,6 +21,7 @@ describe("StartGameForm", () => {
       selector({ setGameConfig, startGameFromConfig })
     );
 
+    
     // Mock global fetch → simula que el backend acepta cualquier usuario
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,

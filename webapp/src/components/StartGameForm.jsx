@@ -12,18 +12,55 @@ export default function StartGameForm() {
   const [difficulty, setDifficulty] = React.useState("Facil");
   const [boardSize, setBoardSize] = React.useState(8);
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  const [error, setError] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
 
-    setGameConfig({
-      gameMode,
-      player1Name,
-      player2Name,
-      difficulty,
-      boardSize,
+  const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+
+  async function createUser(username) {
+    const res = await fetch(`${API_URL}/createuser`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username }),
     });
 
-    startGameFromConfig();
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Error creating user");
+    }
+
+    return data;
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      //await createUser(player1Name);
+      
+      if (gameMode === "1vs1") {
+        //await createUser(player2Name);
+      }
+
+      setGameConfig({
+        gameMode,
+        player1Name,
+        player2Name,
+        difficulty,
+        boardSize,
+      });
+
+      startGameFromConfig();
+    } catch (err) {
+    setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -98,9 +135,10 @@ export default function StartGameForm() {
         />
       </div>
 
-      <button className="startButton" type="submit">
-        Empezar partida
+      <button className="startButton" type="submit" disabled={loading}>
+        {loading ? "Creando jugadores..." : "Empezar partida"}
       </button>
+      {error && <p className="error">{error}</p>}
     </form>
   );
 }

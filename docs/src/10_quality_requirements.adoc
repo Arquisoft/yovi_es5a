@@ -50,6 +50,100 @@ In any case the tree should include links to the scenarios of the following sect
 ****
 endif::arc42help[]
 
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Usuario
+actor Bot
+actor "Sistema Externo" as ExtSystem
+
+rectangle "MÓDULO 1 - Aplicación Web" {
+
+  package "RF01 - Gestión de Usuarios" {
+    usecase "RF01.1\nRegistrarse" as UC1
+    usecase "RF01.2\nIniciar sesión" as UC2
+    usecase "RF01.3\nMantener sesión activa" as UC3
+    usecase "RF01.4\nCerrar sesión" as UC4
+  }
+
+  package "RF02 - Interfaz de Juego" {
+    usecase "RF02.1\nInterfaz web interactiva" as UC5
+    usecase "RF02.2\nMostrar tablero en tiempo real" as UC6
+    usecase "RF02.3\nRealizar movimientos" as UC7
+    usecase "RF02.4\nMostrar turno actual" as UC8
+    usecase "RF02.5\nMostrar resultado partida" as UC9
+  }
+
+  package "RF03 - Historial de Partidas" {
+    usecase "RF03.1\nGuardar historial" as UC10
+    usecase "RF03.2\nConsultar partidas anteriores" as UC11
+    usecase "RF03.3\nMostrar estadísticas" as UC12
+    usecase "RF03.3.1\nPartidas ganadas" as UC13
+    usecase "RF03.3.2\nPartidas perdidas" as UC14
+    usecase "RF03.3.3\nPartidas empatadas" as UC15
+    usecase "RF03.3.4\nTiempo total jugado" as UC16
+  }
+
+  package "RF04 - API Externa para Bots" {
+    usecase "RF04.1\nExponer API" as UC17
+    usecase "RF04.2\nAutenticación API" as UC18
+    usecase "RF04.3\nCrear partida como bot" as UC19
+    usecase "RF04.4\nRealizar movimientos (bot)" as UC20
+    usecase "RF04.5\nObtener estado en formato YEN" as UC21
+  }
+}
+
+rectangle "MÓDULO 2 - Lógica (Rust)" {
+
+  package "RF05 - Verificación de Victoria" {
+    usecase "RF05.1\nDeterminar ganador" as UC22
+    usecase "RF05.2\nIdentificar jugador ganador" as UC23
+    usecase "RF05.3\nDetectar empate" as UC24
+    usecase "RF05.4\nResponder en JSON" as UC25
+  }
+
+  package "RF06 - Servicio Web" {
+    usecase "RF06.1\nComunicación remota" as UC26
+    usecase "RF06.2\nVerificar partida ganada" as UC27
+    usecase "RF06.3\nVerificar disponibilidad" as UC28
+    usecase "RF06.4\nRespuestas en JSON" as UC29
+  }
+
+  package "RF07 - Procesamiento YEN" {
+    usecase "RF07.1\nInterpretar formato YEN" as UC30
+    usecase "RF07.2\nValidar sintaxis YEN" as UC31
+    usecase "RF07.3\nRechazar YEN inválido" as UC32
+  }
+}
+
+' Relaciones Usuario
+Usuario --> UC1
+Usuario --> UC2
+Usuario --> UC4
+Usuario --> UC5
+Usuario --> UC7
+Usuario --> UC11
+
+UC12 .> UC13 : <<include>>
+UC12 .> UC14 : <<include>>
+UC12 .> UC15 : <<include>>
+UC12 .> UC16 : <<include>>
+
+' Relaciones Bot
+Bot --> UC19
+Bot --> UC20
+Bot --> UC21
+Bot --> UC18
+
+' Comunicación entre módulos
+ExtSystem --> UC26
+UC26 --> UC22
+UC26 --> UC30
+
+@enduml
+
+
 === Quality Scenarios
 
 ifdef::arc42help[]

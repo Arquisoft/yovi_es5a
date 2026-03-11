@@ -3,19 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vitest run src && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest run src",
-    "test:coverage": "vitest run --coverage src",
-    "test:watch": "vitest --watch src",
-    "test:e2e:run": "cucumber-js --import test/e2e/support/setup.mjs --import test/e2e/steps/**/*.mjs test/e2e/features --format progress",
-    "test:e2e": "start-server-and-test start:all http://localhost:5173 test:e2e:run",
-    "test:e2e:install-browsers": "npx playwright install",
-    "start:all": "concurrently \"npm run dev\" \"npm --prefix ../users start\""
-  },
+ "scripts": {
+  "dev": "vite",
+  "build": "tsc -b && vitest run && vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+  "test": "vitest run",
+  "test:coverage": "vitest run --coverage",
+  "test:watch": "vitest --watch",
+  "test:e2e:run": "cucumber-js --import test/e2e/support/setup.mjs --import test/e2e/steps/**/*.mjs test/e2e/features --format progress",
+  "test:e2e": "start-server-and-test start:all http://localhost:5173 test:e2e:run",
+  "test:e2e:install-browsers": "npx playwright install",
+  "start:all": "concurrently \"npm run dev\" \"npm --prefix ../users start\""
+},
+
   "dependencies": {
     "eslint": "^9.39.3",
     "konva": "^10.2.0",

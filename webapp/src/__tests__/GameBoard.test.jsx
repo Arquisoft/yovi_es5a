@@ -16,7 +16,6 @@ vi.mock("../renderers/KonvaRenderer", () => ({
 }));
 
 vi.mock("../header/Header", () => ({ default: () => <div>Header</div> }));
-
 vi.mock("../components/VictoryMenu", () => ({
   default: ({ title, message }) => (
     <div>
@@ -81,21 +80,24 @@ describe("GameBoard", () => {
     });
   });
 
-  it("el botón 'Pasar turno' está deshabilitado si no hay celda seleccionada", () => {
+
+  //    Verifica que el tablero se muestra correctamente al inicio.
+  it("renderiza el tablero cuando hay celdas disponibles", () => {
     render(<GameBoard />);
-    expect(screen.getByRole("button", { name: /pasar turno/i })).toBeDisabled();
+    expect(screen.getByText("Header")).toBeInTheDocument();
   });
 
+ 
   it("si la celda seleccionada es inválida (1vs1), muestra error y no llama API", async () => {
     const user = userEvent.setup();
     render(<GameBoard />);
 
     await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
-    await user.click(screen.getByRole("button", { name: /pasar turno/i }));
 
     expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
     expect(validateTwoPlayerMove).not.toHaveBeenCalled();
   });
+
 
   it("1vs1: movimiento válido llama validateTwoPlayerMove, setCellOwner y nextTurn", async () => {
     const user = userEvent.setup();
@@ -110,7 +112,6 @@ describe("GameBoard", () => {
     render(<GameBoard />);
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-    await user.click(screen.getByRole("button", { name: /pasar turno/i }));
 
     await waitFor(() => expect(validateTwoPlayerMove).toHaveBeenCalledTimes(1));
     expect(actions.setCellOwner).toHaveBeenCalledWith("0,0", "player1");
@@ -129,7 +130,6 @@ describe("GameBoard", () => {
     render(<GameBoard />);
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-    await user.click(screen.getByRole("button", { name: /pasar turno/i }));
 
     expect(await screen.findByText(/movimiento inválido/i)).toBeInTheDocument();
     expect(actions.nextTurn).not.toHaveBeenCalled();
@@ -159,7 +159,6 @@ describe("GameBoard", () => {
     render(<GameBoard />);
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-    await user.click(screen.getByRole("button", { name: /pasar turno/i }));
 
     await waitFor(() => expect(validateBotMove).toHaveBeenCalledTimes(1));
 
@@ -194,7 +193,6 @@ describe("GameBoard", () => {
     render(<GameBoard />);
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-    await user.click(screen.getByRole("button", { name: /pasar turno/i }));
 
     expect(await screen.findByRole("heading", { name: /¡victoria!/i })).toBeInTheDocument();
     expect(screen.getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();

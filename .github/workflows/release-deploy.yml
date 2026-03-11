@@ -53,11 +53,11 @@ jobs:
           cargo test
 
   e2e:
-    name: Run E2E tests
-    runs-on: ubuntu-latest
-    needs: [test-node, test-rust]
+  name: Run E2E tests
+  runs-on: ubuntu-latest
+  needs: [test-node, test-rust]
 
-    services:
+  services:
     mysql:
       image: mysql:8.0
       env:
@@ -71,36 +71,40 @@ jobs:
         --health-timeout=5s
         --health-retries=5
 
-      env:
-        DB_HOST: localhost
-        DB_USER: root
-        DB_PASSWORD: rootpassword
-        DB_NAME: yovi_db
+  env:
+    DB_HOST: localhost
+    DB_USER: root
+    DB_PASSWORD: rootpassword
+    DB_NAME: yovi_db
 
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install users dependencies
-        run: |
-          cd users
-          npm ci
-      - name: Install webapp dependencies
-        run: |
-          cd webapp
-          npm ci
-      - name: Install Playwright browsers
-        run: |
-          cd webapp
-          npm run test:e2e:install-browsers
-      - name: Run E2E tests (start servers and run cucumber)
-        run: |
-          cd webapp
-          npm run test:e2e
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install users dependencies
+      run: |
+        cd users
+        npm ci
+
+    - name: Install webapp dependencies
+      run: |
+        cd webapp
+        npm ci
+
+    - name: Install Playwright browsers
+      run: |
+        cd webapp
+        npm run test:e2e:install-browsers
+
+    - name: Run E2E tests
+      run: |
+        cd webapp
+        npm run test:e2e
 
   docker-push-users:
     name: Publish users image
@@ -181,4 +185,3 @@ jobs:
             wget https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/master/docker-compose.yml -O docker-compose.yml
             docker compose down
             docker compose up -d --pull always
-            ./init-db.sh

@@ -18,25 +18,27 @@ export function parseCellId(cellId) {
 
   return { q: parsedQ, r: parsedR };
 }
-
 export function boardToYen({ size, turnNumber, cells }) {
   const safeSize = Number(size);
   const safeCells = Array.isArray(cells) ? cells : [];
-  const currentTurn = turnNumber % 2 === 1 ? "R" : "B";
 
   const byId = new Map(safeCells.map((cell) => [cell.id, cell]));
   const rows = [];
 
-  for (let rowSize = 1; rowSize <= safeSize; rowSize += 1) {
-    const qValue = safeSize - rowSize;
+  // Iterar igual que generateTriangleInverted: rowIndex 0 = ápex (q alto), rowIndex n = base (q=0)
+  for (let rowIndex = 0; rowIndex < safeSize; rowIndex++) {
+    const q = safeSize - 1 - rowIndex;
     const row = [];
 
-    for (let rValue = 0; rValue < rowSize; rValue += 1) {
-      const cell = byId.get(`${qValue},${rValue}`);
-      if (!cell || !cell.state) {
-        row.push(".");
-      } else {
-        row.push(PLAYER_SYMBOLS[cell.state] || ".");
+    if (rowIndex === 0) {
+      // ápex: caso especial, r = 0
+      const cell = byId.get(`${q},0`);
+      row.push(!cell || !cell.state ? "." : PLAYER_SYMBOLS[cell.state] || ".");
+    } else {
+      // resto de filas: r va de 1 a rowIndex + 1
+      for (let r = 1; r <= rowIndex + 1; r++) {
+        const cell = byId.get(`${q},${r}`);
+        row.push(!cell || !cell.state ? "." : PLAYER_SYMBOLS[cell.state] || ".");
       }
     }
 
@@ -45,11 +47,12 @@ export function boardToYen({ size, turnNumber, cells }) {
 
   return {
     size: safeSize,
-    turn: currentTurn,
+    turn: turnNumber,
     players: ["B", "R"],
     layout: rows.join("/"),
   };
 }
+
 
 function symbolToOwner(symbol) {
   if (symbol === "R") {
@@ -96,5 +99,40 @@ export function yenToBoardState(board) {
     size: safeSize,
     turnNumber,
     statesById,
+  };
+}
+
+export function makeTestTriangleBoard(size, markedIds = [], firstPlayer = "player1") {
+  const safeSize = Number(size);
+  if (Number.isNaN(safeSize) || safeSize <= 0) {
+    throw new Error("Invalid size in makeTestTriangleBoard");
+  }
+
+  // generamos las celdas igual que generateTriangle
+  const cells = [];
+  for (let q = 0; q < safeSize; q += 1) {
+    for (let r = 0; r < safeSize - q; r += 1) {
+      cells.push({ q, r, id: `${q},${r}`, state: null });
+    }
+  }
+
+  // marcamos algunas celdas
+  markedIds.forEach((id) => {
+    const cell = cells.find((c) => c.id === id);
+    if (cell) {
+      cell.state = firstPlayer;
+    }
+  });
+
+  const turnNumber = 1; // turno impar -> "R"
+  const yen = boardToYen({ size: safeSize, turnNumber, cells });
+  console.log(yen);
+  const back = yenToBoardState(yen);
+
+  return {
+    size: safeSize,
+    cells,
+    yen,
+    back,
   };
 }

@@ -34,6 +34,7 @@ pub mod core;
 pub mod gamey_error;
 pub mod notation;
 pub mod bot_server;
+pub mod game_server;
 pub use bot::*;
 pub use cli::*;
 pub use core::*;

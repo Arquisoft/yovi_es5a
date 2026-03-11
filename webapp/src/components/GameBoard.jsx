@@ -33,35 +33,31 @@ export default function GameBoard() {
     empty: "#ccc",
   };
 
-  function handleCellClick(id) {
+  async function handleCellClick(id) {
+    if (isSubmittingTurn || gameOver) return;
+
     setSelectedId(id);
-  }
-
-  async function handleNextTurn() {
-    if (!selectedId) return;
-
     setTurnError("");
 
     if (gameMode === "1vs1") {
-      //Modo 2 jugadores
-      const selectedCell = parseCellId(selectedId);
+      const selectedCell = parseCellId(id);
       if (!selectedCell) {
         setTurnError("Celda seleccionada inválida.");
         return;
       }
-
-      const board = boardToYen({ size, turnNumber, cells });
       setIsSubmittingTurn(true);
 
       try {
+        const board = boardToYen({ size, turnNumber, cells });
         const result = await validateTwoPlayerMove({ board, selectedCell });
 
         if (!result.isValidMove) {
           setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
+          setSelectedId(null);
           return;
         }
 
-        const moved = setCellOwner(selectedId, currentPlayer);
+        const moved = setCellOwner(id, currentPlayer);
         if (!moved) {
           setTurnError("No se pudo confirmar el movimiento.");
           return;
@@ -72,7 +68,6 @@ export default function GameBoard() {
         if (result.hasWon) {
           const winnerName = currentPlayer === "player1" ? players.player1Name : players.player2Name;
           const loserName = currentPlayer === "player1" ? players.player2Name : players.player1Name;
-
           setGameOver({
             title: "¡Victoria!",
             message: `${winnerName} ha ganado la partida.`,
@@ -99,30 +94,27 @@ export default function GameBoard() {
       return;
     }
 
-    //Por si queremos añadir otro modo para probar simplemente el front como estaba
     if (gameMode !== "1vsbot") {
-      const moved = playTurn(selectedId);
-      if (moved) {
-        setSelectedId(null);
-      }
+      const moved = playTurn(id);
+      if (moved) setSelectedId(null);
       return;
     }
 
     // Modo 1vsBot
-    const selectedCell = parseCellId(selectedId);
+    const selectedCell = parseCellId(id);
     if (!selectedCell) {
       setTurnError("Celda seleccionada inválida.");
       return;
     }
-
-    const board = boardToYen({ size, turnNumber, cells });
     setIsSubmittingTurn(true);
 
     try {
+      const board = boardToYen({ size, turnNumber, cells });
       const result = await validateBotMove({ board, selectedCell, difficulty });
 
       if (!result.isValidMove) {
         setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
+        setSelectedId(null);
         return;
       }
 
@@ -176,19 +168,21 @@ export default function GameBoard() {
     }
   }
 
-if (!cells?.length) return <div>Cargando tablero...</div>;
+  if (!cells?.length) return <div>Cargando tablero...</div>;
+
+  if (gameOver) {
+    return (
+      <VictoryMenu
+        title={gameOver.title}
+        message={gameOver.message}
+        subtitle={gameOver.subtitle}
+        matchSummary={gameOver.matchSummary}
+      />
+    );
+  }
 
   return (
     <div>
-      {gameOver ? (
-        <VictoryMenu
-          title={gameOver.title}
-          message={gameOver.message}
-          subtitle={gameOver.subtitle}
-          matchSummary={gameOver.matchSummary}
-        />
-      ) : null}
-
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
       ) : null}
@@ -206,10 +200,9 @@ if (!cells?.length) return <div>Cargando tablero...</div>;
         selectedId={selectedId}
         playerColors={PLAYER_COLORS}
       />
+      
       <div style={{ textAlign: "center", marginTop: 8 }}>
-        <button disabled={!selectedId || isSubmittingTurn || Boolean(gameOver)} onClick={handleNextTurn}>
-          {isSubmittingTurn ? "Validando..." : "Pasar turno"}
-        </button>
+        {isSubmittingTurn ? <p>Validando...</p> : null}
         {turnError ? <p className="turnError">{turnError}</p> : null}
       </div>
     </div>

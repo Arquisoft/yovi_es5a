@@ -2,18 +2,23 @@ import React from "react";
 import { Stage, Layer, Line, Group } from "react-konva";
 
 const HEX_SIZE = 30;
+const HEX_DRAW_SIZE = HEX_SIZE * 1;
 
-function axialToPixel(q, r, size) {
-  const x = size * (Math.sqrt(3) * q + (Math.sqrt(3) / 2) * r);
-  const y = size * (3 / 2) * r;
+function axialToPixel(q, r, hexSize, size) {
+  const rowIndex = (size - 1) - q;
+  const j = rowIndex === 0 ? 0 : r - 1;
+
+  const x = (j - rowIndex / 2) * Math.sqrt(3) * hexSize;
+  const y = rowIndex * (3 / 2) * hexSize;
   return { x, y };
 }
 
 function hexPoints(size) {
   const points = [];
+  const angleOffset = -Math.PI / 2;
 
   for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i;
+    const angle = (Math.PI / 3) * i + angleOffset;
     points.push(size * Math.cos(angle));
     points.push(size * Math.sin(angle));
   }
@@ -22,24 +27,14 @@ function hexPoints(size) {
 }
 
 export default function KonvaRenderer({ cells, onCellClick, selectedId, playerColors }) {
-  const hex = hexPoints(HEX_SIZE);
-  // backwards-compat: if caller passed a board instance, derive cells
-  if (!cells) {
-    // eslint-disable-next-line no-undef
-    // keep supporting older callsites that pass `board` prop
-    // but prefer passing `cells` directly from parent
-    // (caller may pass a board object instead of cells)
-    // try to access `board.getCells()` if available
-    // NOTE: this branch is for robustness; GameBoard passes `cells`.
-    // eslint-disable-next-line no-undef
-    // (no-op)
-  }
+  const hex = hexPoints(HEX_DRAW_SIZE); // usa el tamaño reducido
+
+  const size = Math.max(...cells.map((c) => c.q)) + 1;
 
   const STAGE_WIDTH = 800;
   const STAGE_HEIGHT = 600;
 
-  // calcular bounds del tablero en coordenadas de píxel
-  const pixels = cells.map((c) => axialToPixel(c.q, c.r, HEX_SIZE));
+  const pixels = cells.map((c) => axialToPixel(c.q, c.r, HEX_SIZE, size));
   const xs = pixels.map((p) => p.x);
   const ys = pixels.map((p) => p.y);
   const minX = Math.min(...xs);
@@ -47,11 +42,8 @@ export default function KonvaRenderer({ cells, onCellClick, selectedId, playerCo
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
 
-  // centro del tablero en coordenadas internas
   const boardCenterX = (minX + maxX) / 2;
   const boardCenterY = (minY + maxY) / 2;
-
-  // desplazar todo el grupo para que su centro coincida con el centro del Stage
   const groupX = STAGE_WIDTH / 2 - boardCenterX;
   const groupY = STAGE_HEIGHT / 2 - boardCenterY;
 
@@ -60,9 +52,8 @@ export default function KonvaRenderer({ cells, onCellClick, selectedId, playerCo
       <Layer>
         <Group x={groupX} y={groupY}>
           {cells.map((cell) => {
-            const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE);
+            const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
 
-            // determine fill color based on ownership and selection
             let fill = (playerColors && playerColors.empty) || "#ccc";
             if (cell.state === "player1") fill = (playerColors && playerColors.player1) || "#e63946";
             if (cell.state === "player2") fill = (playerColors && playerColors.player2) || "#1d4ed8";

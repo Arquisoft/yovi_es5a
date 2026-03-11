@@ -45,7 +45,7 @@ export default function StartGameForm() {
       
       if (gameMode === "1vs1") {
         await createUser(player2Name);
-      }
+      } 
 
       setGameConfig({
         gameMode,

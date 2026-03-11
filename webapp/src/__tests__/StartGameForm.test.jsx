@@ -16,9 +16,16 @@ describe("StartGameForm", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     useBoardStore.mockImplementation((selector) =>
       selector({ setGameConfig, startGameFromConfig })
     );
+
+    // Mock global fetch → simula que el backend acepta cualquier usuario
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 1 }),
+    });
   });
 
   it("renderiza 1vs1 por defecto (pide 2 nombres, no muestra dificultad)", () => {
@@ -62,13 +69,20 @@ describe("StartGameForm", () => {
 
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
 
+    // Verifica que se llamó a fetch 2 veces (una por jugador)
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/createuser"),
+      expect.objectContaining({ method: "POST" })
+    );
+
     expect(setGameConfig).toHaveBeenCalledTimes(1);
     expect(setGameConfig).toHaveBeenCalledWith({
       gameMode: "1vs1",
       player1Name: "Alice",
       player2Name: "Bob",
       difficulty: "Facil",
-      boardSize: "10", // Nota: con tu código actual queda string si el usuario lo cambia
+      boardSize: "10",
     });
 
     expect(startGameFromConfig).toHaveBeenCalledTimes(1);
@@ -85,15 +99,37 @@ describe("StartGameForm", () => {
 
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
 
+    // En modo bot solo se crea 1 usuario
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
     expect(setGameConfig).toHaveBeenCalledTimes(1);
     expect(setGameConfig).toHaveBeenCalledWith({
       gameMode: "1vsbot",
       player1Name: "Juan",
       player2Name: "",
       difficulty: "Media",
-      boardSize: 8, // aquí sigue siendo number porque no tocaste el input
+      boardSize: 8,
     });
 
     expect(startGameFromConfig).toHaveBeenCalledTimes(1);
+  });
+
+  it("muestra error si el backend falla al crear usuario", async () => {
+    // Sobrescribe el mock para simular error del servidor
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Username already exists" }),
+    });
+
+    const user = userEvent.setup();
+    render(<StartGameForm />);
+
+    await user.type(screen.getByLabelText(/nombre jugador 1/i), "Alice");
+    await user.type(screen.getByLabelText(/nombre jugador 2/i), "Bob");
+    await user.click(screen.getByRole("button", { name: /empezar partida/i }));
+
+    expect(await screen.findByText(/username already exists/i)).toBeInTheDocument();
+    expect(setGameConfig).not.toHaveBeenCalled();
+    expect(startGameFromConfig).not.toHaveBeenCalled();
   });
 });

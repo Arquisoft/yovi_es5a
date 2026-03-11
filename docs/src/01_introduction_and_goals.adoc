@@ -88,17 +88,11 @@ Construir una plataforma web para jugar partidas del juego Y con soporte de usua
 
 * RF05.3: El módulo detectará condiciones de empate o tablas.
 
-* RF05.4: La respuesta incluirá el estado del juego en formato JSON.
-
 * RF06 - Servicio Web
 
-** RF06.1: El módulo ofrecerá un mecanismo de comunicación remota para ser invocado por otros subsistemas.
+** RF06.1: El módulo permitirá verificar si una partida ha sido ganada.
 
-** RF06.2: El módulo permitirá verificar si una partida ha sido ganada.
-
-** RF06.3: El módulo proporcionará un mecanismo para verificar su disponibilidad operativa.
-
-** RF06.4: Todas las respuestas del servicio serán en formato JSON.
+** RF06.2: Todas las respuestas del servicio serán en formato JSON.
 
 ===== RF07 - Procesamiento de Formato YEN
 
@@ -138,7 +132,7 @@ endif::arc42help[]
 [options="header",cols="1,2"]
 |===
 |Atributo de calidad|Motivación
-|Rendimiento (RNF01)|El sistema deberá responder a las peticiones de juego en menos de 500ms y soportar al menos 500 usuarios concurrentes.
+|Rendimiento (RNF01)|El sistema deberá soportar al menos 100 usuarios concurrentes.
 |Seguridad (RNF02)|Las comunicaciones entre módulos y con clientes deberán ir cifradas mediante HTTPS, y las contraseñas se almacenarán con hash seguro.
 |Disponibilidad (RNF03)|El sistema deberá tener una disponibilidad mínima del 99% en horario de operación.
 |Mantenibilidad (RNF04)|El código de ambos módulos deberá incluir pruebas unitarias con cobertura mínima del 70% y estar adecuadamente documentado.

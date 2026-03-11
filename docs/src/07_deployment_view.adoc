@@ -66,7 +66,7 @@ endif::arc42help[]
 skinparam monochrome true
 left to right direction
 
-actor Usuario
+actor Navegador
 
 node "Azure VM (Linux Ubuntu 24.04)" {
 
@@ -82,11 +82,11 @@ node "Azure VM (Linux Ubuntu 24.04)" {
     }
 }
 
-Usuario <--> WebApp : Interacción UI
+Navegador <--> WebApp : Interacción UI
 
 WebApp <--> Users : HTTP/JSON
 
-Users <--> Gamey : Lógica juego / Bot
+WebApp <--> Gamey : Lógica juego / Bot
 
 Users <--> Database : Persistencia datos
 @enduml
@@ -95,7 +95,7 @@ Users <--> Database : Persistencia datos
 Motivation::
 
 La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. El usuario interactua con el sistema a través de una interfaz diseñada con React. Está se comunica con el back-end mediante OpenApi. A su vez, el back-end se comunica con la base de datos con la api mencionada anteriormente.
-El back-end también se comunica con el módulo de juego mediante el módulo Rust Bot-server.
+El front-end también se comunica con el módulo de juego mediante los módulo Bot-server y Game-server.
 
 Características de calidad/rendimiento::
 
@@ -116,7 +116,7 @@ Mapeo de los bloques de construcción a infraestructura::
 
 | WebApp | Front-end diseñado con React para la interacción con el usuario.
 
-| Users | Back-end diseñado con Node para gestionar la lógica de la aplicación. 
+| Users | Back-end diseñado con Node para gestionar la interacción con la BD. 
 
 | Gamey | Módulo Rust con la lógica del juego y del bot.
 

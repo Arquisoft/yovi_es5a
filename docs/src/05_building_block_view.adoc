@@ -108,7 +108,8 @@ Componentes::
   
 *OpenApi*
 
-Comunica el front-end con el back-end siguiendo el protocolo HTTP y con el formato JSON. Las principales operaciones que contempla son :
+Comunica el front-end con el back-end Node siguiendo el protocolo HTTP y con el formato JSON. Expone una serie de operaciones para almacenar información de relevancia en la BD.
+Entre toda esa información, se encuentra:
 
   - Registro de usuarios.
   - Inicio de partidas.
@@ -120,6 +121,10 @@ Comunica el front-end con el back-end siguiendo el protocolo HTTP y con el forma
 
 Comunica el bot con el resto de la aplicación siguiendo el protocolo HTTP y con el formato JSON. La única operación que contempla es la realización de movimientos
 por parte del bot.
+
+*GameServer*
+
+Expone el método play para determinar la validez de una jugada realizada por los usuarios y determinar si la jugada permite ganar la partida actua..
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -168,17 +173,20 @@ frame "Game Engine" {
   node "BotServer"
   node "Core"
   node "Notation"
+  node "GameServer"
 }
 
 "Usuario" <--> "WebApp" : Interactúa
-"WebApp" <--> "OpenApi" : Comunicarse con el back
+"WebApp" <--> "OpenApi" : Comunicarse con el back Node
 "OpenApi" <--> "Users" : Comunicarse con el front
 
-"Users" <--> "Database" : Almacena\extrae
-"Users" <--> "BotServer" : Comunicarse con el juego
+"Usuario" <--> "Database" : Almacena\extrae
+"WebApp" <--> "BotServer" : Comunicarse con los bots
+"WebApp" <--> "GameServer" : Comunicarse con el validador de movimientos
 "Core" <--> "Notation" : Usa YEN
-"Core" <--> "Bot" : Comunicarse con el bot
-"Core" <--> "BotServer" : Comunicarse con el núcleo del juego
+"BotServer" <--> "Bot" : Usar la lógica de los bots
+"Core" <--> "BotServer" : Arrancar el servidor del bot
+"Core" <--> "GameServer" : Arrancar el servidor del juego
 
 @enduml
 ----
@@ -194,17 +202,19 @@ Componentes::
 
 | WebApp | Expone una interfaz de usuario para que el usuario interacciona con el sistema.
 
-| OpenApi | Comunica el front-end (WebApp) con el back-end (Users).
+| OpenApi | Comunica el front-end (WebApp) con el back-end Node (Users).
 
-| Users | Gestiona la interacción del usuario.
+| Users | Gestiona la interacción con la base de datos.
 
 | Database | Almacena un historial de los usuarios registrados, partidas realizadas, puntuaciones obtenidas, ...
 
-| Bot | Contiene la lógica relacionada con el bot.
+| Bot | Contiene la lógica de los bots.
 
-| BotServer | Permite la interacción del back-end con el bot.
+| BotServer | Permite la interacción del sistema con los bots.
 
 | Core | Contiene la lógica del juego y gestiona el estado del mismo y la validación de movimientos y reglas.
+
+| GameServer | Permite la interacción del sistema con la lógica del juego.
 
 | Notation | Incluye toda la lógica sobre la notación YEN.
 

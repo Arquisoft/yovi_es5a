@@ -33,10 +33,10 @@ app.post('/createuser', async (req, res) => {
   const username = req.body && req.body.username;
   try {
     const message = await createUser(username);
-    res.json({ message });
+    res.status(200).json({ message });
   } catch (err) {
     console.error('Error:', err.message);
-    res.status(err.message.includes('Username is required') ? 400 : 500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 

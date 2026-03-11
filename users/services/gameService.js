@@ -75,6 +75,7 @@ async function finishGame(gameId, winner) {
 }
 
 module.exports = {
+  gameRepo,
   createUserVsUserGame,
   createUserVsBotGame,
   createBotVsBotGame,

@@ -14,4 +14,7 @@ async function createUser(username) {
   }
 }
 
-module.exports = { createUser };
+module.exports = { 
+  userRepo,
+  createUser
+};

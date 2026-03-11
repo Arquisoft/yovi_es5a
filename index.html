@@ -450,7 +450,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_vista_general_de_los_requisitos">1.1. Vista general de los requisitos</a></li>
 <li><a href="#_requisitos_de_calidad">1.2. Requisitos de Calidad</a></li>
 <li><a href="#_stakeholders">1.3. Stakeholders</a></li>
-<li><a href="#_stakeholders_2">1.4. Stakeholders</a></li>
 </ul>
 </li>
 <li><a href="#section-architecture-constraints">2. Restricciones de Arquitectura</a>
@@ -858,9 +857,6 @@ If you as an architect do not know how the quality of your work will be judged&#
 </div>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_stakeholders">1.3. Stakeholders</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -900,7 +896,7 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stakeholders_2">1.4. Stakeholders</h3>
+<h3 id="_stakeholders">1.3. Stakeholders</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1457,7 +1453,8 @@ La separación entre WebApp y Gamey permite desacoplar la interfaz de usuario de
 <p><strong>OpenApi</strong></p>
 </div>
 <div class="paragraph">
-<p>Comunica el front-end con el back-end siguiendo el protocolo HTTP y con el formato JSON. Las principales operaciones que contempla son :</p>
+<p>Comunica el front-end con el back-end Node siguiendo el protocolo HTTP y con el formato JSON. Expone una serie de operaciones para almacenar información de relevancia en la BD.
+Entre toda esa información, se encuentra:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1482,6 +1479,12 @@ La separación entre WebApp y Gamey permite desacoplar la interfaz de usuario de
 <div class="paragraph">
 <p>Comunica el bot con el resto de la aplicación siguiendo el protocolo HTTP y con el formato JSON. La única operación que contempla es la realización de movimientos
 por parte del bot.</p>
+</div>
+<div class="paragraph">
+<p><strong>GameServer</strong></p>
+</div>
+<div class="paragraph">
+<p>Expone el método play para determinar la validez de una jugada realizada por los usuarios y determinar si la jugada permite ganar la partida actua..</p>
 </div>
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -1528,7 +1531,7 @@ Its headline is the name of the black box.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Nivel%202.png" alt="Nivel 2" width="1156" height="319">
+<img src="./images/Nivel%202.png" alt="Nivel 2" width="992" height="375">
 </div>
 </div>
 <div class="dlist">
@@ -1558,11 +1561,11 @@ Its headline is the name of the black box.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">OpenApi</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Comunica el front-end (WebApp) con el back-end (Users).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Comunica el front-end (WebApp) con el back-end Node (Users).</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Users</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> Gestiona la interacción del usuario.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Gestiona la interacción con la base de datos.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Database</p></td>
@@ -1570,15 +1573,19 @@ Its headline is the name of the black box.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bot</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> Contiene la lógica relacionada con el bot.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Contiene la lógica de los bots.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">BotServer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> Permite la interacción del back-end con el bot.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Permite la interacción del sistema con los bots.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Core</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"> Contiene la lógica del juego y gestiona el estado del mismo y la validación de movimientos y reglas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameServer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Permite la interacción del sistema con la lógica del juego.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Notation</p></td>
@@ -1834,7 +1841,7 @@ when your infrastructure is more complex.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="934" height="234">
+<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="940" height="251">
 </div>
 </div>
 <div class="dlist">
@@ -1842,7 +1849,7 @@ when your infrastructure is more complex.</p>
 <dt class="hdlist1">Motivation</dt>
 <dd>
 <p>La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. El usuario interactua con el sistema a través de una interfaz diseñada con React. Está se comunica con el back-end mediante OpenApi. A su vez, el back-end se comunica con la base de datos con la api mencionada anteriormente.
-El back-end también se comunica con el módulo de juego mediante el módulo Rust Bot-server.</p>
+El front-end también se comunica con el módulo de juego mediante los módulo Bot-server y Game-server.</p>
 </dd>
 <dt class="hdlist1">Características de calidad/rendimiento</dt>
 <dd>
@@ -1879,7 +1886,7 @@ continuo de nuestra aplicación.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Users</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Back-end diseñado con Node para gestionar la lógica de la aplicación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Back-end diseñado con Node para gestionar la interacción con la BD.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Gamey</p></td>

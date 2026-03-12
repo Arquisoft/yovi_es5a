@@ -43,6 +43,7 @@ En este apartado se describen las decisiones fundamentales y estrategias de solu
 | _Visual Studio Code_ | _Usaremos Visual Studio Code como editor de código principal para su compatibilidad con el entorno de desarrollo y su extensibilidad._
 | _Express_ | _Usaremos Express como framework para el backend debido a su simplicidad._
 | _PlantUML_ | _Usaremos PlantUML para la creación de diagramas de arquitectura debido a su facilidad de uso y su capacidad para integrarse con otras herramientas._
+| _React y Node.js_ | _Usaremos React para el desarrollo del frontend debido a su capacidad para crear interfaces de usuario interactivas y dinámicas, y Node.js para el backend por su eficiencia en la gestión de solicitudes y su compatibilidad con JavaScript._
 |===
 
 === Decisiones para lograr los requisitos de calidad

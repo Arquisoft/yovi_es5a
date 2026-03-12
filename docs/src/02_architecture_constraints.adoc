@@ -36,7 +36,7 @@ En este apartado se describen las restricciones de arquitectura que afectan a es
 |Restricción|Descripción
 | _Control de Versiones_ | _Usaremos Git y GitHub para el control de versiones del proyecto_
 | _Documentación_ | _La documentación del proyecto estará basada en el formato arc42 y se alojará en GitHub Pages_
-| _Lenguajes de Programación_ | _El proyecto se desarrollará principalmente en JavaScript, utilizando Node.js para el backend y React para el frontend. Además el motor del juego estará en Rust_
+| _Lenguajes de Programación_ | _El proyecto se desarrollará principalmente en JavaScript. Además el motor del juego estará en Rust_
 | _Testing_ | _Se utilizará Jest para testing unitario y Cypress para testing end-to-end_
 | _Apis Creadas_ | _Se necesitarán APIs para la comunicación entre el frontend y el backend_
 | _Deployment_ | _El despliegue del proyecto se hará en una máquina Linux con docker instalado creando un contenedor por cada módulo_

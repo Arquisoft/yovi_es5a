@@ -12,9 +12,16 @@ let dbConnection;
 
 async function getConnection() {
   if (!dbConnection) {
-    dbConnection = await mysql.createConnection(dbConfig);
+    for (let i = 0; i < 10; i++) {
+      try {
+        dbConnection = await mysql.createConnection(dbConfig);
+        console.log("Connected to MySQL");
+        break;
+      } catch (err) {
+        console.log(`MySQL not ready, retrying (${i+1}/10)...`);
+        await new Promise(res => setTimeout(res, 2000));
+      }
+    }
   }
   return dbConnection;
 }
-
-module.exports = { getConnection };

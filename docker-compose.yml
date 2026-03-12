@@ -13,9 +13,12 @@ services:
     networks:
       - monitor-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-rootpassword}"]
+      interval: 10s
       timeout: 20s
       retries: 10
+      start_period: 40s
+
 
   users:
     build: ./users
@@ -34,6 +37,7 @@ services:
     networks:
       - monitor-net
 
+
   webapp:
     build:
       context: ./webapp
@@ -49,6 +53,7 @@ services:
     networks:
       - monitor-net
 
+
   gamey:
     build: ./gamey
     container_name: gamey
@@ -57,6 +62,7 @@ services:
       - "4000:4000"
     networks:
       - monitor-net
+
 
   prometheus:
     image: prom/prometheus
@@ -68,6 +74,7 @@ services:
     networks:
       - monitor-net
 
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -78,9 +85,11 @@ services:
     networks:
       - monitor-net
 
+
 networks:
   monitor-net:
     driver: bridge
+
 
 volumes:
   mysql_data:

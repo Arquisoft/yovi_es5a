@@ -6,7 +6,7 @@
 # Database configuration
 DB_HOST=${DB_HOST:-localhost}
 DB_USER=${DB_USER:-root}
-DB_PASSWORD=${DB_PASSWORD}
+DB_PASSWORD=${DB_PASSWORD:-rootpassword}
 DB_NAME=${DB_NAME:-yovi_db}
 
 SCHEMA_FILE="./database/init.sql"

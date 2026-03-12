@@ -15,7 +15,7 @@ export default function StartGameForm() {
   const [error, setError] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL ?? "http://users:3000";
 
   async function createUser(username) {
     const res = await fetch(`${API_URL}/createuser`, {

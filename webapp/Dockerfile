@@ -10,8 +10,8 @@ RUN npm ci --silent
 COPY . .
 
 # Accept build-time API url (defaults to localhost:3000)
-ARG VITE_API_URL="http://40.66.45.17:3000"
-ARG VITE_GAMEY_URL="http://40.66.45.17:4000"
+ARG VITE_API_URL="http://users:3000"
+ARG VITE_GAMEY_URL="http://gamey:4000"
 
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_GAMEY_URL=${VITE_GAMEY_URL}

@@ -19,7 +19,6 @@ services:
       retries: 10
       start_period: 40s
 
-
   users:
     build: ./users
     container_name: users
@@ -37,13 +36,12 @@ services:
     networks:
       - monitor-net
 
-
   webapp:
     build:
       context: ./webapp
       args:
-        - VITE_API_URL=http://users:3000
-        - VITE_GAMEY_URL=http://gamey:4000
+        - VITE_API_URL=http://40.66.45.17:3000    # ✅ corregido
+        - VITE_GAMEY_URL=http://40.66.45.17:4000  # ✅ corregido
     container_name: webapp
     image: ghcr.io/arquisoft/yovi_es5a-webapp:latest
     ports:
@@ -53,7 +51,6 @@ services:
     networks:
       - monitor-net
 
-
   gamey:
     build: ./gamey
     container_name: gamey
@@ -62,7 +59,6 @@ services:
       - "4000:4000"
     networks:
       - monitor-net
-
 
   prometheus:
     image: prom/prometheus
@@ -74,7 +70,6 @@ services:
     networks:
       - monitor-net
 
-
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -85,11 +80,9 @@ services:
     networks:
       - monitor-net
 
-
 networks:
   monitor-net:
     driver: bridge
-
 
 volumes:
   mysql_data:

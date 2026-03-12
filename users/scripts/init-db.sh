@@ -9,7 +9,7 @@ DB_USER=${DB_USER:-root}
 DB_PASSWORD=${DB_PASSWORD}
 DB_NAME=${DB_NAME:-yovi_db}
 
-SCHEMA_FILE="./schema.sql"
+SCHEMA_FILE="./database/init.sql"
 
 echo "Initializing MySQL database..."
 

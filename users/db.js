@@ -25,3 +25,6 @@ async function getConnection() {
   }
   return dbConnection;
 }
+
+
+module.exports = { getConnection };

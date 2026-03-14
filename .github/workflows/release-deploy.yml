@@ -185,9 +185,11 @@ jobs:
 
             wget $BASE_URL/docker-compose.yml -O docker-compose.yml
 
+            rm -rf users/database
             mkdir -p users/database
             wget $BASE_URL/users/database/init.sql -O users/database/init.sql
 
+            rm -rf users/monitoring
             mkdir -p users/monitoring/prometheus
             wget $BASE_URL/users/monitoring/prometheus/prometheus.yml -O users/monitoring/prometheus/prometheus.yml
 

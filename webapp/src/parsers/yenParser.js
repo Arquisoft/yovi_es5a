@@ -47,7 +47,7 @@ export function boardToYen({ size, turnNumber, cells }) {
 
   return {
     size: safeSize,
-    turn: turnNumber,
+    turn: turnNumber % 2,
     players: ["B", "R"],
     layout: rows.join("/"),
   };

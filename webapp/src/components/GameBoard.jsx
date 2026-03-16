@@ -4,7 +4,7 @@ import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
 import VictoryMenu from "./VictoryMenu";
 import { boardToYen, parseCellId, yenToBoardState } from "../parsers/yenParser";
-import { validateBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
+import { requestBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
 export default function GameBoard() {
@@ -97,78 +97,68 @@ export default function GameBoard() {
       return;
     }
 
-    if (gameMode !== "1vsbot") {
-      const moved = playTurn(id);
-      if (moved) setSelectedId(null);
+  if (gameMode !== "1vsbot") {
+    const moved = playTurn(id);
+    if (moved) setSelectedId(null);
       return;
-    }
+  }
 
-    // Modo 1vsBot
-    const selectedCell = parseCellId(id);
-    if (!selectedCell) {
-      setTurnError("Celda seleccionada inválida.");
-      return;
-    }
-    setIsSubmittingTurn(true);
+// Modo 1vsBot
+  const selectedCell = parseCellId(id);
+  if (!selectedCell) {
+    setTurnError("Celda seleccionada inválida.");
+   return;
+  }
 
-    try {
-      const board = boardToYen({ size, turnNumber, cells });
-      const result = await validateBotMove({ board, selectedCell, difficulty });
+  setIsSubmittingTurn(true);
 
-      if (!result.isValidMove) {
-        setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
-        setSelectedId(null);
-        return;
-      }
+  try {
+  const playerMoved = setCellOwner(id, "player1");
+  if (!playerMoved) {
+    setTurnError("No se pudo confirmar el movimiento del jugador.");
+    setSelectedId(null);
+    return;
+  }
 
-      const parsedBoard = yenToBoardState(result.board);
-      if (!parsedBoard) {
-        setTurnError("No se pudo interpretar el tablero devuelto por el servidor.");
-        return;
-      }
+  const boardAfterPlayerMove = boardToYen({
+    size,
+    turnNumber: 2,
+    cells: useBoardStore.getState().cells,
+  });
 
-      applyBoardSnapshot(parsedBoard);
-      setSelectedId(null);
+  const botResult = await requestBotMove({
+    board: boardAfterPlayerMove,
+    botId: "random_bot",
+  });
 
-      if (result.hasPlayerWon) {
-        setGameOver({
-          title: "¡Victoria!",
-          message: `${players.player1Name} ha ganado la partida.`,
-          subtitle: "Enhorabuena por esta partida.",
-          matchSummary: {
-            mode: "1vsbot",
-            elapsedSeconds,
-            turnNumber,
-            boardSize: size,
-            playerName: players.player1Name,
-            difficulty: difficulty || "Facil",
-            winner: "player",
-          },
-        });
-        return;
-      }
+  const botCoords = botResult.coords;
+  if (
+    !botCoords ||
+    typeof botCoords.x !== "number" ||
+    typeof botCoords.y !== "number"
+  ) {
+    setTurnError("El servidor no devolvió una jugada válida del bot.");
+    setSelectedId(null);
+    return;
+  }
 
-      if (result.hasBotWon) {
-        setGameOver({
-          title: "¡Derrota!",
-          message: `${players.player1Name} ha perdido la partida.`,
-          subtitle: "El bot se ha llevado esta ronda.",
-          matchSummary: {
-            mode: "1vsbot",
-            elapsedSeconds,
-            turnNumber,
-            boardSize: size,
-            playerName: players.player1Name,
-            difficulty: difficulty || "Facil",
-            winner: "bot",
-          },
-        });
-      }
-    } catch (error) {
-      setTurnError(error instanceof Error ? error.message : "Error de comunicación con el servidor.");
-    } finally {
-      setIsSubmittingTurn(false);
-    }
+  const botCellId = `${botCoords.x},${botCoords.y}`;
+  const botMoved = setCellOwner(botCellId, "player2");
+
+  if (!botMoved) {
+    setTurnError("No se pudo aplicar el movimiento del bot en el tablero.");
+    setSelectedId(null);
+    return;
+  }
+
+  nextTurn();
+  nextTurn();
+  setSelectedId(null);
+  } catch (error) {
+    setTurnError(error instanceof Error ? error.message : "Error de comunicación con el servidor.");
+  } finally {
+    setIsSubmittingTurn(false);
+  }
   }
 
   if (!cells?.length) return <div>Cargando tablero...</div>;

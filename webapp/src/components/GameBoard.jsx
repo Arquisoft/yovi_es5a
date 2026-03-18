@@ -73,7 +73,7 @@ export default function GameBoard() {
           const loserName = currentPlayer === "player1" ? players.player2Name : players.player1Name;
           setGameOver({
             title: "¡Victoria!",
-            message: `${loserName} ha ganado la partida.`,
+            message: `${winnerName} ha ganado la partida.`,
             subtitle: "Enhorabuena por esta partida.",
             matchSummary: {
               mode: "1vs1",

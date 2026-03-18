@@ -32,16 +32,16 @@ async fn main() {
     tracing_subscriber::registry().init();
     let args = CliArgs::parse();
 
-    /*if args.mode == Mode::Server {
-        if let Err(e) = run_bot_server(args.port).await {
+    if args.mode == Mode::Server {
+        if let Err(e) = tokio::try_join!(
+            run_bot_server(args.port + 1),
+            run_game_server(args.port),
+        ) {
             eprintln!("Error: {}", e);
             std::process::exit(1);
         }
     } else {
         run_cli_game().expect("End CLI game");
-    }*/
-    if let Err(e) = run_game_server(args.port).await {
-            eprintln!("Error: {}", e);
-            std::process::exit(1);
-        }
+    }
 }
+

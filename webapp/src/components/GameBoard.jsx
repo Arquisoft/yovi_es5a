@@ -111,11 +111,6 @@ export default function GameBoard() {
       return;
     }
 
-    if (useBoardStore.getState().getCellOwner(id) !== null) {
-      setTurnError("Esa celda ya está ocupada.");
-      return;
-    }
-
     setIsSubmittingTurn(true);
 
     try {

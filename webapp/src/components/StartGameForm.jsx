@@ -41,11 +41,11 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
-    /*  await createUser(player1Name);
+      await createUser(player1Name);
       
       if (gameMode === "1vs1") {
         await createUser(player2Name);
-      } */
+      } 
 
       setGameConfig({
         gameMode,

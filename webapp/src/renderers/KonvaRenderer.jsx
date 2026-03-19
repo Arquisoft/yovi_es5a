@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Stage, Layer, Line, Group } from "react-konva";
 
 const HEX_SIZE = 30;
@@ -26,9 +26,8 @@ function hexPoints(size) {
   return points;
 }
 
-export default function KonvaRenderer({ cells, onCellClick, selectedId, playerColors }) {
-  const hex = hexPoints(HEX_DRAW_SIZE); // usa el tamaño reducido
-
+export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, playerColors }) {
+  const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
 
   const STAGE_WIDTH = 800;
@@ -80,4 +79,4 @@ export default function KonvaRenderer({ cells, onCellClick, selectedId, playerCo
       </Layer>
     </Stage>
   );
-}
+});

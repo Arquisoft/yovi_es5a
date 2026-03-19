@@ -15,9 +15,7 @@ export default function StartGameForm() {
   const [error, setError] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
 
-  //Descomentar esto en release const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000"; // Para trabajar en local 
-                                                                            // hay que poner localhost en vez de 40.66.45.17
-  const API_URL = "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
   async function createUser(username) {
     console.log("Fetching:", `${API_URL}/createuser`, username);

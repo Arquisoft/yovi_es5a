@@ -181,6 +181,22 @@ jobs:
           user: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           command: |
-            wget https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/master/docker-compose.yml -O docker-compose.yml
+            BASE_URL="https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/master"
+
+            wget $BASE_URL/docker-compose.yml -O docker-compose.yml
+
+            mkdir -p users/database
+            wget $BASE_URL/users/database/init.sql -O users/database/init.sql
+
+            mkdir -p users/monitoring/prometheus
+            wget $BASE_URL/users/monitoring/prometheus/prometheus.yml -O users/monitoring/prometheus/prometheus.yml
+
+            mkdir -p users/monitoring/grafana/provisioning/dashboards
+            wget $BASE_URL/users/monitoring/grafana/provisioning/dashboards/dashboard.json -O users/monitoring/grafana/provisioning/dashboards/dashboard.json
+            wget $BASE_URL/users/monitoring/grafana/provisioning/dashboards/dashboard.yml -O users/monitoring/grafana/provisioning/dashboards/dashboard.yml
+
+            mkdir -p users/monitoring/grafana/provisioning/datasources
+            wget $BASE_URL/users/monitoring/grafana/provisioning/datasources/datasource.yml -O users/monitoring/grafana/provisioning/datasources/datasource.yml
+
             docker compose down -v
             docker compose up -d --pull always

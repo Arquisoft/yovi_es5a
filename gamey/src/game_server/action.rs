@@ -141,6 +141,7 @@ pub async fn place(
             )));
         }
     };
+    println!("{}",has_won);
     let response = MoveResponse {
         is_valid_move : is_valid,
         has_won,

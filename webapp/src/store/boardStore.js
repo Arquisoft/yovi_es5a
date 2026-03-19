@@ -7,7 +7,6 @@ function generateTriangleInverted(size) {
     const rowIndex = (size - 1) - q;
 
     if (rowIndex === 0) {
-      // ápex: caso especial, r = 0
       cells.push({ q, r: 0, id: `${q},0`, state: null });
     } else {
       for (let r = 1; r <= rowIndex + 1; r++) {
@@ -21,9 +20,7 @@ function generateTriangleInverted(size) {
 
 function clampBoardSize(value) {
   const parsed = Number(value);
-  if (Number.isNaN(parsed)) {
-    return 8;
-  }
+  if (Number.isNaN(parsed)) return 8;
   return Math.min(15, Math.max(6, parsed));
 }
 
@@ -54,25 +51,28 @@ export const useBoardStore = create((set, get) => ({
   },
 
   setCellOwner: (cellId, player) => {
-    let changed = false;
+    // Solo permite colocar si la celda existe Y está vacía (state === null)
+    const currentCells = get().cells;
+    const target = currentCells.find((cell) => cell.id === cellId);
+
+    if (!target || target.state !== null) {
+      // Celda no encontrada o ya ocupada — no se hace nada
+      return false;
+    }
 
     set((state) => ({
-      cells: state.cells.map((cell) => {
-        if (cell.id !== cellId) {
-          return cell;
-        }
-        changed = true;
-        return { ...cell, state: player };
-      }),
+      cells: state.cells.map((cell) =>
+        cell.id === cellId ? { ...cell, state: player } : cell
+      ),
     }));
 
-    return changed;
+    return true;
   },
-  
-getCellOwner: (cellId) => {
-  const cell = get().cells.find((cell) => cell.id === cellId);
-  return cell?.state ?? null;
-},
+
+  getCellOwner: (cellId) => {
+    const cell = get().cells.find((cell) => cell.id === cellId);
+    return cell?.state ?? null;
+  },
 
   nextTurn: () => {
     set((state) => ({ turnNumber: state.turnNumber + 1 }));
@@ -97,7 +97,9 @@ getCellOwner: (cellId) => {
     set((state) => ({
       cells: state.cells.map((cell) => ({
         ...cell,
-        state: Object.prototype.hasOwnProperty.call(statesById, cell.id) ? statesById[cell.id] : null,
+        state: Object.prototype.hasOwnProperty.call(statesById, cell.id)
+          ? statesById[cell.id]
+          : null,
       })),
       turnNumber: typeof turnNumber === "number" ? turnNumber : state.turnNumber,
     }));
@@ -107,11 +109,7 @@ getCellOwner: (cellId) => {
     const state = get();
     const currentPlayer = state.turnNumber % 2 === 1 ? "player1" : "player2";
     const changed = state.setCellOwner(cellId, currentPlayer);
-
-    if (!changed) {
-      return false;
-    }
-
+    if (!changed) return false;
     state.nextTurn();
     return true;
   },

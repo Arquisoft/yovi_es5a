@@ -4,38 +4,45 @@ const PLAYER_SYMBOLS = {
 };
 
 export function parseCellId(cellId) {
-  if (typeof cellId !== "string") {
-    return null;
-  }
-
+  if (typeof cellId !== "string") return null;
   const [qValue, rValue] = cellId.split(",");
   const parsedQ = Number(qValue);
   const parsedR = Number(rValue);
-
-  if (Number.isNaN(parsedQ) || Number.isNaN(parsedR)) {
-    return null;
-  }
-
+  if (Number.isNaN(parsedQ) || Number.isNaN(parsedR)) return null;
   return { q: parsedQ, r: parsedR };
 }
+
+/**
+ * Convierte coordenadas baricéntricas {x, y, z} del bot
+ * al formato de celda {q, r} usado por el tablero.
+ *
+ * Relación:
+ *   q = x
+ *   r = 0        si x === size - 1 (ápex)
+ *   r = y + 1    en el resto de filas
+ */
+export function barycentricToCell(coords, size) {
+  const { x, y } = coords;
+  if (x === size - 1) {
+    return { q: x, r: 0 };
+  }
+  return { q: x, r: y + 1 };
+}
+
 export function boardToYen({ size, turnNumber, cells }) {
   const safeSize = Number(size);
   const safeCells = Array.isArray(cells) ? cells : [];
-
   const byId = new Map(safeCells.map((cell) => [cell.id, cell]));
   const rows = [];
 
-  // Iterar igual que generateTriangleInverted: rowIndex 0 = ápex (q alto), rowIndex n = base (q=0)
   for (let rowIndex = 0; rowIndex < safeSize; rowIndex++) {
     const q = safeSize - 1 - rowIndex;
     const row = [];
 
     if (rowIndex === 0) {
-      // ápex: caso especial, r = 0
       const cell = byId.get(`${q},0`);
       row.push(!cell || !cell.state ? "." : PLAYER_SYMBOLS[cell.state] || ".");
     } else {
-      // resto de filas: r va de 1 a rowIndex + 1
       for (let r = 1; r <= rowIndex + 1; r++) {
         const cell = byId.get(`${q},${r}`);
         row.push(!cell || !cell.state ? "." : PLAYER_SYMBOLS[cell.state] || ".");
@@ -53,16 +60,9 @@ export function boardToYen({ size, turnNumber, cells }) {
   };
 }
 
-
 function symbolToOwner(symbol) {
-  if (symbol === "R") {
-    return "player1";
-  }
-
-  if (symbol === "B") {
-    return "player2";
-  }
-
+  if (symbol === "R") return "player1";
+  if (symbol === "B") return "player2";
   return null;
 }
 
@@ -71,9 +71,7 @@ export function yenToBoardState(board) {
   const safeSize = Number.isNaN(parsedSize) ? null : parsedSize;
   const rows = typeof board?.layout === "string" ? board.layout.split("/") : [];
 
-  if (!safeSize || rows.length !== safeSize) {
-    return null;
-  }
+  if (!safeSize || rows.length !== safeSize) return null;
 
   const statesById = {};
 
@@ -82,9 +80,7 @@ export function yenToBoardState(board) {
     const rowIndex = rowSize - 1;
     const row = rows[rowIndex] || "";
 
-    if (row.length !== rowSize) {
-      return null;
-    }
+    if (row.length !== rowSize) return null;
 
     for (let rValue = 0; rValue < rowSize; rValue += 1) {
       const symbol = row[rValue] || ".";
@@ -95,11 +91,7 @@ export function yenToBoardState(board) {
   const turnSymbol = board?.turn === "B" ? "B" : board?.turn === "R" ? "R" : null;
   const turnNumber = turnSymbol === "R" ? 1 : turnSymbol === "B" ? 2 : null;
 
-  return {
-    size: safeSize,
-    turnNumber,
-    statesById,
-  };
+  return { size: safeSize, turnNumber, statesById };
 }
 
 export function makeTestTriangleBoard(size, markedIds = [], firstPlayer = "player1") {
@@ -108,7 +100,6 @@ export function makeTestTriangleBoard(size, markedIds = [], firstPlayer = "playe
     throw new Error("Invalid size in makeTestTriangleBoard");
   }
 
-  // generamos las celdas igual que generateTriangle
   const cells = [];
   for (let q = 0; q < safeSize; q += 1) {
     for (let r = 0; r < safeSize - q; r += 1) {
@@ -116,23 +107,15 @@ export function makeTestTriangleBoard(size, markedIds = [], firstPlayer = "playe
     }
   }
 
-  // marcamos algunas celdas
   markedIds.forEach((id) => {
     const cell = cells.find((c) => c.id === id);
-    if (cell) {
-      cell.state = firstPlayer;
-    }
+    if (cell) cell.state = firstPlayer;
   });
 
-  const turnNumber = 1; // turno impar -> "R"
+  const turnNumber = 1;
   const yen = boardToYen({ size: safeSize, turnNumber, cells });
   console.log(yen);
   const back = yenToBoardState(yen);
 
-  return {
-    size: safeSize,
-    cells,
-    yen,
-    back,
-  };
+  return { size: safeSize, cells, yen, back };
 }

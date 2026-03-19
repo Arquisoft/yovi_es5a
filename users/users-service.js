@@ -6,10 +6,8 @@ const fs = require('node:fs');
 const YAML = require('js-yaml');
 const promBundle = require('express-prom-bundle');
 const { createUser } = require('./services/userService');
-const { createInsertGame, finishGame } = require('./services/gameService');
 const ScoreService = require('./services/scoreService');
 const { getConnection } = require('./db');
-const { match } = require('node:assert');
 
 const metricsMiddleware = promBundle({includeMethod: true});
 app.use(metricsMiddleware);
@@ -42,7 +40,7 @@ app.post('/createuser', async (req, res) => {
   }
 });
 
-app.post("/finished-match", async (req, res) => {
+app.post("/finished-match", (req, res) => {
   console.log("BODY RECIBIDO:", req.body);
   const matchSummary = req.body;
 
@@ -51,23 +49,10 @@ app.post("/finished-match", async (req, res) => {
       message: "Datos de partida requeridos"
     });
   }
-  const winner = matchSummary.winnerName;
-  console.log("WINNER RECIBIDO:", winner);
-  if (!winner) {
-      return res.status(400).json({
-      message: "There is no winner, a winner is required"
-      });
-    }  
-  try{
-    const score = ScoreService.calculate(matchSummary);
-    const gameId = await createInsertGame(matchSummary);
-    console.log("GAME ID:", gameId, "SCORE CALCULATED:", score); 
-    await finishGame(gameId, winner, score);
-    res.json({ score });
-  } catch (err) {
-    console.error('Error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
+
+  const score = ScoreService.calculate(matchSummary);
+
+  res.json({ score });
 
 });
 

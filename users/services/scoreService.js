@@ -8,7 +8,7 @@ class ScoreService {
       turnNumber,
       boardSize,
     } = matchSummary;
-    console.log("Calculating score with turnNumber:", turnNumber, "boardSize:", boardSize);
+
     score += boardSize * 10;
 
 

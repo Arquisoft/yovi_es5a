@@ -15,7 +15,7 @@ export default function StartGameForm() {
   const [error, setError] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL ?? "http://40.66.45.17:3000";
+  const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
   async function createUser(username) {
     const res = await fetch(`${API_URL}/createuser`, {
@@ -41,11 +41,11 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
-    /*  await createUser(player1Name);
+      await createUser(player1Name);
       
       if (gameMode === "1vs1") {
         await createUser(player2Name);
-      } */
+      } 
 
       setGameConfig({
         gameMode,

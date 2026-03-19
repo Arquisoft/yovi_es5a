@@ -5,43 +5,19 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-/// Path parameters extracted from the choose endpoint URL.
 #[derive(Deserialize)]
 pub struct ChooseParams {
-    /// The API version (e.g., "v1").
     api_version: String,
-    /// The identifier of the bot to use for move selection.
     bot_id: String,
 }
 
-/// Response returned by the choose endpoint on success.
-///
-/// Contains the bot's chosen move coordinates along with context
-/// about which API version and bot were used.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct MoveResponse {
-    /// The API version used for this request.
     pub api_version: String,
-    /// The bot that selected this move.
     pub bot_id: String,
-    /// The coordinates where the bot chooses to place its piece.
     pub coords: Coordinates,
 }
 
-/// Handler for the bot move selection endpoint.
-///
-/// This endpoint accepts a game state in YEN format and returns the
-/// coordinates of the bot's chosen move.
-///
-/// # Route
-/// `POST /{api_version}/ybot/choose/{bot_id}`
-///
-/// # Request Body
-/// A JSON object in YEN format representing the current game state.
-///
-/// # Response
-/// On success, returns a `MoveResponse` with the chosen coordinates.
-/// On failure, returns an `ErrorResponse` with details about what went wrong.
 #[axum::debug_handler]
 pub async fn choose(
     State(state): State<AppState>,
@@ -49,6 +25,7 @@ pub async fn choose(
     Json(yen): Json<YEN>,
 ) -> Result<Json<MoveResponse>, Json<ErrorResponse>> {
     check_api_version(&params.api_version)?;
+
     let game_y = match GameY::try_from(yen) {
         Ok(game) => game,
         Err(err) => {
@@ -59,6 +36,15 @@ pub async fn choose(
             )));
         }
     };
+
+    if game_y.check_game_over() {
+        return Err(Json(ErrorResponse::error(
+            "The game is already over, no moves can be made",
+            Some(params.api_version),
+            Some(params.bot_id),
+        )));
+    }
+
     let bot = match state.bots().find(&params.bot_id) {
         Some(bot) => bot,
         None => {
@@ -73,23 +59,33 @@ pub async fn choose(
             )));
         }
     };
-    let coords = match bot.choose_move(&game_y) {
-        Some(coords) => coords,
-        None => {
-            // Handle the case where the bot has no valid moves
-            return Err(Json(ErrorResponse::error(
-                "No valid moves available for the bot",
-                Some(params.api_version),
-                Some(params.bot_id),
-            )));
+
+    // Pedir movimientos al bot hasta obtener una celda libre.
+    // Usar is_occupied() es O(1) gracias al HashMap interno de GameY.
+    // Si el bot devuelve None, el tablero está lleno.
+    let coords = loop {
+        match bot.choose_move(&game_y) {
+            None => {
+                return Err(Json(ErrorResponse::error(
+                    "No valid moves available for the bot",
+                    Some(params.api_version),
+                    Some(params.bot_id),
+                )));
+            }
+            Some(candidate) if !game_y.is_occupied(&candidate) => {
+                break candidate;
+            }
+            Some(_) => {
+                // Celda ocupada: volver a pedir al bot
+            }
         }
     };
-    let response = MoveResponse {
+
+    Ok(Json(MoveResponse {
         api_version: params.api_version,
         bot_id: params.bot_id,
         coords,
-    };
-    Ok(Json(response))
+    }))
 }
 
 #[cfg(test)]

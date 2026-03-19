@@ -18,6 +18,7 @@ export default function StartGameForm() {
   const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
   async function createUser(username) {
+    console.log("Fetching:", `${API_URL}/createuser`, username);
     const res = await fetch(`${API_URL}/createuser`, {
       method: "POST",
       headers: {
@@ -25,7 +26,7 @@ export default function StartGameForm() {
       },
       body: JSON.stringify({ username }),
     });
-
+    console.log("Response receive:", `${API_URL}/createuser`, username);
     const data = await res.json();
 
     if (!res.ok) {

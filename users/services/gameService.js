@@ -2,6 +2,64 @@ const GameRepository = require('../repositories/gameRepository');
 
 const gameRepo = new GameRepository();
 
+async function createInsertGame(matchSummary) {
+   if (!matchSummary ) {
+    throw new Error('Match summary is required');
+  }
+
+  const { mode, boardSize } = matchSummary;
+
+  if (mode === "1vs1") {
+    const { winnerName, loserName } = matchSummary;
+    //Posiblemente no deben existir estos 2 componentes, comprobar nombres.
+    return createUserVsUserGame(
+      winnerName,
+      loserName,
+      boardSize
+    );
+  }
+
+  if (mode === "1vsbot") {
+    const { userId, botId, difficulty } = matchSummary;
+
+    return createUserVsBotGame(
+      userId,
+      botId,
+      boardSize,
+      difficulty
+    );
+  }
+
+  if (mode === "botvsbot") {
+    const { bot1Id, bot2Id, difficulty } = matchSummary;
+    return createBotVsBotGame(bot1Id, bot2Id, boardSize, difficulty);
+  }
+
+  throw new Error("Invalid game mode");
+
+
+}
+
+async function runInTransaction(callback) {
+  const connection = await gameRepo.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const result = await callback(connection);
+
+    await connection.commit();
+    return result;
+
+  } catch (err) {
+    await connection.rollback();
+    throw new Error('Database error: ' + err.message);
+
+  } finally {
+    connection.release();
+  }
+}
+
 async function createUserVsUserGame(player1Id, player2Id, boardSize) {
   if (!player1Id || !player2Id || !boardSize) {
     throw new Error('player1Id, player2Id, and boardSize are required');
@@ -9,34 +67,22 @@ async function createUserVsUserGame(player1Id, player2Id, boardSize) {
   if (player1Id === player2Id) {
     throw new Error('Players must be different');
   }
-  const connection = await gameRepo.getConnection();
-  try {
-    await connection.beginTransaction();
-    const gameId = await gameRepo.insertGame(boardSize);
-    await gameRepo.insertUserGame(gameId, player1Id, player2Id);
-    await connection.commit();
-    return `Game created with ID: ${gameId}`;
-  } catch (err) {
-    await connection.rollback();
-    throw new Error('Database error: ' + err.message);
-  }
+  return runInTransaction(async (connection) => {
+    const gameId = await gameRepo.insertGame(connection, boardSize);
+    await gameRepo.insertUserGame(connection, gameId, player1Id, player2Id);
+    return gameId;
+  });
 }
 
 async function createUserVsBotGame(userId, botId, boardSize, difficulty) {
   if (!userId || !botId || !boardSize || !difficulty) {
     throw new Error('userId, botId, boardSize, and difficulty are required');
   }
-  const connection = await gameRepo.getConnection();
-  try {
-    await connection.beginTransaction();
-    const gameId = await gameRepo.insertGame(boardSize);
-    await gameRepo.insertUserBotGame(gameId, userId, botId, difficulty);
-    await connection.commit();
-    return `Game created with ID: ${gameId}`;
-  } catch (err) {
-    await connection.rollback();
-    throw new Error('Database error: ' + err.message);
-  }
+  return runInTransaction(async (connection) => {
+    const gameId = await gameRepo.insertGame(connection, boardSize);
+    await gameRepo.insertUserBotGame(connection, gameId, userId, botId, difficulty);
+    return gameId;
+  });
 }
 
 async function createBotVsBotGame(bot1Id, bot2Id, boardSize, difficulty) {
@@ -46,32 +92,22 @@ async function createBotVsBotGame(bot1Id, bot2Id, boardSize, difficulty) {
   if (bot1Id === bot2Id) {
     throw new Error('Bots must be different');
   }
-  const connection = await gameRepo.getConnection();
-  try {
-    await connection.beginTransaction();
-    const gameId = await gameRepo.insertGame(boardSize);
-    await gameRepo.insertBotGame(gameId, bot1Id, bot2Id, difficulty);
-    await connection.commit();
-    return `Game created with ID: ${gameId}`;
-  } catch (err) {
-    await connection.rollback();
-    throw new Error('Database error: ' + err.message);
-  }
+  return runInTransaction(async (connection) => {
+    const gameId = await gameRepo.insertGame(connection, boardSize);
+    await gameRepo.insertBotGameTx(connection, gameId, bot1Id, bot2Id, difficulty);
+    return gameId;
+  });
 }
 
-async function finishGame(gameId, winner) {
-  if (!gameId || !winner) {
-    throw new Error('gameId and winner are required');
+async function finishGame(gameId, winner, score) {
+  if (!gameId || !winner || score == null) {
+    throw new Error('gameId, winner, and score are required');
   }
-  if (!['player1', 'player2', 'draw'].includes(winner)) {
-    throw new Error('Winner must be player1, player2, or draw');
-  }
-  try {
-    await gameRepo.updateGameWinner(gameId, winner);
-    return `Game ${gameId} finished with winner: ${winner}`;
-  } catch (err) {
-    throw new Error('Database error: ' + err.message);
-  }
+
+  return runInTransaction(async (connection) => {
+    await gameRepo.updateGameWinner(connection, gameId, winner, score);
+    return gameId;
+  });
 }
 
 module.exports = {
@@ -79,5 +115,6 @@ module.exports = {
   createUserVsUserGame,
   createUserVsBotGame,
   createBotVsBotGame,
+  createInsertGame,
   finishGame
 };

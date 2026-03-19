@@ -1,4 +1,6 @@
-const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
+//const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
+//Lo comentado hay que descomentarlo en release, lo hago asi para poder probarlo con el backend simulado. Ademas asi ya sabeis que me teneis que devolver
+const GAMEY_BASE_URL = "http://localhost:4000";
 
 function createPlayUrl() {
   const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/")

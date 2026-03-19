@@ -18,28 +18,29 @@ CREATE TABLE IF NOT EXISTS bots (
 CREATE TABLE IF NOT EXISTS game (
   id INT AUTO_INCREMENT PRIMARY KEY,
   board_size INT NOT NULL,  -- Tamaño del tablero (ej. 3 para 3x3, 5 para 5x5)
-  winner ENUM('player1', 'player2', 'draw') DEFAULT NULL,  -- Resultado: quién ganó o empate
+  winner VARCHAR(255) DEFAULT NULL,  -- Resultado: quién ganó o empate
+  score INT DEFAULT NULL,  -- Puntuación calculada para el ganador
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Tiempo de la partida
 );
 
 -- Tabla hija para partidas usuario vs usuario
 CREATE TABLE IF NOT EXISTS userGames (
   id INT PRIMARY KEY,  -- FK a game(id)
-  player1_id INT NOT NULL,  -- ID del primer usuario
-  player2_id INT NOT NULL,  -- ID del segundo usuario
+  player1_id VARCHAR(255) NOT NULL,  -- usuario1
+  player2_id VARCHAR(255) NOT NULL,  -- usuario2
   FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE,
-  FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (player1_id) REFERENCES users(username) ON DELETE CASCADE,
+  FOREIGN KEY (player2_id) REFERENCES users(username) ON DELETE CASCADE
 );
 
 -- Tabla hija para partidas usuario vs bot
 CREATE TABLE IF NOT EXISTS ubotGames (
   id INT PRIMARY KEY,  -- FK a game(id)
-  user_id INT NOT NULL,  -- ID del usuario
+  user_id VARCHAR(255) NOT NULL,  -- ID del usuario
   bot_id INT NOT NULL,  -- ID del bot
   difficulty ENUM('facil', 'medio', 'dificil') NOT NULL,  -- Dificultad del bot
   FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(username) ON DELETE CASCADE,
   FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
 );
 

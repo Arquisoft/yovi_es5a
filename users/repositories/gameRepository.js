@@ -7,24 +7,26 @@ class GameRepository {
     this.conn = conn;
   }
 
-  async insertGame(boardSize) {
-    return await this.db.insertGame(boardSize);
+  async insertGame(connection, boardSize) {
+    return await this.db.insertGameTx(connection, boardSize);
   }
 
-  async insertUserGame(gameId, player1Id, player2Id) {
-    return await this.db.insertUserGame(gameId, player1Id, player2Id);
+  
+
+  async insertUserGame(connection, gameId, player1Id, player2Id) {
+    return await this.db.insertUserGameTx(connection, gameId, player1Id, player2Id);
   }
 
-  async insertUserBotGame(gameId, userId, botId, difficulty) {
-    return await this.db.insertUserBotGame(gameId, userId, botId, difficulty);
+  async insertUserBotGame(connection, gameId, userId, botId, difficulty) {
+    return await this.db.insertUserBotGameTx(connection, gameId, userId, botId, difficulty);
   }
 
-  async insertBotGame(gameId, bot1Id, bot2Id, difficulty) {
-    return await this.db.insertBotGame(gameId, bot1Id, bot2Id, difficulty);
+  async insertBotGame(connection, gameId, bot1Id, bot2Id, difficulty) {
+    return await this.db.insertBotGameTx(connection, gameId, bot1Id, bot2Id, difficulty);
   }
 
-  async updateGameWinner(gameId, winner) {
-    return await this.db.updateGameWinner(gameId, winner);
+  async updateGameWinner(connection, gameId, winner, score) {
+    return await this.db.updateGameWinnerTx(connection, gameId, winner, score);
   }
 
   // Método para obtener conexión si se necesita transacción externa

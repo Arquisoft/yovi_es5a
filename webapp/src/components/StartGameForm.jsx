@@ -15,9 +15,12 @@ export default function StartGameForm() {
   const [error, setError] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL ?? "http://40.66.45.17:3000";
+  //Descomentar esto en release const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000"; // Para trabajar en local 
+                                                                            // hay que poner localhost en vez de 40.66.45.17
+  const API_URL = "http://localhost:3000";
 
   async function createUser(username) {
+    console.log("Fetching:", `${API_URL}/createuser`, username);
     const res = await fetch(`${API_URL}/createuser`, {
       method: "POST",
       headers: {
@@ -25,7 +28,7 @@ export default function StartGameForm() {
       },
       body: JSON.stringify({ username }),
     });
-
+    console.log("Response receive:", `${API_URL}/createuser`, username);
     const data = await res.json();
 
     if (!res.ok) {

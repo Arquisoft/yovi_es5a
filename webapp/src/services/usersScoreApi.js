@@ -1,5 +1,6 @@
-const USERS_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
+//const USERS_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+//Lo comentado hay que descomentarlo en release, lo hago asi para poder probarlo con el backend simulado. Ademas asi ya sabeis que me teneis que devolver
+const USERS_BASE_URL = "http://localhost:3000";
 function createFinishedMatchUrl() {
   const normalizedBaseUrl = USERS_BASE_URL.endsWith("/") ? USERS_BASE_URL.slice(0, -1) : USERS_BASE_URL;
   return `${normalizedBaseUrl}/finished-match`;

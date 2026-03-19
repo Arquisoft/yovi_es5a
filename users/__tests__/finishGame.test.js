@@ -15,7 +15,7 @@ describe('finishGame', () => {
 
   it('winner inválido → error', async () => {
     await expect(finishGame(1, 'invalid'))
-      .rejects.toThrow('Winner must be player1, player2, or draw')
+      .rejects.toThrow('Winner must be player1, player2, player, bot, or draw')
   })
 
   it('flujo correcto', async () => {

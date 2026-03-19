@@ -7,13 +7,15 @@ Este módulo implementa el servicio de gestión de usuarios y sus datos asociado
 1. Inicia la base de datos MySQL usando Docker Compose:
 
 ```powershell
-docker compose up -d mysql
+docker compose up -d mysq
 ```
 
 2. Configura las variables de entorno necesarias antes de arrancar el servicio:
 
 ```powershell
-$env:DB_HOST="127.0.0.1"; $env:DB_USER="root"; $env:DB_PASSWORD="rootpassword"; $env:DB_NAME="yovi_db";
+$env:DB_USER="root";
+$env:DB_PASSWORD="rootpassword";
+$env:DB_NAME="yovi_db";
 ```
 
 3. Arranca el servicio:

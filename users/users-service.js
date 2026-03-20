@@ -51,7 +51,8 @@ app.post("/finished-match", async (req, res) => {
       message: "Datos de partida requeridos"
     });
   }
-  const winner = matchSummary.winnerName;
+  let winner = matchSummary.winnerName;
+  if(winner ==null) winner = matchSummary.playerName;
   console.log("WINNER RECIBIDO:", winner);
   if (!winner) {
       return res.status(400).json({

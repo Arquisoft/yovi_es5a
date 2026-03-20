@@ -1,6 +1,6 @@
-//const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
+const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
 //Lo comentado hay que descomentarlo en release, lo hago asi para poder probarlo con el backend simulado. Ademas asi ya sabeis que me teneis que devolver
-const GAMEY_BASE_URL = "http://localhost:4000";
+//const GAMEY_BASE_URL = "http://localhost:4000";
 
 function createPlayUrl() {
   const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/")
@@ -10,9 +10,11 @@ function createPlayUrl() {
 }
 
 function createBotUrl(botId = "random_bot") {
+  console.log("Creating bot URL for botId:", botId);
   const url = new URL(GAMEY_BASE_URL);
   url.port = "4001";
   url.pathname = `/v1/ybot/choose/${botId}`;
+  console.log("Constructed bot URL:", url.toString());
   return url.toString();
 }
 
@@ -48,6 +50,7 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
 }
 
 export async function requestBotMove({ board, botId = "random_bot" }) {
+  console.log("Requesting bot move with board:", board, "and botId:", botId);
   const response = await fetch(createBotUrl(botId), {
     method: "POST",
     headers: {
@@ -55,6 +58,7 @@ export async function requestBotMove({ board, botId = "random_bot" }) {
     },
     body: JSON.stringify(board),
   });
+  console.log("Received response from bot API:", response);
 
   let data = null;
   try {

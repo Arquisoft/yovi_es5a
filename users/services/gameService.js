@@ -20,13 +20,13 @@ async function createInsertGame(matchSummary) {
   }
 
   if (mode === "1vsbot") {
-    const { userId, botId, difficulty } = matchSummary;
+    const { playerName } = matchSummary;
 
     return createUserVsBotGame(
-      userId,
-      botId,
+      playerName,
+      1, //Esta hardcodeao el numero 1 ahora mismo, hace falta mirar como hacer con los bots.
       boardSize,
-      difficulty
+      1
     );
   }
 
@@ -75,6 +75,7 @@ async function createUserVsUserGame(player1Id, player2Id, boardSize) {
 }
 
 async function createUserVsBotGame(userId, botId, boardSize, difficulty) {
+  console.log("Creating user vs bot game with userId:", userId, "botId:", botId, "boardSize:", boardSize, "difficulty:", difficulty);
   if (!userId || !botId || !boardSize || !difficulty) {
     throw new Error('userId, botId, boardSize, and difficulty are required');
   }

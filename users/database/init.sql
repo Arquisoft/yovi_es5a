@@ -40,8 +40,9 @@ CREATE TABLE IF NOT EXISTS ubotGames (
   bot_id INT NOT NULL,  -- ID del bot
   difficulty ENUM('facil', 'medio', 'dificil') NOT NULL,  -- Dificultad del bot
   FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(username) ON DELETE CASCADE,
-  FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
+  -- FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES users(username) ON DELETE CASCADE
+  
 );
 
 -- Tabla hija para partidas bot vs bot
@@ -50,7 +51,8 @@ CREATE TABLE IF NOT EXISTS botGames (
   bot1_id INT NOT NULL,  -- ID del primer bot
   bot2_id INT NOT NULL,  -- ID del segundo bot
   difficulty ENUM('facil', 'medio', 'dificil') NOT NULL,  -- Dificultad de los bots (puede ser la misma o diferente)
-  FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE,
-  FOREIGN KEY (bot1_id) REFERENCES bots(id) ON DELETE CASCADE,
-  FOREIGN KEY (bot2_id) REFERENCES bots(id) ON DELETE CASCADE
+  -- FOREIGN KEY (bot1_id) REFERENCES bots(id) ON DELETE CASCADE
+  -- FOREIGN KEY (bot2_id) REFERENCES bots(id) ON DELETE CASCADE
+  FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE
+  
 );

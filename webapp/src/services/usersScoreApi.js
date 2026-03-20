@@ -25,7 +25,7 @@ function buildFinishedMatchPayload(matchSummary) {
   return {
     ...commonPayload,
     mode: "1vsbot",
-    playerName: matchSummary.playerName,
+    playerName: matchSummary.winnerName,
     difficulty: matchSummary.difficulty,
     winner: matchSummary.winner,
   };
@@ -34,8 +34,9 @@ function buildFinishedMatchPayload(matchSummary) {
 export async function requestMatchScore(matchSummary) {
   //cargaros el try catch cuando este el backend, esto lo hago para mockearlo y probar. Asi ademas sabeis ya que me teneis que devolver
   try {
+    console.log("Calculating score with match summary:", matchSummary.winnerName);
     const payload = buildFinishedMatchPayload(matchSummary);
-
+    console.log("Payload for score calculation:", payload.playerName);
     const response = await fetch(createFinishedMatchUrl(), {
       method: "POST",
       headers: {

@@ -13,3 +13,36 @@
 	font-weight: 600;
 	margin-top: 0.6rem;
 }
+
+.gameBoard {
+  display: flex;
+  flex-direction: column;
+}
+
+.boardStatusArea {
+  min-height: 28px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boardStatusText {
+  margin: 0;
+  min-height: 20px;
+  line-height: 20px;
+  text-align: center;
+  color: #444;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.boardStatusText.isVisible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.boardStatusText.isError {
+  color: #e63946;
+}

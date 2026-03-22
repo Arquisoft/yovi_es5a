@@ -57,6 +57,7 @@ services:
     image: ghcr.io/arquisoft/yovi_es5a-gamey:latest
     ports:
       - "4000:4000"
+      - "4001:4001"
     networks:
       - monitor-net
 

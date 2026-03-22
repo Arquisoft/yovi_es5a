@@ -7,9 +7,10 @@ const YAML = require('js-yaml');
 const promBundle = require('express-prom-bundle');
 const { createUser } = require('./services/userService');
 const ScoreService = require('./services/scoreService');
+const gameService = require('./services/gameService');
 const { getConnection } = require('./db');
 
-const metricsMiddleware = promBundle({includeMethod: true});
+const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
 try {
@@ -29,6 +30,59 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+function validateFinishedMatchPayload(matchSummary) {
+  if (!matchSummary || typeof matchSummary !== 'object') {
+    return 'Datos de partida requeridos';
+  }
+
+  const boardSize = Number(matchSummary.boardSize);
+  if (!Number.isFinite(boardSize) || boardSize <= 0) {
+    return 'boardSize debe ser un número positivo';
+  }
+
+  const turnNumber = Number(matchSummary.turnNumber);
+  if (!Number.isFinite(turnNumber) || turnNumber < 0) {
+    return 'turnNumber debe ser un número mayor o igual que 0';
+  }
+
+  const elapsedSeconds = Number(matchSummary.elapsedSeconds ?? 0);
+  if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 0) {
+    return 'elapsedSeconds debe ser un número mayor o igual que 0';
+  }
+
+  if (matchSummary.mode === '1vs1') {
+    const winnerName = String(matchSummary.winnerName || '').trim();
+    const loserName = String(matchSummary.loserName || '').trim();
+    if (!winnerName || !loserName) {
+      return 'winnerName y loserName son obligatorios en 1vs1';
+    }
+    return null;
+  }
+
+  if (matchSummary.mode === '1vsbot') {
+    const playerName = String(matchSummary.playerName || '').trim();
+    const difficulty = String(matchSummary.difficulty || '').trim();
+    const isDraw = Boolean(matchSummary.isDraw);
+    const winner = String(matchSummary.winner || '').trim();
+
+    if (!playerName) {
+      return 'playerName es obligatorio en 1vsbot';
+    }
+
+    if (!difficulty) {
+      return 'difficulty es obligatorio en 1vsbot';
+    }
+
+    if (!isDraw && !winner) {
+      return 'winner es obligatorio en 1vsbot si no hay empate';
+    }
+
+    return null;
+  }
+
+  return 'mode debe ser 1vs1 o 1vsbot';
+}
+
 app.post('/createuser', async (req, res) => {
   const username = req.body && req.body.username;
   try {
@@ -40,20 +94,23 @@ app.post('/createuser', async (req, res) => {
   }
 });
 
-app.post("/finished-match", (req, res) => {
-  console.log("BODY RECIBIDO:", req.body);
+app.post('/finished-match', async (req, res) => {
   const matchSummary = req.body;
-
-  if (!matchSummary) {
-    return res.status(400).json({
-      message: "Datos de partida requeridos"
-    });
+  console.log('Received finished match:', matchSummary);
+  const validationError = validateFinishedMatchPayload(matchSummary);
+  if (validationError) {
+    return res.status(400).json({ message: validationError });
   }
 
-  const score = ScoreService.calculate(matchSummary);
-
-  res.json({ score });
-
+  try {
+    const score = ScoreService.calculate(matchSummary);
+    const gameId = await gameService.recordFinishedMatch(matchSummary, score);
+    return res.json({ score, saved: true, gameId });
+  } catch (err) {
+    console.error('Error al finalizar partida:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message });
+  }
 });
 
 if (require.main === module) {

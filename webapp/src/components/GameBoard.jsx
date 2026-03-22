@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
@@ -260,6 +261,23 @@ export default function GameBoard() {
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
       ) : null}
+
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <Link
+          to="/puntuaciones"
+          style={{
+            display: "inline-block",
+            textDecoration: "none",
+            border: "1px solid #202020",
+            borderRadius: 8,
+            padding: "8px 12px",
+            color: "#202020",
+            background: "#fafafa",
+          }}
+        >
+          Ver puntuaciones
+        </Link>
+      </div>
 
       <Header
         currentPlayer={currentPlayer}

@@ -265,6 +265,52 @@ async function getUserMatchHistory(userId, page, pageSize, connection) {
   return { rows, total };
 }
 
+async function getUserVsUserMatchHistory(userId, page, pageSize, connection) {
+  const activeConnection = await resolveConnection(connection);
+  const safePageSize = Math.max(1, Math.floor(Number(pageSize) || 25));
+  const offset = Math.max(0, (Math.floor(Number(page) || 1) - 1) * safePageSize);
+
+  const [countRows] = await activeConnection.execute(
+    `SELECT COUNT(*) AS total
+     FROM game g
+     INNER JOIN userGames ug ON ug.id = g.id
+     WHERE g.mode = '1vs1'
+       AND (ug.player1_id = ? OR ug.player2_id = ?)`,
+    [userId, userId]
+  );
+  const total = Number(countRows[0]?.total || 0);
+
+  const [rows] = await activeConnection.execute(
+    `SELECT
+       g.id,
+       g.score,
+       g.board_size,
+       g.total_turns,
+       g.elapsed_seconds,
+       g.winner,
+       g.finished_at,
+       p1.username AS player1_name,
+       p2.username AS player2_name,
+       CASE
+         WHEN g.winner = 'player1' THEN p1.username
+         WHEN g.winner = 'player2' THEN p2.username
+         WHEN g.winner = 'draw' THEN 'Empate'
+         ELSE 'Desconocido'
+       END AS winner_name
+     FROM game g
+     INNER JOIN userGames ug ON ug.id = g.id
+     INNER JOIN users p1 ON p1.id = ug.player1_id
+     INNER JOIN users p2 ON p2.id = ug.player2_id
+     WHERE g.mode = '1vs1'
+       AND (ug.player1_id = ? OR ug.player2_id = ?)
+     ORDER BY g.finished_at DESC, g.id DESC
+     LIMIT ${safePageSize} OFFSET ${offset}`,
+    [userId, userId]
+  );
+
+  return { rows, total };
+}
+
 module.exports = {
   insertGame,
   insertUserGame,
@@ -281,4 +327,5 @@ module.exports = {
   getLeaderboardPageCenteredByUserId,
   getUserSuggestionsByUsername,
   getUserMatchHistory,
+  getUserVsUserMatchHistory,
 };

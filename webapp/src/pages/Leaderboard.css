@@ -1,7 +1,44 @@
 .leaderboardPage {
+  --lb-bg: #ffffff;
+  --lb-text: #101828;
+  --lb-muted: #475467;
+  --lb-border: #d0d5dd;
+  --lb-header-bg: #f2f4f7;
+  --lb-row-bg: #ffffff;
+  --lb-row-alt-bg: #fbfcfd;
+  --lb-highlight-bg: #fff0c7;
+  --lb-link: #0f59d1;
+  --lb-link-hover: #0a3f99;
+  --lb-error: #b42318;
+  --lb-card-bg: #ffffff;
+  --lb-chip-bg: #f8fafc;
+
   max-width: 56rem;
   margin: 0 auto;
   text-align: left;
+  color: var(--lb-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaderboardPage {
+    --lb-bg: #111827;
+    --lb-text: #e5e7eb;
+    --lb-muted: #cbd5e1;
+    --lb-border: #334155;
+    --lb-header-bg: #1f2937;
+    --lb-row-bg: #0f172a;
+    --lb-row-alt-bg: #111b31;
+    --lb-highlight-bg: #3f2e0c;
+    --lb-link: #7dd3fc;
+    --lb-link-hover: #bae6fd;
+    --lb-error: #fca5a5;
+    --lb-card-bg: #0b1220;
+    --lb-chip-bg: #1f2937;
+  }
+}
+
+.leaderboardPage {
+  background: transparent;
 }
 
 .pageHeader {
@@ -21,16 +58,16 @@
 .primaryLinkButton {
   display: inline-block;
   text-decoration: none;
-  border: 0.0625rem solid #202020;
+  border: 0.0625rem solid var(--lb-border);
   border-radius: 0.5rem;
   padding: 0.5rem 0.85rem;
-  color: #202020;
-  background: #fafafa;
+  color: var(--lb-text);
+  background: var(--lb-chip-bg);
 }
 
 .primaryLinkButton {
-  background: #202020;
-  color: #fff;
+  background: var(--lb-link);
+  color: #ffffff;
 }
 
 .searchWrap {
@@ -42,7 +79,9 @@
   width: 100%;
   padding: 0.7rem 0.85rem;
   border-radius: 9999px;
-  border: 0.0625rem solid #cfcfcf;
+  border: 0.0625rem solid var(--lb-border);
+  background: var(--lb-bg);
+  color: var(--lb-text);
   font-size: 0.95rem;
 }
 
@@ -50,9 +89,9 @@
   list-style: none;
   margin: 0.4rem 0 0;
   padding: 0.2rem;
-  border: 0.0625rem solid #d4d4d4;
+  border: 0.0625rem solid var(--lb-border);
   border-radius: 0.75rem;
-  background: #fff;
+  background: var(--lb-bg);
 }
 
 .suggestionsList li button {
@@ -60,14 +99,20 @@
   text-align: left;
   border: none;
   background: transparent;
+  color: var(--lb-text);
   padding: 0.55rem 0.7rem;
 }
 
+.suggestionsList li button:hover {
+  background: var(--lb-row-alt-bg);
+}
+
 .tableWrap {
-  border: 0.0625rem solid #ddd;
+  border: 0.0625rem solid var(--lb-border);
   border-radius: 0.75rem;
   overflow: hidden;
   min-height: 12rem;
+  background: var(--lb-bg);
 }
 
 .tablePlaceholder {
@@ -78,20 +123,43 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.92rem;
+  color: var(--lb-text);
 }
 
 .leaderboardTable th,
 .leaderboardTable td {
   padding: 0.55rem 0.65rem;
-  border-bottom: 0.0625rem solid #efefef;
+  border-bottom: 0.0625rem solid var(--lb-border);
+  background: var(--lb-row-bg);
 }
 
 .leaderboardTable th {
-  background: #f6f6f6;
+  background: var(--lb-header-bg);
+  color: var(--lb-text);
+}
+
+.leaderboardTable tbody tr:nth-child(even) td {
+  background: var(--lb-row-alt-bg);
 }
 
 .highlightRow {
-  background: #fff0d8;
+  outline: 0.125rem solid var(--lb-link);
+  outline-offset: -0.125rem;
+}
+
+.highlightRow td {
+  background: var(--lb-highlight-bg) !important;
+}
+
+.usernameLink {
+  color: var(--lb-link);
+  text-decoration: underline;
+  text-underline-offset: 0.125rem;
+  font-weight: 600;
+}
+
+.usernameLink:hover {
+  color: var(--lb-link-hover);
 }
 
 .paginationControls {
@@ -103,10 +171,12 @@
 }
 
 .profileCard {
-  border: 0.0625rem solid #ddd;
+  border: 0.0625rem solid var(--lb-border);
   border-radius: 0.75rem;
   padding: 0.85rem;
   margin-bottom: 1rem;
+  background: var(--lb-card-bg);
+  color: var(--lb-text);
 }
 
 .loadingText,
@@ -116,7 +186,7 @@
 }
 
 .errorText {
-  color: #b91c1c;
+  color: var(--lb-error);
 }
 
 @media (max-width: 43.75rem) {

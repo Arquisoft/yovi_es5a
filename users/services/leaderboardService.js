@@ -91,28 +91,49 @@ async function getUserHistory(username, { page, pageSize }) {
 
   const safePage = parsePage(page);
   const safePageSize = parsePageSize(pageSize);
-  const { rows, total } = await gameRepo.getUserMatchHistory(user.id, safePage, safePageSize);
+  const { rows: botRows, total: botTotal } = await gameRepo.getUserMatchHistory(user.id, safePage, safePageSize);
+  const { rows: pvpRows, total: pvpTotal } = await gameRepo.getUserVsUserMatchHistory(user.id, safePage, safePageSize);
+
+  const botItems = botRows.map((row) => ({
+    id: Number(row.id),
+    score: Number(row.score),
+    boardSize: Number(row.board_size),
+    totalTurns: Number(row.total_turns),
+    elapsedSeconds: Number(row.elapsed_seconds),
+    winner: row.winner,
+    winnerName: row.winner === 'player' ? user.username : row.winner === 'bot' ? row.bot_name : 'Empate',
+    difficulty: row.difficulty,
+    botName: row.bot_name,
+    finishedAt: row.finished_at,
+  }));
+
+  const pvpItems = pvpRows.map((row) => ({
+    id: Number(row.id),
+    score: Number(row.score),
+    boardSize: Number(row.board_size),
+    totalTurns: Number(row.total_turns),
+    elapsedSeconds: Number(row.elapsed_seconds),
+    winner: row.winner,
+    winnerName: row.winner_name,
+    player1Name: row.player1_name,
+    player2Name: row.player2_name,
+    finishedAt: row.finished_at,
+  }));
 
   return {
     user: {
       id: Number(user.id),
       username: user.username,
     },
-    items: rows.map((row) => ({
-      id: Number(row.id),
-      score: Number(row.score),
-      boardSize: Number(row.board_size),
-      totalTurns: Number(row.total_turns),
-      elapsedSeconds: Number(row.elapsed_seconds),
-      winner: row.winner,
-      difficulty: row.difficulty,
-      botName: row.bot_name,
-      finishedAt: row.finished_at,
-    })),
+    items: botItems,
+    botItems,
+    pvpItems,
     page: safePage,
     pageSize: safePageSize,
-    total: Number(total),
-    totalPages: Math.max(1, Math.ceil(Number(total) / safePageSize)),
+    total: Number(botTotal),
+    totalPages: Math.max(1, Math.ceil(Number(botTotal) / safePageSize)),
+    pvpTotal: Number(pvpTotal),
+    pvpTotalPages: Math.max(1, Math.ceil(Number(pvpTotal) / safePageSize)),
   };
 }
 

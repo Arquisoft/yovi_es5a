@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function LeaderboardTable({ rows, highlightedUsername }) {
   if (!rows.length) {
@@ -21,7 +22,11 @@ export default function LeaderboardTable({ rows, highlightedUsername }) {
             return (
               <tr key={`${row.globalPosition}-${row.username}`} className={isCurrentUser ? "highlightRow" : ""}>
                 <td>{row.globalPosition}</td>
-                <td>{row.username}</td>
+                <td>
+                  <Link className="usernameLink" to={`/user/${encodeURIComponent(row.username)}`}>
+                    {row.username}
+                  </Link>
+                </td>
                 <td>{row.bestScore}</td>
               </tr>
             );

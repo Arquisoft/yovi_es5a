@@ -67,6 +67,10 @@ class GameRepository {
     return await this.db.getUserMatchHistory(userId, page, pageSize, connection);
   }
 
+  async getUserVsUserMatchHistory(userId, page, pageSize, connection) {
+    return await this.db.getUserVsUserMatchHistory(userId, page, pageSize, connection);
+  }
+
   // Método para obtener conexión si se necesita transacción externa
   async getConnection() {
     return await this.conn();

@@ -14,7 +14,14 @@ export default function UserProfilePage() {
   const decodedUsername = decodeURIComponent(nombreUsuario || "");
 
   const [profile, setProfile] = React.useState(null);
-  const [history, setHistory] = React.useState({ items: [], page: 1, pageSize: 25, totalPages: 1 });
+  const [history, setHistory] = React.useState({
+    botItems: [],
+    pvpItems: [],
+    page: 1,
+    pageSize: 25,
+    totalPages: 1,
+    pvpTotalPages: 1,
+  });
   const [centered, setCentered] = React.useState({ items: [], page: 1, pageSize: 25, totalPages: 1, highlightedUsername: decodedUsername });
   const [loadingProfile, setLoadingProfile] = React.useState(false);
   const [loadingHistory, setLoadingHistory] = React.useState(false);
@@ -56,14 +63,16 @@ export default function UserProfilePage() {
         if (active) {
           setHistory((prev) => ({
             ...prev,
-            items: response.items || [],
+            botItems: response.botItems || response.items || [],
+            pvpItems: response.pvpItems || [],
             totalPages: response.totalPages || 1,
+            pvpTotalPages: response.pvpTotalPages || 1,
           }));
         }
       })
       .catch(() => {
         if (active) {
-          setHistory((prev) => ({ ...prev, items: [] }));
+          setHistory((prev) => ({ ...prev, botItems: [], pvpItems: [] }));
         }
       })
       .finally(() => {
@@ -161,35 +170,74 @@ export default function UserProfilePage() {
       <section>
         <h3>Historial de partidas</h3>
         {loadingHistory ? <p className="loadingText">Cargando historial...</p> : null}
-        {!loadingHistory && !(history.items || []).length ? <p className="emptyState">Este usuario no tiene partidas.</p> : null}
+        {!loadingHistory && !(history.botItems || []).length && !(history.pvpItems || []).length ? (
+          <p className="emptyState">Este usuario no tiene partidas.</p>
+        ) : null}
 
-        {!!(history.items || []).length ? (
-          <div className="tableWrap">
-            <table className="leaderboardTable">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Puntuación</th>
-                  <th>Tablero</th>
-                  <th>Turnos</th>
-                  <th>Dificultad</th>
-                  <th>Resultado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.items.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-                    <td>{item.score}</td>
-                    <td>{item.boardSize}</td>
-                    <td>{item.totalTurns}</td>
-                    <td>{item.difficulty}</td>
-                    <td>{item.winner}</td>
+        {!!(history.botItems || []).length ? (
+          <>
+            <h4>Partidas contra bot</h4>
+            <div className="tableWrap">
+              <table className="leaderboardTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Puntuación</th>
+                    <th>Tablero</th>
+                    <th>Turnos</th>
+                    <th>Dificultad</th>
+                    <th>Ganador</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {history.botItems.map((item) => (
+                    <tr key={`bot-${item.id}`}>
+                      <td>{item.id}</td>
+                      <td>{item.score}</td>
+                      <td>{item.boardSize}</td>
+                      <td>{item.totalTurns}</td>
+                      <td>{item.difficulty}</td>
+                      <td>{item.winnerName || item.winner}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : null}
+
+        {!!(history.pvpItems || []).length ? (
+          <>
+            <h4>Partidas jugador contra jugador</h4>
+            <div className="tableWrap">
+              <table className="leaderboardTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Puntuación</th>
+                    <th>Tablero</th>
+                    <th>Turnos</th>
+                    <th>Jugador 1</th>
+                    <th>Jugador 2</th>
+                    <th>Ganador</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.pvpItems.map((item) => (
+                    <tr key={`pvp-${item.id}`}>
+                      <td>{item.id}</td>
+                      <td>{item.score}</td>
+                      <td>{item.boardSize}</td>
+                      <td>{item.totalTurns}</td>
+                      <td>{item.player1Name}</td>
+                      <td>{item.player2Name}</td>
+                      <td>{item.winnerName || item.winner}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : null}
 
         <PaginationControls

@@ -35,7 +35,6 @@ export default function GameBoard() {
     empty: "#ccc",
   }), []);
 
-  // Muestra "Validando..." solo si isSubmittingTurn lleva más de 2 segundos activo
   React.useEffect(() => {
     if (!isSubmittingTurn) {
       setShowValidating(false);
@@ -48,52 +47,11 @@ export default function GameBoard() {
   const handleCellClick = React.useCallback(async (id) => {
     if (isSubmittingTurn || gameOver) return;
 
-          setSelectedId(null);
+    setSelectedId(id);
+    setTurnError("");
 
-          if (result.hasWon) {
-            const winnerName =
-              currentPlayer === "player1" ? players.player1Name : players.player2Name;
-            const loserName =
-              currentPlayer === "player1" ? players.player2Name : players.player1Name;
-
-            setGameOver({
-              title: "¡Victoria!",
-              message: `${winnerName} ha ganado la partida.`,
-              subtitle: "Enhorabuena por esta partida.",
-              matchSummary: {
-                mode: "1vs1",
-                elapsedSeconds,
-                turnNumber,
-                boardSize: size,
-                winnerName,
-                loserName,
-              },
-            });
-            return;
-          }
-
-          nextTurn();
-        } catch (error) {
-          setTurnError(
-            error instanceof Error
-              ? error.message
-              : "Error de comunicación con el servidor."
-          );
-        } finally {
-          setIsSubmittingTurn(false);
-        }
-
-        return;
-      }
-
-      // ── Modo sin configurar ─────────────────────────────────────────────────
-      if (gameMode !== "1vsbot") {
-        const moved = playTurn(id);
-        if (moved) setSelectedId(null);
-        return;
-      }
-
-      // ── Modo 1vsBot ─────────────────────────────────────────────────────────
+    // ── Modo 1vs1 ────────────────────────────────────────────────────────────
+    if (gameMode === "1vs1") {
       const selectedCell = parseCellId(id);
       if (!selectedCell) {
         setTurnError("Celda seleccionada inválida.");
@@ -103,39 +61,37 @@ export default function GameBoard() {
       setIsSubmittingTurn(true);
 
       try {
-        const boardBeforeMove = boardToYen({ size, turnNumber, cells });
-        const playerResult = await validateTwoPlayerMove({
-          board: boardBeforeMove,
-          selectedCell,
-        });
+        const board = boardToYen({ size, turnNumber, cells });
+        const result = await validateTwoPlayerMove({ board, selectedCell });
 
-        if (!playerResult.isValidMove) {
-          setTurnError(playerResult.message || "Movimiento inválido.");
+        if (!result.isValidMove) {
+          setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
           setSelectedId(null);
           return;
         }
 
-        const playerMoved = setCellOwner(id, "player1");
-        if (!playerMoved) {
-          setTurnError("No se pudo confirmar el movimiento del jugador.");
-          setSelectedId(null);
+        const moved = setCellOwner(id, currentPlayer);
+        if (!moved) {
+          setTurnError("No se pudo confirmar el movimiento.");
           return;
         }
 
         setSelectedId(null);
 
-        if (playerResult.hasWon) {
+        if (result.hasWon) {
+          const winnerName = currentPlayer === "player1" ? players.player1Name : players.player2Name;
+          const loserName = currentPlayer === "player1" ? players.player2Name : players.player1Name;
           setGameOver({
             title: "¡Victoria!",
-            message: `${players.player1Name} ha ganado la partida.`,
+            message: `${winnerName} ha ganado la partida.`,
             subtitle: "Enhorabuena por esta partida.",
             matchSummary: {
-              mode: "1vsbot",
+              mode: "1vs1",
               elapsedSeconds,
               turnNumber,
               boardSize: size,
-              winnerName: players.player1Name,
-              loserName: players.player2Name,
+              winnerName,
+              loserName,
             },
           });
           return;
@@ -143,7 +99,9 @@ export default function GameBoard() {
 
         nextTurn();
       } catch (error) {
-        setTurnError(error instanceof Error ? error.message : "Error de comunicación con el servidor.");
+        setTurnError(
+          error instanceof Error ? error.message : "Error de comunicación con el servidor."
+        );
       } finally {
         setIsSubmittingTurn(false);
       }
@@ -172,21 +130,19 @@ export default function GameBoard() {
       const boardBeforeMove = boardToYen({ size, turnNumber, cells });
       const result = await validateTwoPlayerMove({ board: boardBeforeMove, selectedCell });
 
-        const botResult = await requestBotMove({
-          board: boardAfterPlayerMove,
-          botId: "random_bot",
-        });
+      if (!result.isValidMove) {
+        setTurnError(result.message || "Movimiento inválido.");
+        setSelectedId(null);
+        return;
+      }
 
-        const botCoords = botResult?.coords;
-        if (
-          !botCoords ||
-          typeof botCoords.x !== "number" ||
-          typeof botCoords.y !== "number" ||
-          typeof botCoords.z !== "number"
-        ) {
-          setTurnError("El servidor no devolvió una jugada válida del bot.");
-          return;
-        }
+      // 2. Aplicar movimiento del jugador
+      const playerMoved = setCellOwner(id, "player1");
+      if (!playerMoved) {
+        setTurnError("No se pudo confirmar el movimiento del jugador.");
+        setSelectedId(null);
+        return;
+      }
 
       setSelectedId(null);
 
@@ -222,60 +178,69 @@ export default function GameBoard() {
         botId: "random_bot",
       });
 
-      const botCoords = botResult.coords;
+      const botCoords = botResult?.coords;
       if (
         !botCoords ||
         typeof botCoords.x !== "number" ||
-        typeof botCoords.y !== "number"
+        typeof botCoords.y !== "number" ||
+        typeof botCoords.z !== "number"
       ) {
         setTurnError("El servidor no devolvió una jugada válida del bot.");
         return;
       }
 
-        if (botResult.hasWon) {
-          setGameOver({
-            title: "Derrota",
-            message: `${players.player2Name} ha ganado la partida.`,
-            subtitle: "El bot ha encontrado una jugada ganadora.",
-            matchSummary: {
-              mode: "1vsbot",
-              elapsedSeconds,
-              turnNumber: turnNumber + 1,
-              boardSize: size,
-              winnerName: players.player2Name,
-              loserName: players.player1Name,
-            },
-          });
-          return;
-        }
+      // 5. Convertir {x,y,z} → "q,r" y aplicar en tablero
+      const botCell = barycentricToCell(botCoords, size);
+      const botCellId = `${botCell.q},${botCell.r}`;
 
-        nextTurn();
-        nextTurn();
-      } catch (error) {
-        setTurnError(
-          error instanceof Error
-            ? error.message
-            : "Error de comunicación con el servidor."
-        );
-      } finally {
-        setIsSubmittingTurn(false);
+      const botMoved = setCellOwner(botCellId, "player2");
+      if (!botMoved) {
+        setTurnError("No se pudo aplicar el movimiento del bot en el tablero.");
+        return;
       }
-    },
-    [
-      isSubmittingTurn,
-      gameOver,
-      gameMode,
-      size,
-      turnNumber,
-      cells,
-      players,
-      elapsedSeconds,
-      setCellOwner,
-      nextTurn,
-      playTurn,
-      currentPlayer,
-    ]
-  );
+
+      // 6. Comprobar victoria del bot
+      if (botResult.hasWon) {
+        setGameOver({
+          title: "Derrota",
+          message: `${players.player2Name} ha ganado la partida.`,
+          subtitle: "El bot ha encontrado una jugada ganadora.",
+          matchSummary: {
+            mode: "1vsbot",
+            elapsedSeconds,
+            turnNumber: turnNumber + 1,
+            boardSize: size,
+            winnerName: players.player2Name,
+            loserName: players.player1Name,
+          },
+        });
+        return;
+      }
+
+      nextTurn();
+      nextTurn();
+    } catch (error) {
+      setTurnError(
+        error instanceof Error ? error.message : "Error de comunicación con el servidor."
+      );
+    } finally {
+      setIsSubmittingTurn(false);
+    }
+  }, [
+    isSubmittingTurn,
+    gameOver,
+    gameMode,
+    size,
+    turnNumber,
+    cells,
+    players,
+    elapsedSeconds,
+    setCellOwner,
+    nextTurn,
+    playTurn,
+    currentPlayer,
+    difficulty,
+  ]);
 
   if (!cells?.length) return <div>Cargando tablero...</div>;
 

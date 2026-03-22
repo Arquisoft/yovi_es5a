@@ -73,6 +73,6 @@ export async function requestBotMove({ board, botId = "random_bot" }) {
     botId: data.bot_id ?? botId,
     coords: data.coords,
     apiVersion: data.api_version ?? null,
+    hasWon: Boolean(data?.hasWon),
   };
 }
-

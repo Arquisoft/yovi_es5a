@@ -7,13 +7,6 @@ import { boardToYen, parseCellId, barycentricToCell } from "../parsers/yenParser
 import { requestBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
-const PLAYER_COLORS = {
-  player1: "#e63946",
-  player2: "#1d4ed8",
-  selected: "#2ecc71",
-  empty: "#ccc",
-};
-
 export default function GameBoard() {
   const cells = useBoardStore((state) => state.cells);
   const size = useBoardStore((state) => state.size);
@@ -31,41 +24,29 @@ export default function GameBoard() {
 
   const [selectedId, setSelectedId] = React.useState(null);
   const [isSubmittingTurn, setIsSubmittingTurn] = React.useState(false);
+  const [showValidating, setShowValidating] = React.useState(false);
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
 
-  const handleCellClick = React.useCallback(
-    async (id) => {
-      if (isSubmittingTurn || gameOver) return;
+  const PLAYER_COLORS = React.useMemo(() => ({
+    player1: "#e63946",
+    player2: "#1d4ed8",
+    selected: "#2ecc71",
+    empty: "#ccc",
+  }), []);
 
-      setSelectedId(id);
-      setTurnError("");
+  // Muestra "Validando..." solo si isSubmittingTurn lleva más de 2 segundos activo
+  React.useEffect(() => {
+    if (!isSubmittingTurn) {
+      setShowValidating(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowValidating(true), 2000);
+    return () => clearTimeout(timer);
+  }, [isSubmittingTurn]);
 
-      // ── Modo 1vs1 ────────────────────────────────────────────────────────────
-      if (gameMode === "1vs1") {
-        const selectedCell = parseCellId(id);
-        if (!selectedCell) {
-          setTurnError("Celda seleccionada inválida.");
-          return;
-        }
-
-        setIsSubmittingTurn(true);
-
-        try {
-          const board = boardToYen({ size, turnNumber, cells });
-          const result = await validateTwoPlayerMove({ board, selectedCell });
-
-          if (!result.isValidMove) {
-            setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
-            setSelectedId(null);
-            return;
-          }
-
-          const moved = setCellOwner(id, currentPlayer);
-          if (!moved) {
-            setTurnError("No se pudo confirmar el movimiento.");
-            return;
-          }
+  const handleCellClick = React.useCallback(async (id) => {
+    if (isSubmittingTurn || gameOver) return;
 
           setSelectedId(null);
 
@@ -160,11 +141,36 @@ export default function GameBoard() {
           return;
         }
 
-        const boardAfterPlayerMove = boardToYen({
-          size,
-          turnNumber: turnNumber + 1,
-          cells: useBoardStore.getState().cells,
-        });
+        nextTurn();
+      } catch (error) {
+        setTurnError(error instanceof Error ? error.message : "Error de comunicación con el servidor.");
+      } finally {
+        setIsSubmittingTurn(false);
+      }
+
+      return;
+    }
+
+    // ── Modo sin configurar ───────────────────────────────────────────────────
+    if (gameMode !== "1vsbot") {
+      const moved = playTurn(id);
+      if (moved) setSelectedId(null);
+      return;
+    }
+
+    // ── Modo 1vsBot ───────────────────────────────────────────────────────────
+    const selectedCell = parseCellId(id);
+    if (!selectedCell) {
+      setTurnError("Celda seleccionada inválida.");
+      return;
+    }
+
+    setIsSubmittingTurn(true);
+
+    try {
+      // 1. Validar movimiento del jugador
+      const boardBeforeMove = boardToYen({ size, turnNumber, cells });
+      const result = await validateTwoPlayerMove({ board: boardBeforeMove, selectedCell });
 
         const botResult = await requestBotMove({
           board: boardAfterPlayerMove,
@@ -204,11 +210,27 @@ export default function GameBoard() {
         return;
       }
 
-        const botMoved = setCellOwner(botCellId, "player2");
-        if (!botMoved) {
-          setTurnError("No se pudo aplicar el movimiento del bot en el tablero.");
-          return;
-        }
+      // 4. Pedir movimiento al bot
+      const boardAfterPlayerMove = boardToYen({
+        size,
+        turnNumber: 2,
+        cells: useBoardStore.getState().cells,
+      });
+
+      const botResult = await requestBotMove({
+        board: boardAfterPlayerMove,
+        botId: "random_bot",
+      });
+
+      const botCoords = botResult.coords;
+      if (
+        !botCoords ||
+        typeof botCoords.x !== "number" ||
+        typeof botCoords.y !== "number"
+      ) {
+        setTurnError("El servidor no devolvió una jugada válida del bot.");
+        return;
+      }
 
         if (botResult.hasWon) {
           setGameOver({
@@ -289,9 +311,21 @@ export default function GameBoard() {
         playerColors={PLAYER_COLORS}
       />
 
-      <div style={{ textAlign: "center", marginTop: 8 }}>
-        {isSubmittingTurn ? <p>Validando...</p> : null}
-        {turnError ? <p className="turnError">{turnError}</p> : null}
+      {/* Zona de mensajes con altura fija — no desplaza el tablero */}
+      <div style={{
+        position: "relative",
+        height: "28px",
+        textAlign: "center",
+        marginTop: 8,
+      }}>
+        <div style={{ position: "absolute", width: "100%", left: 0, top: 0 }}>
+          {showValidating && !turnError
+            ? <p style={{ margin: 0 }}>Validando...</p>
+            : null}
+          {turnError
+            ? <p className="turnError" style={{ margin: 0 }}>{turnError}</p>
+            : null}
+        </div>
       </div>
     </div>
   );

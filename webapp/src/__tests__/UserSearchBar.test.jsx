@@ -24,17 +24,12 @@ import { fetchUserSuggestions, resolveUserExact } from "../services/leaderboardA
 
 describe("UserSearchBar", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vi.clearAllMocks();
     fetchUserSuggestions.mockResolvedValue({ items: ["Anabel"] });
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("hace debounce y muestra sugerencias", async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = userEvent.setup();
 
     render(
       <MemoryRouter>
@@ -43,14 +38,12 @@ describe("UserSearchBar", () => {
     );
 
     await user.type(screen.getByLabelText(/buscar usuario/i), "anabe");
-    vi.advanceTimersByTime(400);
-
-    await waitFor(() => expect(fetchUserSuggestions).toHaveBeenCalled());
+    await waitFor(() => expect(fetchUserSuggestions).toHaveBeenCalled(), { timeout: 2000 });
     expect(screen.getByRole("button", { name: "Anabel" })).toBeInTheDocument();
   });
 
   it("al pulsar enter con coincidencia exacta navega al perfil", async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = userEvent.setup();
     resolveUserExact.mockResolvedValue({ username: "Ana" });
 
     render(
@@ -62,7 +55,7 @@ describe("UserSearchBar", () => {
     await user.type(screen.getByLabelText(/buscar usuario/i), "Ana");
     await user.keyboard("{Enter}");
 
-    await waitFor(() => expect(resolveUserExact).toHaveBeenCalled());
+    await waitFor(() => expect(resolveUserExact).toHaveBeenCalled(), { timeout: 2000 });
     expect(mockedNavigate).toHaveBeenCalledWith("/user/Ana");
   });
 });

@@ -49,8 +49,25 @@ export async function fetchUserProfile({ username }) {
   return requestJson(createUrl(`/users/${encodeURIComponent(username)}`));
 }
 
-export async function fetchUserHistory({ username, page = 1, pageSize = 25 }) {
-  return requestJson(createUrl(`/users/${encodeURIComponent(username)}/history`, { page, pageSize }));
+export async function fetchUserHistory({
+  username,
+  page = 1,
+  pageSize = 25,
+  botPage,
+  botPageSize,
+  pvpPage,
+  pvpPageSize,
+}) {
+  return requestJson(
+    createUrl(`/users/${encodeURIComponent(username)}/history`, {
+      page,
+      pageSize,
+      botPage,
+      botPageSize,
+      pvpPage,
+      pvpPageSize,
+    })
+  );
 }
 
 export async function fetchCenteredLeaderboard({ username, page, pageSize = 25 }) {

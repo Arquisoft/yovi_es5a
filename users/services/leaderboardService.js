@@ -81,7 +81,7 @@ async function getUserProfile(username) {
   };
 }
 
-async function getUserHistory(username, { page, pageSize }) {
+async function getUserHistory(username, { page, pageSize, botPage, botPageSize, pvpPage, pvpPageSize }) {
   const user = await resolveUserByExactUsername(username);
   if (!user) {
     const error = new Error('Usuario no encontrado');
@@ -89,10 +89,21 @@ async function getUserHistory(username, { page, pageSize }) {
     throw error;
   }
 
-  const safePage = parsePage(page);
-  const safePageSize = parsePageSize(pageSize);
-  const { rows: botRows, total: botTotal } = await gameRepo.getUserMatchHistory(user.id, safePage, safePageSize);
-  const { rows: pvpRows, total: pvpTotal } = await gameRepo.getUserVsUserMatchHistory(user.id, safePage, safePageSize);
+  const safeBotPage = parsePage(botPage ?? page);
+  const safeBotPageSize = parsePageSize(botPageSize ?? pageSize);
+  const safePvpPage = parsePage(pvpPage ?? page);
+  const safePvpPageSize = parsePageSize(pvpPageSize ?? pageSize);
+
+  const { rows: botRows, total: botTotal } = await gameRepo.getUserMatchHistory(
+    user.id,
+    safeBotPage,
+    safeBotPageSize
+  );
+  const { rows: pvpRows, total: pvpTotal } = await gameRepo.getUserVsUserMatchHistory(
+    user.id,
+    safePvpPage,
+    safePvpPageSize
+  );
 
   const botItems = botRows.map((row) => ({
     id: Number(row.id),
@@ -128,12 +139,18 @@ async function getUserHistory(username, { page, pageSize }) {
     items: botItems,
     botItems,
     pvpItems,
-    page: safePage,
-    pageSize: safePageSize,
+    page: safeBotPage,
+    pageSize: safeBotPageSize,
+    botPage: safeBotPage,
+    botPageSize: safeBotPageSize,
+    pvpPage: safePvpPage,
+    pvpPageSize: safePvpPageSize,
     total: Number(botTotal),
-    totalPages: Math.max(1, Math.ceil(Number(botTotal) / safePageSize)),
+    totalPages: Math.max(1, Math.ceil(Number(botTotal) / safeBotPageSize)),
+    botTotal: Number(botTotal),
+    botTotalPages: Math.max(1, Math.ceil(Number(botTotal) / safeBotPageSize)),
     pvpTotal: Number(pvpTotal),
-    pvpTotalPages: Math.max(1, Math.ceil(Number(pvpTotal) / safePageSize)),
+    pvpTotalPages: Math.max(1, Math.ceil(Number(pvpTotal) / safePvpPageSize)),
   };
 }
 

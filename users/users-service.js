@@ -176,6 +176,10 @@ app.get('/users/:username/history', async (req, res) => {
     const response = await leaderboardService.getUserHistory(req.params.username, {
       page: req.query.page,
       pageSize: req.query.pageSize,
+      botPage: req.query.botPage,
+      botPageSize: req.query.botPageSize,
+      pvpPage: req.query.pvpPage,
+      pvpPageSize: req.query.pvpPageSize,
     });
     return res.json(response);
   } catch (err) {

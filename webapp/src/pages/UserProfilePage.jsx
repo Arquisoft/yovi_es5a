@@ -17,12 +17,14 @@ export default function UserProfilePage() {
   const [history, setHistory] = React.useState({
     botItems: [],
     pvpItems: [],
-    page: 1,
-    pageSize: 25,
-    totalPages: 1,
+    botPage: 1,
+    botPageSize: 25,
+    botTotalPages: 1,
+    pvpPage: 1,
+    pvpPageSize: 25,
     pvpTotalPages: 1,
   });
-  const [centered, setCentered] = React.useState({ items: [], page: 1, pageSize: 25, totalPages: 1, highlightedUsername: decodedUsername });
+  const [centered, setCentered] = React.useState({ items: [], page: null, pageSize: 25, totalPages: 1, highlightedUsername: decodedUsername });
   const [loadingProfile, setLoadingProfile] = React.useState(false);
   const [loadingHistory, setLoadingHistory] = React.useState(false);
   const [loadingCentered, setLoadingCentered] = React.useState(false);
@@ -58,14 +60,24 @@ export default function UserProfilePage() {
   React.useEffect(() => {
     let active = true;
     setLoadingHistory(true);
-    fetchUserHistory({ username: decodedUsername, page: history.page, pageSize: history.pageSize })
+    fetchUserHistory({
+      username: decodedUsername,
+      botPage: history.botPage,
+      botPageSize: history.botPageSize,
+      pvpPage: history.pvpPage,
+      pvpPageSize: history.pvpPageSize,
+    })
       .then((response) => {
         if (active) {
           setHistory((prev) => ({
             ...prev,
             botItems: response.botItems || response.items || [],
             pvpItems: response.pvpItems || [],
-            totalPages: response.totalPages || 1,
+            botPage: response.botPage || prev.botPage,
+            botPageSize: response.botPageSize || prev.botPageSize,
+            botTotalPages: response.botTotalPages || response.totalPages || 1,
+            pvpPage: response.pvpPage || prev.pvpPage,
+            pvpPageSize: response.pvpPageSize || prev.pvpPageSize,
             pvpTotalPages: response.pvpTotalPages || 1,
           }));
         }
@@ -84,14 +96,24 @@ export default function UserProfilePage() {
     return () => {
       active = false;
     };
-  }, [decodedUsername, history.page, history.pageSize]);
+  }, [decodedUsername, history.botPage, history.botPageSize, history.pvpPage, history.pvpPageSize]);
+
+  React.useEffect(() => {
+    setCentered((prev) => ({
+      ...prev,
+      items: [],
+      page: null,
+      totalPages: 1,
+      highlightedUsername: decodedUsername,
+    }));
+  }, [decodedUsername]);
 
   React.useEffect(() => {
     let active = true;
     setLoadingCentered(true);
     fetchCenteredLeaderboard({
       username: decodedUsername,
-      page: centered.page,
+      page: centered.page ?? undefined,
       pageSize: centered.pageSize,
     })
       .then((response) => {
@@ -157,12 +179,12 @@ export default function UserProfilePage() {
         )}
 
         <PaginationControls
-          page={centered.page}
+          page={centered.page || 1}
           totalPages={centered.totalPages || 1}
           pageSize={centered.pageSize}
           onPageChange={(nextPage) => setCentered((prev) => ({ ...prev, page: nextPage }))}
           onPageSizeChange={(nextSize) =>
-            setCentered((prev) => ({ ...prev, pageSize: nextSize, page: 1 }))
+            setCentered((prev) => ({ ...prev, pageSize: nextSize, page: null }))
           }
         />
       </section>
@@ -203,6 +225,15 @@ export default function UserProfilePage() {
                 </tbody>
               </table>
             </div>
+            <PaginationControls
+              page={history.botPage}
+              totalPages={history.botTotalPages || 1}
+              pageSize={history.botPageSize}
+              onPageChange={(nextPage) => setHistory((prev) => ({ ...prev, botPage: nextPage }))}
+              onPageSizeChange={(nextSize) =>
+                setHistory((prev) => ({ ...prev, botPageSize: nextSize, botPage: 1 }))
+              }
+            />
           </>
         ) : null}
 
@@ -237,16 +268,17 @@ export default function UserProfilePage() {
                 </tbody>
               </table>
             </div>
+            <PaginationControls
+              page={history.pvpPage}
+              totalPages={history.pvpTotalPages || 1}
+              pageSize={history.pvpPageSize}
+              onPageChange={(nextPage) => setHistory((prev) => ({ ...prev, pvpPage: nextPage }))}
+              onPageSizeChange={(nextSize) =>
+                setHistory((prev) => ({ ...prev, pvpPageSize: nextSize, pvpPage: 1 }))
+              }
+            />
           </>
         ) : null}
-
-        <PaginationControls
-          page={history.page}
-          totalPages={history.totalPages || 1}
-          pageSize={history.pageSize}
-          onPageChange={(nextPage) => setHistory((prev) => ({ ...prev, page: nextPage }))}
-          onPageSizeChange={(nextSize) => setHistory((prev) => ({ ...prev, pageSize: nextSize, page: 1 }))}
-        />
       </section>
     </section>
   );

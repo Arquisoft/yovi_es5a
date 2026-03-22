@@ -39,6 +39,34 @@ class GameRepository {
     return await this.db.insertFinishedGame(summary, connection);
   }
 
+  async updateUserBotStats(userId, score, connection) {
+    return await this.db.updateUserBotStats(userId, score, connection);
+  }
+
+  async findUserByUsernameExact(username, connection) {
+    return await this.db.findUserByUsernameExact(username, connection);
+  }
+
+  async getLeaderboardPage(page, pageSize, connection) {
+    return await this.db.getLeaderboardPage(page, pageSize, connection);
+  }
+
+  async getUserRankById(userId, connection) {
+    return await this.db.getUserRankById(userId, connection);
+  }
+
+  async getLeaderboardPageCenteredByUserId(userId, pageSize, requestedPage, connection) {
+    return await this.db.getLeaderboardPageCenteredByUserId(userId, pageSize, requestedPage, connection);
+  }
+
+  async getUserSuggestionsByUsername(query, limit, connection) {
+    return await this.db.getUserSuggestionsByUsername(query, limit, connection);
+  }
+
+  async getUserMatchHistory(userId, page, pageSize, connection) {
+    return await this.db.getUserMatchHistory(userId, page, pageSize, connection);
+  }
+
   // Método para obtener conexión si se necesita transacción externa
   async getConnection() {
     return await this.conn();

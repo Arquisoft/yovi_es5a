@@ -8,6 +8,7 @@ const promBundle = require('express-prom-bundle');
 const { createUser } = require('./services/userService');
 const ScoreService = require('./services/scoreService');
 const gameService = require('./services/gameService');
+const leaderboardService = require('./services/leaderboardService');
 const { getConnection } = require('./db');
 
 const metricsMiddleware = promBundle({ includeMethod: true });
@@ -110,6 +111,91 @@ app.post('/finished-match', async (req, res) => {
     console.error('Error al finalizar partida:', err.message);
     const statusCode = err.statusCode || 500;
     return res.status(statusCode).json({ message: err.message });
+  }
+});
+
+app.get('/leaderboard', async (req, res) => {
+  try {
+    const response = await leaderboardService.getLeaderboard({
+      page: req.query.page,
+      pageSize: req.query.pageSize,
+    });
+    return res.json(response);
+  } catch (err) {
+    console.error('Error en leaderboard:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message || 'Error al obtener leaderboard' });
+  }
+});
+
+app.get('/leaderboard/suggest', async (req, res) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    const items = await leaderboardService.getUserSuggestions(q);
+    return res.json({ items });
+  } catch (err) {
+    console.error('Error en sugerencias:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message || 'Error al obtener sugerencias' });
+  }
+});
+
+app.get('/users/resolve', async (req, res) => {
+  try {
+    const username = String(req.query.username || '').trim();
+    if (!username) {
+      return res.status(400).json({ message: 'username es obligatorio' });
+    }
+
+    const user = await leaderboardService.resolveUserByExactUsername(username);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    return res.json({ username: user.username });
+  } catch (err) {
+    console.error('Error al resolver usuario:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message || 'Error al resolver usuario' });
+  }
+});
+
+app.get('/users/:username', async (req, res) => {
+  try {
+    const profile = await leaderboardService.getUserProfile(req.params.username);
+    return res.json(profile);
+  } catch (err) {
+    console.error('Error al obtener perfil:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message || 'Error al obtener perfil' });
+  }
+});
+
+app.get('/users/:username/history', async (req, res) => {
+  try {
+    const response = await leaderboardService.getUserHistory(req.params.username, {
+      page: req.query.page,
+      pageSize: req.query.pageSize,
+    });
+    return res.json(response);
+  } catch (err) {
+    console.error('Error al obtener historial:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message || 'Error al obtener historial' });
+  }
+});
+
+app.get('/users/:username/centered-leaderboard', async (req, res) => {
+  try {
+    const response = await leaderboardService.getCenteredLeaderboard(req.params.username, {
+      page: req.query.page,
+      pageSize: req.query.pageSize,
+    });
+    return res.json(response);
+  } catch (err) {
+    console.error('Error al obtener leaderboard centrado:', err.message);
+    const statusCode = err.statusCode || 500;
+    return res.status(statusCode).json({ message: err.message || 'Error al obtener leaderboard centrado' });
   }
 });
 

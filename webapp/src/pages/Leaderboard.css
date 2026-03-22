@@ -1,0 +1,132 @@
+.leaderboardPage {
+  max-width: 56rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pageLinks {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.secondaryLinkButton,
+.primaryLinkButton {
+  display: inline-block;
+  text-decoration: none;
+  border: 0.0625rem solid #202020;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  color: #202020;
+  background: #fafafa;
+}
+
+.primaryLinkButton {
+  background: #202020;
+  color: #fff;
+}
+
+.searchWrap {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 9999px;
+  border: 0.0625rem solid #cfcfcf;
+  font-size: 0.95rem;
+}
+
+.suggestionsList {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0.2rem;
+  border: 0.0625rem solid #d4d4d4;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.suggestionsList li button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0.7rem;
+}
+
+.tableWrap {
+  border: 0.0625rem solid #ddd;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  min-height: 12rem;
+}
+
+.tablePlaceholder {
+  min-height: 12rem;
+}
+
+.leaderboardTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.leaderboardTable th,
+.leaderboardTable td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 0.0625rem solid #efefef;
+}
+
+.leaderboardTable th {
+  background: #f6f6f6;
+}
+
+.highlightRow {
+  background: #fff0d8;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.profileCard {
+  border: 0.0625rem solid #ddd;
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.loadingText,
+.emptyState,
+.errorText {
+  margin: 0.6rem 0;
+}
+
+.errorText {
+  color: #b91c1c;
+}
+
+@media (max-width: 43.75rem) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .paginationControls {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

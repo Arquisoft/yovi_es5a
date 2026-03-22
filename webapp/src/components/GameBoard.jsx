@@ -1,9 +1,10 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
 import VictoryMenu from "./VictoryMenu";
-import { boardToYen, parseCellId, yenToBoardState, barycentricToCell } from "../parsers/yenParser";
+import { boardToYen, parseCellId, barycentricToCell } from "../parsers/yenParser";
 import { requestBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
@@ -16,7 +17,6 @@ export default function GameBoard() {
   const playTurn = useBoardStore((state) => state.playTurn);
   const setCellOwner = useBoardStore((state) => state.setCellOwner);
   const nextTurn = useBoardStore((state) => state.nextTurn);
-  const applyBoardSnapshot = useBoardStore((state) => state.applyBoardSnapshot);
   const gameMode = useBoardStore((state) => state.gameMode);
   const difficulty = useBoardStore((state) => state.difficulty);
   const players = useBoardStore((state) => state.players);
@@ -213,6 +213,23 @@ export default function GameBoard() {
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
       ) : null}
+
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <Link
+          to="/puntuaciones"
+          style={{
+            display: "inline-block",
+            textDecoration: "none",
+            border: "1px solid #202020",
+            borderRadius: 8,
+            padding: "8px 12px",
+            color: "#202020",
+            background: "#fafafa",
+          }}
+        >
+          Ver puntuaciones
+        </Link>
+      </div>
 
       <Header
         currentPlayer={currentPlayer}

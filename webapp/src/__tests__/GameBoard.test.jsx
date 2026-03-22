@@ -29,16 +29,17 @@ vi.mock("../parsers/yenParser", () => ({
   parseCellId: vi.fn(),
   boardToYen: vi.fn(),
   yenToBoardState: vi.fn(),
+  barycentricToCell: vi.fn(),
 }));
 
 vi.mock("../services/gamePlayApi", () => ({
   validateTwoPlayerMove: vi.fn(),
-  validateBotMove: vi.fn(),
+  requestBotMove: vi.fn(),
 }));
 
 import { useBoardStore } from "../store/boardStore";
-import { parseCellId, boardToYen, yenToBoardState } from "../parsers/yenParser";
-import { validateTwoPlayerMove, validateBotMove } from "../services/gamePlayApi";
+import { parseCellId, boardToYen, barycentricToCell } from "../parsers/yenParser";
+import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
 
 describe("GameBoard", () => {
   const actions = {
@@ -65,6 +66,7 @@ describe("GameBoard", () => {
     };
 
     useBoardStore.mockImplementation((selector) => selector(state));
+    useBoardStore.getState = () => state;
     return state;
   }
 
@@ -135,7 +137,7 @@ describe("GameBoard", () => {
     expect(actions.nextTurn).not.toHaveBeenCalled();
   });
 
-  it("1vsbot: aplica snapshot cuando la API responde OK", async () => {
+  it("1vsbot: aplica movimiento del bot cuando la API responde OK", async () => {
     const user = userEvent.setup();
 
     setMockStore({
@@ -144,32 +146,33 @@ describe("GameBoard", () => {
       players: { player1Name: "Pepe", player2Name: "Bot", isBotSecondPlayer: true },
     });
 
-    validateBotMove.mockResolvedValue({
+    validateTwoPlayerMove.mockResolvedValue({
       isValidMove: true,
-      hasPlayerWon: false,
-      hasBotWon: false,
-      board: "NEW_BOARD",
+      hasWon: false,
+      message: "",
     });
 
-    yenToBoardState.mockReturnValue({
-      statesById: { "0,0": "player1" },
-      turnNumber: 2,
+    requestBotMove.mockResolvedValue({
+      coords: { x: 1, y: 0, z: 0 },
     });
+
+    barycentricToCell.mockReturnValue({ q: 0, r: 0 });
+    actions.setCellOwner
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true);
 
     render(<GameBoard />);
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
-    await waitFor(() => expect(validateBotMove).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(requestBotMove).toHaveBeenCalledTimes(1));
 
-    expect(actions.applyBoardSnapshot).toHaveBeenCalledTimes(1);
-    expect(actions.applyBoardSnapshot).toHaveBeenCalledWith({
-      statesById: { "0,0": "player1" },
-      turnNumber: 2,
-    });
+    expect(actions.setCellOwner).toHaveBeenNthCalledWith(1, "0,0", "player1");
+    expect(actions.setCellOwner).toHaveBeenNthCalledWith(2, "0,0", "player2");
+    expect(actions.nextTurn).toHaveBeenCalledTimes(2);
   });
 
-  it("1vsbot: si hasPlayerWon=true muestra VictoryMenu", async () => {
+  it("1vsbot: si el jugador gana, muestra VictoryMenu", async () => {
     const user = userEvent.setup();
 
     setMockStore({
@@ -178,17 +181,13 @@ describe("GameBoard", () => {
       players: { player1Name: "Pepe", player2Name: "Bot", isBotSecondPlayer: true },
     });
 
-    validateBotMove.mockResolvedValue({
+    validateTwoPlayerMove.mockResolvedValue({
       isValidMove: true,
-      hasPlayerWon: true,
-      hasBotWon: false,
-      board: "NEW_BOARD",
+      hasWon: true,
+      message: "",
     });
 
-    yenToBoardState.mockReturnValue({
-      statesById: {},
-      turnNumber: 2,
-    });
+    actions.setCellOwner.mockReturnValue(true);
 
     render(<GameBoard />);
 

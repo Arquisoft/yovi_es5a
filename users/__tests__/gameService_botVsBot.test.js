@@ -31,8 +31,8 @@ describe('createBotVsBotGame', () => {
     const msg = await createBotVsBotGame(1, 2, 8, 'Hard');
 
     expect(mockConn.beginTransaction).toHaveBeenCalled();
-    expect(gameRepo.insertGame).toHaveBeenCalledWith(8);
-    expect(gameRepo.insertBotGame).toHaveBeenCalledWith(10, 1, 2, 'Hard');
+    expect(gameRepo.insertGame).toHaveBeenCalledWith(8, 'botvsbot', mockConn);
+    expect(gameRepo.insertBotGame).toHaveBeenCalledWith(10, 1, 2, 'Hard', mockConn);
     expect(mockConn.commit).toHaveBeenCalled();
     expect(msg).toBe('Game created with ID: 10');
   });

@@ -25,7 +25,7 @@ describe("usersScoreApi - requestMatchScore", () => {
 
     const mockResponse = {
       ok: true,
-      json: vi.fn().mockResolvedValue({ score: 350 }),
+      json: vi.fn().mockResolvedValue({ score: 350, saved: true, gameId: 11 }),
     };
 
     global.fetch.mockResolvedValue(mockResponse);
@@ -44,12 +44,13 @@ describe("usersScoreApi - requestMatchScore", () => {
       elapsedSeconds: 120,
       turnNumber: 15,
       boardSize: 8,
+      isDraw: false,
       mode: "1vs1",
       winnerName: "Alice",
       loserName: "Bob",
     });
 
-    expect(result).toEqual({ score: 350 });
+    expect(result).toEqual({ score: 350, saved: true, gameId: 11 });
   });
 
   it("envía payload correcto para partidas 1vsbot y parsea score desde points", async () => {
@@ -65,7 +66,7 @@ describe("usersScoreApi - requestMatchScore", () => {
 
     const mockResponse = {
       ok: true,
-      json: vi.fn().mockResolvedValue({ points: "420" }), // string
+      json: vi.fn().mockResolvedValue({ points: "420", saved: true, gameId: 12 }), // string
     };
 
     global.fetch.mockResolvedValue(mockResponse);
@@ -79,13 +80,14 @@ describe("usersScoreApi - requestMatchScore", () => {
       elapsedSeconds: 90,
       turnNumber: 10,
       boardSize: 7,
+      isDraw: false,
       mode: "1vsbot",
       playerName: "Pepe",
       difficulty: "Media",
       winner: "player",
     });
 
-    expect(result).toEqual({ score: 420 }); // convertido a número
+    expect(result).toEqual({ score: 420, saved: true, gameId: 12 }); // convertido a número
   });
 
   it("también acepta puntuacion/puntuacion en la respuesta", async () => {
@@ -100,13 +102,13 @@ describe("usersScoreApi - requestMatchScore", () => {
 
     const mockResponse = {
       ok: true,
-      json: vi.fn().mockResolvedValue({ puntuacion: "99" }),
+      json: vi.fn().mockResolvedValue({ puntuacion: "99", saved: true, gameId: 13 }),
     };
 
     global.fetch.mockResolvedValue(mockResponse);
 
     const result = await requestMatchScore(matchSummary);
-    expect(result).toEqual({ score: 99 });
+    expect(result).toEqual({ score: 99, saved: true, gameId: 13 });
   });
 
   it("si response.ok es false o score no es numérico, devuelve score 200 (Simulado)", async () => {
@@ -127,7 +129,7 @@ describe("usersScoreApi - requestMatchScore", () => {
     global.fetch.mockResolvedValue(mockResponse);
 
     const result = await requestMatchScore(matchSummary);
-    expect(result).toEqual({ score: 200 });
+    expect(result).toEqual({ score: 200, saved: false, gameId: null });
   });
 
   it("si fetch lanza error, también devuelve score 200", async () => {
@@ -144,6 +146,6 @@ describe("usersScoreApi - requestMatchScore", () => {
     global.fetch.mockRejectedValue(new Error("network error"));
 
     const result = await requestMatchScore(matchSummary);
-    expect(result).toEqual({ score: 200 });
+    expect(result).toEqual({ score: 200, saved: false, gameId: null });
   });
 });

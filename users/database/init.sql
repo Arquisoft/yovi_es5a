@@ -22,6 +22,16 @@ CREATE TABLE IF NOT EXISTS game (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Tiempo de la partida
 );
 
+ALTER TABLE game
+  MODIFY COLUMN winner ENUM('player1', 'player2', 'player', 'bot', 'draw') DEFAULT NULL;
+
+ALTER TABLE game
+  ADD COLUMN mode ENUM('1vs1', '1vsbot', 'botvsbot') DEFAULT NULL,
+  ADD COLUMN total_turns INT NOT NULL DEFAULT 0,
+  ADD COLUMN elapsed_seconds INT NOT NULL DEFAULT 0,
+  ADD COLUMN score INT NOT NULL DEFAULT 0,
+  ADD COLUMN finished_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
 -- Tabla hija para partidas usuario vs usuario
 CREATE TABLE IF NOT EXISTS userGames (
   id INT PRIMARY KEY,  -- FK a game(id)
@@ -53,3 +63,10 @@ CREATE TABLE IF NOT EXISTS botGames (
   FOREIGN KEY (bot1_id) REFERENCES bots(id) ON DELETE CASCADE,
   FOREIGN KEY (bot2_id) REFERENCES bots(id) ON DELETE CASCADE
 );
+
+INSERT INTO bots (name, difficulty) 
+VALUES
+  ('Bot Facil', 'facil'),
+  ('Bot Medio', 'medio'),
+  ('Bot Dificil', 'dificil');
+  commit;

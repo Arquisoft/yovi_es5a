@@ -182,8 +182,27 @@ export default function GameBoard() {
           return;
         }
 
-        const botCell = barycentricToCell(botCoords, size);
-        const botCellId = `${botCell.q},${botCell.r}`;
+      setSelectedId(null);
+
+      // 3. Comprobar victoria del jugador ANTES de llamar al bot
+      if (result.hasWon) {
+        setGameOver({
+          title: "¡Victoria!",
+          message: `${players.player1Name} ha ganado la partida.`,
+          subtitle: "Enhorabuena por esta partida.",
+          matchSummary: {
+            mode: "1vsbot",
+            elapsedSeconds,
+            turnNumber,
+            boardSize: size,
+            playerName: players.player1Name,
+            difficulty,
+            winner: "player",
+            isDraw: false,
+          },
+        });
+        return;
+      }
 
         const botMoved = setCellOwner(botCellId, "player2");
         if (!botMoved) {

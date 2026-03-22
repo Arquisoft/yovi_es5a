@@ -7,7 +7,6 @@ import { boardToYen, parseCellId, yenToBoardState, barycentricToCell } from "../
 import { requestBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
-
 export default function GameBoard() {
   const cells = useBoardStore((state) => state.cells);
   const size = useBoardStore((state) => state.size);
@@ -24,16 +23,26 @@ export default function GameBoard() {
 
   const [selectedId, setSelectedId] = React.useState(null);
   const [isSubmittingTurn, setIsSubmittingTurn] = React.useState(false);
+  const [showValidating, setShowValidating] = React.useState(false);
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
 
-  // Referencia estable — no se recrea en cada render
   const PLAYER_COLORS = React.useMemo(() => ({
     player1: "#e63946",
     player2: "#1d4ed8",
     selected: "#2ecc71",
     empty: "#ccc",
   }), []);
+
+  // Muestra "Validando..." solo si isSubmittingTurn lleva más de 2 segundos activo
+  React.useEffect(() => {
+    if (!isSubmittingTurn) {
+      setShowValidating(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowValidating(true), 2000);
+    return () => clearTimeout(timer);
+  }, [isSubmittingTurn]);
 
   const handleCellClick = React.useCallback(async (id) => {
     if (isSubmittingTurn || gameOver) return;
@@ -114,7 +123,7 @@ export default function GameBoard() {
     setIsSubmittingTurn(true);
 
     try {
-      // 1. Validar movimiento del jugador con el mismo endpoint que 1vs1
+      // 1. Validar movimiento del jugador
       const boardBeforeMove = boardToYen({ size, turnNumber, cells });
       const result = await validateTwoPlayerMove({ board: boardBeforeMove, selectedCell });
 
@@ -154,7 +163,7 @@ export default function GameBoard() {
         return;
       }
 
-      // 4. Pedir movimiento al bot solo si el jugador no ha ganado
+      // 4. Pedir movimiento al bot
       const boardAfterPlayerMove = boardToYen({
         size,
         turnNumber: 2,
@@ -228,9 +237,21 @@ export default function GameBoard() {
         playerColors={PLAYER_COLORS}
       />
 
-      <div style={{ textAlign: "center", marginTop: 8 }}>
-        {isSubmittingTurn ? <p>Validando...</p> : null}
-        {turnError ? <p className="turnError">{turnError}</p> : null}
+      {/* Zona de mensajes con altura fija — no desplaza el tablero */}
+      <div style={{
+        position: "relative",
+        height: "28px",
+        textAlign: "center",
+        marginTop: 8,
+      }}>
+        <div style={{ position: "absolute", width: "100%", left: 0, top: 0 }}>
+          {showValidating && !turnError
+            ? <p style={{ margin: 0 }}>Validando...</p>
+            : null}
+          {turnError
+            ? <p className="turnError" style={{ margin: 0 }}>{turnError}</p>
+            : null}
+        </div>
       </div>
     </div>
   );

@@ -1,23 +1,4 @@
 //! HTTP server for Y game bots.
-//!
-//! This module provides an Axum-based REST API for querying Y game bots.
-//! The server exposes endpoints for checking bot status and requesting moves.
-//!
-//! # Endpoints
-//! - `GET /status` - Health check endpoint
-//! - `POST /{api_version}/ybot/choose/{bot_id}` - Request a move from a bot
-//!
-//! # Example
-//! ```no_run
-//! use gamey::run_bot_server;
-//!
-//! #[tokio::main]
-//! async fn main() {
-//!     if let Err(e) = run_bot_server(3000).await {
-//!         eprintln!("Server error: {}", e);
-//!     }
-//! }
-//! ```
 
 pub mod choose;
 pub mod error;
@@ -29,22 +10,16 @@ pub use choose::MoveResponse;
 pub use error::ErrorResponse;
 pub use version::*;
 
-use crate::{GameYError, RandomBot, YBotRegistry, state::AppState};
+use crate::{GameYError, Medium, RandomBot, YBotRegistry, state::AppState};
 
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
 
-/// Creates the Axum router with the given state.
-///
-/// This is useful for testing the API without binding to a network port.
 pub fn create_router(state: AppState) -> axum::Router {
-
-    //Permitimos que se realicen peticiones get y post de cualquier origen y con cualquier header
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST])
         .allow_headers(Any);
-
 
     axum::Router::new()
         .route("/status", axum::routing::get(status))
@@ -53,29 +28,19 @@ pub fn create_router(state: AppState) -> axum::Router {
             axum::routing::post(choose::choose),
         )
         .with_state(state)
-        //le añadimos cors
-        .layer(cors) 
+        .layer(cors)
 }
 
 /// Creates the default application state with the standard bot registry.
 ///
-/// The default state includes the `RandomBot` which selects moves randomly.
+/// Includes `RandomBot` (easy) and `Medium` (medium difficulty).
 pub fn create_default_state() -> AppState {
-    let bots = YBotRegistry::new().with_bot(Arc::new(RandomBot));
+    let bots = YBotRegistry::new()
+        .with_bot(Arc::new(RandomBot))
+        .with_bot(Arc::new(Medium));  // ← registrar Medium
     AppState::new(bots)
 }
 
-/// Starts the bot server on the specified port.
-///
-/// This function blocks until the server is shut down.
-///
-/// # Arguments
-/// * `port` - The TCP port to listen on
-///
-/// # Errors
-/// Returns `GameYError::ServerError` if:
-/// - The TCP port cannot be bound (e.g., port already in use, permission denied)
-/// - The server encounters an error while running
 pub async fn run_bot_server(port: u16) -> Result<(), GameYError> {
     let state = create_default_state();
     let app = create_router(state);
@@ -97,9 +62,6 @@ pub async fn run_bot_server(port: u16) -> Result<(), GameYError> {
     Ok(())
 }
 
-/// Health check endpoint handler.
-///
-/// Returns "OK" to indicate the server is running.
 pub async fn status() -> impl IntoResponse {
     "OK"
 }

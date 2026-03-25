@@ -22,6 +22,15 @@ a:hover {
   color: #535bf2;
 }
 
+/* Neutraliza el color azul de `a` para primaryLinkButton */
+a.primaryLinkButton,
+a.primaryLinkButton:hover,
+a.primaryLinkButton:visited,
+a.primaryLinkButton:active {
+  color: unset;
+  text-decoration: none;
+}
+
 body {
   margin: 0;
   display: flex;
@@ -49,10 +58,10 @@ button {
 button:hover {
   border-color: #646cff;
 }
-  button:focus,
-  button:focus-visible {
-    outline: 0.25rem auto -webkit-focus-ring-color;
-  }
+button:focus,
+button:focus-visible {
+  outline: 0.25rem auto -webkit-focus-ring-color;
+}
 
 @media (prefers-color-scheme: light) {
   :root {

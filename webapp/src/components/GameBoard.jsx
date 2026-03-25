@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
@@ -68,13 +67,13 @@ export default function GameBoard() {
         typeof botCoords.y !== "number" ||
         typeof botCoords.z !== "number"
       ) {
-        setSuggestion("No se pudo obtener sugerencia.");
+        setSuggestion("Sin sugerencia");
         return;
       }
       const cell = barycentricToCell(botCoords, size);
-      setSuggestion(`Sugerencia: (${cell.q}, ${cell.r})`);
+      setSuggestion(`(${cell.q}, ${cell.r})`);
     } catch {
-      setSuggestion("Error al pedir sugerencia.");
+      setSuggestion("Error");
     } finally {
       setIsFetchingSuggestion(false);
     }
@@ -187,7 +186,6 @@ export default function GameBoard() {
           return;
         }
 
-        // Avanzar al turno del bot → anillo se mueve a player2
         nextTurn();
 
         const boardAfterPlayerMove = boardToYen({
@@ -197,7 +195,6 @@ export default function GameBoard() {
         });
 
         const botResult = await requestBotMove({ board: boardAfterPlayerMove, difficulty });
-
         const botCoords = botResult?.coords;
         if (
           !botCoords ||
@@ -234,7 +231,6 @@ export default function GameBoard() {
           return;
         }
 
-        // Volver al turno del jugador → anillo vuelve a player1
         nextTurn();
       } catch (error) {
         setTurnError(
@@ -263,29 +259,17 @@ export default function GameBoard() {
 
   if (!cells?.length) return <p>Cargando tablero...</p>;
 
+  const showSuggestionPanel = gameMode === "1vsbot" || gameMode === "1vs1";
+
   return (
     <div className="gameBoard">
+
+      {/* Dificultad — solo en modo bot */}
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
       ) : null}
 
-      <div style={{ textAlign: "center", marginBottom: 8 }}>
-        <Link
-          to="/puntuaciones"
-          style={{
-            display: "inline-block",
-            textDecoration: "none",
-            border: "1px solid #202020",
-            borderRadius: 8,
-            padding: "8px 12px",
-            color: "#202020",
-            background: "#fafafa",
-          }}
-        >
-          Ver puntuaciones
-        </Link>
-      </div>
-
+      {/* Header con badges de jugadores */}
       <Header
         currentPlayer={currentPlayer}
         turnNumber={turnNumber}
@@ -294,23 +278,9 @@ export default function GameBoard() {
         playerTwoName={players.player2Name}
       />
 
+      {/* Tablero + botón de sugerencia lateral */}
       <div className="boardWithSidebar">
-        <KonvaRenderer
-          cells={cells}
-          onCellClick={handleCellClick}
-          selectedId={selectedId}
-          playerColors={PLAYER_COLORS}
-        />
-      ) : (
-        <>
-          <Header
-            currentPlayer={currentPlayer}
-            turnNumber={turnNumber}
-            playerColors={PLAYER_COLORS}
-            playerOneName={players.player1Name}
-            playerTwoName={players.player2Name}
-          />
-          {gameMode === "1vsbot" ? <p>Dificultad: {difficulty}</p> : null}
+        <div className="boardWithSidebar__board">
           <KonvaRenderer
             cells={cells}
             size={size}
@@ -318,16 +288,44 @@ export default function GameBoard() {
             onCellClick={handleCellClick}
             playerColors={PLAYER_COLORS}
           />
-          {suggestion ? <p>{suggestion}</p> : null}
-          {gameMode === "1vsbot" ? (
-            <button onClick={handleSuggestion} disabled={isFetchingSuggestion || isSubmittingTurn}>
-              {isFetchingSuggestion ? "Buscando..." : "Sugerencia"}
+        </div>
+
+        {showSuggestionPanel ? (
+          <div className="suggestionPanel">
+            <button
+              className="suggestionBtn"
+              onClick={handleSuggestion}
+              disabled={isFetchingSuggestion || isSubmittingTurn || !!gameOver}
+            >
+              {isFetchingSuggestion ? (
+                <span className="suggestionBtn__spinner" />
+              ) : (
+                <span className="suggestionBtn__icon">💡</span>
+              )}
+              <span className="suggestionBtn__label">
+                {isFetchingSuggestion ? "Buscando..." : "Sugerencia"}
+              </span>
             </button>
-          ) : null}
-          {showValidating ? <p>Validando...</p> : null}
-          <p>{turnError || ""}</p>
-        </>
-      )}
+
+            <p className={`suggestionText ${suggestion ? "" : "suggestionText--hidden"}`}>
+              {suggestion ? `📍 ${suggestion}` : "\u00A0"}
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Estado / error — espacio fijo para evitar layout shift */}
+      <div className="boardStatusArea">
+        <p
+          className={`boardStatusText ${
+            showValidating || turnError ? "isVisible" : ""
+          } ${turnError && !showValidating ? "isError" : ""}`}
+        >
+          {showValidating ? "Validando..." : turnError || "\u00A0"}
+        </p>
+      </div>
+
+      {gameOver ? <VictoryMenu {...gameOver} /> : null}
     </div>
   );
 }

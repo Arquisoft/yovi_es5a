@@ -28,6 +28,8 @@ export default function GameBoard() {
   const [showValidating, setShowValidating] = React.useState(false);
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
+  const [isFetchingSuggestion, setIsFetchingSuggestion] = React.useState(false);
+  const [suggestion, setSuggestion] = React.useState(null);
 
   const PLAYER_COLORS = React.useMemo(() => ({
     player1: "#e63946",
@@ -44,6 +46,39 @@ export default function GameBoard() {
     const timer = setTimeout(() => setShowValidating(true), 2000);
     return () => clearTimeout(timer);
   }, [isSubmittingTurn]);
+
+  React.useEffect(() => {
+    setSuggestion(null);
+  }, [turnNumber]);
+
+  const handleSuggestion = React.useCallback(async () => {
+    if (isFetchingSuggestion || isSubmittingTurn || gameOver) return;
+    setSuggestion(null);
+    setIsFetchingSuggestion(true);
+
+    try {
+      const board = boardToYen({ size, turnNumber, cells });
+      const botResult = await requestBotMove({ board, botId: "random_bot" });
+
+      const botCoords = botResult?.coords;
+      if (
+        !botCoords ||
+        typeof botCoords.x !== "number" ||
+        typeof botCoords.y !== "number" ||
+        typeof botCoords.z !== "number"
+      ) {
+        setSuggestion("No se pudo obtener sugerencia.");
+        return;
+      }
+
+      const cell = barycentricToCell(botCoords, size);
+      setSuggestion(`Sugerencia: (${cell.q}, ${cell.r})`);
+    } catch {
+      setSuggestion("Error al pedir sugerencia.");
+    } finally {
+      setIsFetchingSuggestion(false);
+    }
+  }, [isFetchingSuggestion, isSubmittingTurn, gameOver, size, turnNumber, cells]);
 
   const handleCellClick = React.useCallback(async (id) => {
     if (isSubmittingTurn || gameOver) return;
@@ -127,7 +162,6 @@ export default function GameBoard() {
     setIsSubmittingTurn(true);
 
     try {
-      // 1. Validar movimiento del jugador
       const boardBeforeMove = boardToYen({ size, turnNumber, cells });
       const result = await validateTwoPlayerMove({ board: boardBeforeMove, selectedCell });
 
@@ -137,7 +171,6 @@ export default function GameBoard() {
         return;
       }
 
-      // 2. Aplicar movimiento del jugador
       const playerMoved = setCellOwner(id, "player1");
       if (!playerMoved) {
         setTurnError("No se pudo confirmar el movimiento del jugador.");
@@ -147,7 +180,6 @@ export default function GameBoard() {
 
       setSelectedId(null);
 
-      // 3. Comprobar victoria del jugador ANTES de llamar al bot
       if (result.hasWon) {
         setGameOver({
           title: "¡Victoria!",
@@ -167,7 +199,6 @@ export default function GameBoard() {
         return;
       }
 
-      // 4. Pedir movimiento al bot
       const boardAfterPlayerMove = boardToYen({
         size,
         turnNumber: 2,
@@ -190,7 +221,6 @@ export default function GameBoard() {
         return;
       }
 
-      // 5. Convertir {x,y,z} → "q,r" y aplicar en tablero
       const botCell = barycentricToCell(botCoords, size);
       const botCellId = `${botCell.q},${botCell.r}`;
 
@@ -200,7 +230,6 @@ export default function GameBoard() {
         return;
       }
 
-      // 6. Comprobar victoria del bot
       if (botResult.hasWon) {
         setGameOver({
           title: "Derrota",
@@ -257,7 +286,7 @@ export default function GameBoard() {
   }
 
   return (
-    <div>
+    <div className="gameBoard">
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">Dificultad: {difficulty}</p>
       ) : null}
@@ -287,28 +316,44 @@ export default function GameBoard() {
         playerTwoName={players.player2Name}
       />
 
-      <KonvaRenderer
-        cells={cells}
-        onCellClick={handleCellClick}
-        selectedId={selectedId}
-        playerColors={PLAYER_COLORS}
-      />
+      <div className="boardWithSidebar">
+        <KonvaRenderer
+          cells={cells}
+          onCellClick={handleCellClick}
+          selectedId={selectedId}
+          playerColors={PLAYER_COLORS}
+        />
 
-      {/* Zona de mensajes con altura fija — no desplaza el tablero */}
-      <div style={{
-        position: "relative",
-        height: "28px",
-        textAlign: "center",
-        marginTop: 8,
-      }}>
-        <div style={{ position: "absolute", width: "100%", left: 0, top: 0 }}>
-          {showValidating && !turnError
-            ? <p style={{ margin: 0 }}>Validando...</p>
-            : null}
-          {turnError
-            ? <p className="turnError" style={{ margin: 0 }}>{turnError}</p>
-            : null}
+        <div className="suggestionPanel">
+          <button
+            className={`suggestionBtn${isFetchingSuggestion ? " suggestionBtn--loading" : ""}`}
+            onClick={handleSuggestion}
+            disabled={isFetchingSuggestion || isSubmittingTurn || !!gameOver}
+            title="Pedir sugerencia de jugada"
+          >
+            {isFetchingSuggestion ? (
+              <span className="suggestionBtn__spinner" />
+            ) : (
+              <span className="suggestionBtn__icon">💡</span>
+            )}
+            <span className="suggestionBtn__label">
+              {isFetchingSuggestion ? "Pensando..." : "Sugerencia"}
+            </span>
+          </button>
+
+          {suggestion ? (
+            <p className="suggestionText">{suggestion}</p>
+          ) : null}
         </div>
+      </div>
+
+      <div className="boardStatusArea">
+        <p className={`boardStatusText${showValidating && !turnError ? " isVisible" : ""}`}>
+          Validando...
+        </p>
+        <p className={`boardStatusText isError${turnError ? " isVisible" : ""}`}>
+          {turnError || ""}
+        </p>
       </div>
     </div>
   );

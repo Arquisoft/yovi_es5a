@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import GameBoard from "../components/GameBoard";
 
 vi.mock("../store/boardStore", () => ({ useBoardStore: vi.fn() }));
@@ -40,6 +41,14 @@ vi.mock("../services/gamePlayApi", () => ({
 import { useBoardStore } from "../store/boardStore";
 import { parseCellId, boardToYen, barycentricToCell } from "../parsers/yenParser";
 import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
+
+function renderGameBoard() {
+  return render(
+    <MemoryRouter>
+      <GameBoard />
+    </MemoryRouter>
+  );
+}
 
 describe("GameBoard", () => {
   const actions = {
@@ -85,14 +94,14 @@ describe("GameBoard", () => {
 
   //    Verifica que el tablero se muestra correctamente al inicio.
   it("renderiza el tablero cuando hay celdas disponibles", () => {
-    render(<GameBoard />);
+    renderGameBoard();
     expect(screen.getByText("Header")).toBeInTheDocument();
   });
 
  
   it("si la celda seleccionada es inválida (1vs1), muestra error y no llama API", async () => {
     const user = userEvent.setup();
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
 
@@ -111,7 +120,7 @@ describe("GameBoard", () => {
       message: "",
     });
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
@@ -129,7 +138,7 @@ describe("GameBoard", () => {
       message: "Movimiento inválido",
     });
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
@@ -161,7 +170,7 @@ describe("GameBoard", () => {
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true);
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
@@ -189,7 +198,7 @@ describe("GameBoard", () => {
 
     actions.setCellOwner.mockReturnValue(true);
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 

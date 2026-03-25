@@ -167,6 +167,7 @@ async function recordFinishedMatch(matchSummary, score) {
       }, connection);
 
       await gameRepo.insertUserBotGame(gameId, userId, botId, difficulty, connection);
+      await gameRepo.updateUserBotStats(userId, score, connection);
     } else {
       throw createClientError('Modo de partida no soportado');
     }

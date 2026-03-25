@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
@@ -263,13 +264,42 @@ export default function GameBoard() {
   if (!cells?.length) return <p>Cargando tablero...</p>;
 
   return (
-    <div className="gameboard-container">
-      {gameOver ? (
-        <VictoryMenu
-          title={gameOver.title}
-          message={gameOver.message}
-          subtitle={gameOver.subtitle}
-          matchSummary={gameOver.matchSummary}
+    <div className="gameBoard">
+      {gameMode === "1vsbot" && difficulty ? (
+        <p className="dificultad">Dificultad: {difficulty}</p>
+      ) : null}
+
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <Link
+          to="/puntuaciones"
+          style={{
+            display: "inline-block",
+            textDecoration: "none",
+            border: "1px solid #202020",
+            borderRadius: 8,
+            padding: "8px 12px",
+            color: "#202020",
+            background: "#fafafa",
+          }}
+        >
+          Ver puntuaciones
+        </Link>
+      </div>
+
+      <Header
+        currentPlayer={currentPlayer}
+        turnNumber={turnNumber}
+        playerColors={PLAYER_COLORS}
+        playerOneName={players.player1Name}
+        playerTwoName={players.player2Name}
+      />
+
+      <div className="boardWithSidebar">
+        <KonvaRenderer
+          cells={cells}
+          onCellClick={handleCellClick}
+          selectedId={selectedId}
+          playerColors={PLAYER_COLORS}
         />
       ) : (
         <>

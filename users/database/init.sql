@@ -5,7 +5,10 @@ USE yovi_db;
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  best_score INT NOT NULL DEFAULT 0,
+  total_games_1vsbot INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS bots (
@@ -64,9 +67,10 @@ CREATE TABLE IF NOT EXISTS botGames (
   FOREIGN KEY (bot2_id) REFERENCES bots(id) ON DELETE CASCADE
 );
 
-INSERT INTO bots (name, difficulty) 
+INSERT IGNORE INTO bots (name, difficulty) 
 VALUES
   ('Bot Facil', 'facil'),
   ('Bot Medio', 'medio'),
   ('Bot Dificil', 'dificil');
-  commit;
+
+CREATE INDEX idx_users_ranking_1vsbot ON users(best_score, total_games_1vsbot, id);

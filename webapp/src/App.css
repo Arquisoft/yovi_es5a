@@ -109,3 +109,17 @@
   background-color: #218838;
 }
 
+.homeActions {
+  margin-bottom: 1rem;
+}
+
+.primaryLinkButton {
+  display: inline-block;
+  text-decoration: none;
+  border: 0.0625rem solid #202020;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  background: #202020;
+  color: #fff;
+}
+

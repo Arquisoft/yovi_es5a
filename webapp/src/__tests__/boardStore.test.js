@@ -3,7 +3,7 @@ import { useBoardStore } from "../store/boardStore";
 
 // helper: intenta resetear el store usando su estado actual como base
 function resetStore() {
-  const state = useBoardStore.getState();
+  const state = useBoardStore.getInitialState();
   useBoardStore.setState(state, true);
 }
 
@@ -58,5 +58,46 @@ describe("boardStore", () => {
 
     expect(changed).toBe(true);
     expect(updatedCells.find((c) => c.id === targetId).state).toBe("player1");
+  });
+
+  it("setCellOwner devuelve false si la celda ya está ocupada", () => {
+    const { cells, setCellOwner } = useBoardStore.getState();
+    const targetId = cells[0].id;
+
+    expect(setCellOwner(targetId, "player1")).toBe(true);
+    expect(setCellOwner(targetId, "player2")).toBe(false);
+    expect(useBoardStore.getState().getCellOwner(targetId)).toBe("player1");
+  });
+
+  it("playTurn avanza turno si movimiento válido", () => {
+    const { cells, playTurn, turnNumber } = useBoardStore.getState();
+    const changed = playTurn(cells[0].id);
+
+    expect(changed).toBe(true);
+    expect(useBoardStore.getState().turnNumber).toBe(turnNumber + 1);
+  });
+
+  it("setGameConfig y resetGameConfig actualizan configuración", () => {
+    const { setGameConfig, startGameFromConfig, resetGameConfig } = useBoardStore.getState();
+
+    setGameConfig({
+      gameMode: "1vsbot",
+      player1Name: "Ana",
+      player2Name: "",
+      difficulty: "Media",
+      boardSize: 10,
+    });
+    startGameFromConfig();
+
+    let state = useBoardStore.getState();
+    expect(state.isConfigured).toBe(true);
+    expect(state.players.player1Name).toBe("Ana");
+    expect(state.players.player2Name).toBe("Bot");
+
+    resetGameConfig();
+    state = useBoardStore.getState();
+    expect(state.isConfigured).toBe(false);
+    expect(state.players.player1Name).toBe("");
+    expect(state.difficulty).toBeNull();
   });
 });

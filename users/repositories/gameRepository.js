@@ -11,8 +11,8 @@ class GameRepository {
     return await this.db.insertGame(boardSize, mode, connection);
   }
 
-  async insertUserGame(gameId, player1Id, player2Id, connection) {
-    return await this.db.insertUserGame(gameId, player1Id, player2Id, connection);
+  async insertUserGame(gameId, player1Id, player2Id, guestName, connection) {
+    return await this.db.insertUserGame(gameId, player1Id, player2Id, guestName, connection);
   }
 
   async insertUserBotGame(gameId, userId, botId, difficulty, connection) {

@@ -110,8 +110,7 @@ export default function GameBoard() {
           if (result.hasWon) {
             const winnerName =
               currentPlayer === "player1" ? players.player1Name : players.player2Name;
-            const loserName =
-              currentPlayer === "player1" ? players.player2Name : players.player1Name;
+            const winner = currentPlayer === "player1" ? "player" : "guest";
             setGameOver({
               title: "¡Victoria!",
               message: `${winnerName} ha ganado la partida.`,
@@ -121,8 +120,10 @@ export default function GameBoard() {
                 elapsedSeconds,
                 turnNumber,
                 boardSize: size,
-                winnerName,
-                loserName,
+                playerName: players.player1Name,
+                guestName: players.player2Name,
+                winner,
+                isDraw: false,
               },
             });
             return;

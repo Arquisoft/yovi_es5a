@@ -3,6 +3,12 @@ info:
   title: User Service API
   version: 1.0.0
   description: API for managing users and leaderboard
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 paths:
   /createuser:
     post:
@@ -36,6 +42,8 @@ paths:
   /finished-match:
     post:
       summary: Registers a finished match
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -47,6 +55,44 @@ paths:
           description: Match saved and score calculated
         '400':
           description: Validation error
+        '401':
+          description: Unauthorized
+  /auth/refresh:
+    post:
+      summary: Rotate refresh token and return a new token pair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Tokens rotated
+        '401':
+          description: Invalid or expired refresh token
+  /auth/logout:
+    post:
+      summary: Revoke a refresh token session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Refresh session revoked
   /leaderboard:
     get:
       summary: Global leaderboard paginated

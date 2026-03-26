@@ -1,0 +1,78 @@
+.authPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 15% 20%, #0ea5e9 0%, transparent 30%),
+    radial-gradient(circle at 80% 10%, #f59e0b 0%, transparent 25%),
+    linear-gradient(135deg, #111827, #1f2937 45%, #0f172a);
+  padding: 1.5rem;
+}
+
+.authCard {
+  width: min(30rem, 100%);
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1.25rem 3.25rem rgba(2, 6, 23, 0.35);
+  text-align: left;
+}
+
+.authCard h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.authSubtitle {
+  margin-top: 0.35rem;
+  margin-bottom: 1rem;
+  color: #334155;
+}
+
+.authTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.7rem;
+  overflow: hidden;
+}
+
+.authTabs button {
+  border: 0;
+  border-radius: 0;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 0.7rem;
+}
+
+.authTabs button.isActive {
+  background: #0369a1;
+  color: #ffffff;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+
+.authForm input {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.65rem;
+  font-size: 0.95rem;
+}
+
+.authForm button {
+  margin-top: 0.5rem;
+  background: #0f172a;
+  color: #fff;
+  border: 0;
+}
+
+.authError {
+  margin-top: 0.9rem;
+  color: #b91c1c;
+  font-weight: 600;
+}

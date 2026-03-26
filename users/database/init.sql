@@ -39,7 +39,8 @@ ALTER TABLE game
 CREATE TABLE IF NOT EXISTS userGames (
   id INT PRIMARY KEY,  -- FK a game(id)
   player1_id INT NOT NULL,  -- ID del primer usuario
-  player2_id INT NOT NULL,  -- ID del segundo usuario
+  player2_id INT NULL,  -- ID del segundo usuario (legacy)
+  guest_name VARCHAR(255) NULL,  -- Nombre del invitado en modo 1vs1
   FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE,
   FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE

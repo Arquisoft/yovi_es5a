@@ -108,6 +108,7 @@ describe("gamePlayApi", () => {
       botId: "random_bot",
       coords: { x: 1, y: 0, z: -1 },
       apiVersion: "1.0.0",
+      hasWon: false,
     });
   });
 

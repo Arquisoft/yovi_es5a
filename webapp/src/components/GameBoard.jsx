@@ -22,18 +22,18 @@ export default function GameBoard() {
   const players = useBoardStore((state) => state.players);
   const elapsedSeconds = useBoardStore((state) => state.elapsedSeconds);
 
-  const [selectedId, setSelectedId] = React.useState(null);
   const [isSubmittingTurn, setIsSubmittingTurn] = React.useState(false);
   const [showValidating, setShowValidating] = React.useState(false);
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
   const [isFetchingSuggestion, setIsFetchingSuggestion] = React.useState(false);
   const [suggestion, setSuggestion] = React.useState(null);
+  const [suggestionError, setSuggestionError] = React.useState("");
 
   const PLAYER_COLORS = React.useMemo(() => ({
     player1: "#e63946",
     player2: "#1d4ed8",
-    selected: "#2ecc71",
+    suggestion: "#f5c518",
     empty: "#ccc",
   }), []);
 
@@ -48,11 +48,13 @@ export default function GameBoard() {
 
   React.useEffect(() => {
     setSuggestion(null);
+    setSuggestionError("");
   }, [turnNumber]);
 
   const handleSuggestion = React.useCallback(async () => {
     if (isFetchingSuggestion || isSubmittingTurn || gameOver) return;
     setSuggestion(null);
+    setSuggestionError("");
     setIsFetchingSuggestion(true);
 
     try {
@@ -66,23 +68,24 @@ export default function GameBoard() {
         typeof botCoords.y !== "number" ||
         typeof botCoords.z !== "number"
       ) {
-        setSuggestion("No se pudo obtener sugerencia.");
+        setSuggestionError("No se pudo obtener sugerencia.");
         return;
       }
 
       const cell = barycentricToCell(botCoords, size);
-      setSuggestion(`Sugerencia: (${cell.q}, ${cell.r})`);
+      setSuggestion({ q: cell.q, r: cell.r });
     } catch {
-      setSuggestion("Error al pedir sugerencia.");
+      setSuggestionError("Error al pedir sugerencia.");
     } finally {
       setIsFetchingSuggestion(false);
     }
   }, [isFetchingSuggestion, isSubmittingTurn, gameOver, size, turnNumber, cells]);
 
+  const suggestionId = suggestion ? `${suggestion.q},${suggestion.r}` : null;
+
   const handleCellClick = React.useCallback(async (id) => {
     if (isSubmittingTurn || gameOver) return;
 
-    setSelectedId(id);
     setTurnError("");
 
     // ── Modo 1vs1 ────────────────────────────────────────────────────────────
@@ -101,7 +104,6 @@ export default function GameBoard() {
 
         if (!result.isValidMove) {
           setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
-          setSelectedId(null);
           return;
         }
 
@@ -110,8 +112,6 @@ export default function GameBoard() {
           setTurnError("No se pudo confirmar el movimiento.");
           return;
         }
-
-        setSelectedId(null);
 
         if (result.hasWon) {
           const winnerName = currentPlayer === "player1" ? players.player1Name : players.player2Name;
@@ -146,8 +146,7 @@ export default function GameBoard() {
 
     // ── Modo sin configurar ───────────────────────────────────────────────────
     if (gameMode !== "1vsbot") {
-      const moved = playTurn(id);
-      if (moved) setSelectedId(null);
+      playTurn(id);
       return;
     }
 
@@ -166,18 +165,14 @@ export default function GameBoard() {
 
       if (!result.isValidMove) {
         setTurnError(result.message || "Movimiento inválido.");
-        setSelectedId(null);
         return;
       }
 
       const playerMoved = setCellOwner(id, "player1");
       if (!playerMoved) {
         setTurnError("No se pudo confirmar el movimiento del jugador.");
-        setSelectedId(null);
         return;
       }
-
-      setSelectedId(null);
 
       if (result.hasWon) {
         setGameOver({
@@ -302,7 +297,7 @@ export default function GameBoard() {
         <KonvaRenderer
           cells={cells}
           onCellClick={handleCellClick}
-          selectedId={selectedId}
+          suggestionId={suggestionId}
           playerColors={PLAYER_COLORS}
         />
 
@@ -323,8 +318,8 @@ export default function GameBoard() {
             </span>
           </button>
 
-          {suggestion ? (
-            <p className="suggestionText">{suggestion}</p>
+          {suggestionError ? (
+            <p className="suggestionText suggestionText--error">{suggestionError}</p>
           ) : null}
         </div>
       </div>
@@ -339,4 +334,4 @@ export default function GameBoard() {
       </div>
     </div>
   );
-}
+} 

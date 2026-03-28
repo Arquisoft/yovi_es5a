@@ -26,7 +26,7 @@ function hexPoints(size) {
   return points;
 }
 
-export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, playerColors }) {
+export default memo(function KonvaRenderer({ cells, onCellClick, suggestionId, playerColors }) {
   const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
 
@@ -53,12 +53,12 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, pla
           {cells.map((cell) => {
             const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
 
-            let fill = (playerColors && playerColors.empty) || "#ccc";
-            if (cell.state === "player1") fill = (playerColors && playerColors.player1) || "#e63946";
-            if (cell.state === "player2") fill = (playerColors && playerColors.player2) || "#1d4ed8";
-            if (selectedId === cell.id) fill = (playerColors && playerColors.selected) || "#2ecc71";
+            let fill = playerColors?.empty ?? "#ccc";
+            if (cell.state === "player1")    fill = playerColors?.player1   ?? "#e63946";
+            if (cell.state === "player2")    fill = playerColors?.player2   ?? "#1d4ed8";
+            if (cell.id === suggestionId)    fill = playerColors?.suggestion ?? "#f5c518";
 
-            const isSelected = selectedId === cell.id;
+            const isSuggestion = cell.id === suggestionId;
 
             return (
               <Line
@@ -68,7 +68,7 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, pla
                 y={y}
                 closed
                 stroke="black"
-                strokeWidth={isSelected ? 4 : 2}
+                strokeWidth={isSuggestion ? 4 : 2}
                 fill={fill}
                 onClick={() => onCellClick && onCellClick(cell.id)}
                 onTap={() => onCellClick && onCellClick(cell.id)}

@@ -48,7 +48,6 @@
   background-color: #4e58e6;
 }
 
-/* Ensure inputs/buttons remain readable in light color-scheme */
 @media (prefers-color-scheme: light) {
   .startGameForm {
     background-color: #ffffff;
@@ -58,4 +57,13 @@
     background: #ffffff;
     color: #0f172a;
   }
+}
+
+.startInput:-webkit-autofill,
+.startInput:-webkit-autofill:hover,
+.startInput:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+  box-shadow: 0 0 0px 1000px #ffffff inset;
+  transition: background-color 5000s ease-in-out 0s;
 }

@@ -30,7 +30,7 @@ export default function StartGameForm() {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.error || "Error creating user");
+      throw new Error("El nombre de ususario ya existe");
     }
 
     return data;
@@ -42,10 +42,10 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
-     // await createUser(player1Name);
+      await createUser(player1Name);
       
       if (gameMode === "1vs1") {
-     //   await createUser(player2Name);
+        await createUser(player2Name);
       } 
 
       setGameConfig({

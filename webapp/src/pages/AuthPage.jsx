@@ -44,6 +44,7 @@ export default function AuthPage() {
         identifier: loginIdentifier.trim(),
         password: loginPassword,
       });
+      console.log("Respuesta login:", response);
 
       // Ejemplo de respuesta válida esperada por el frontend:
       // {

@@ -123,7 +123,6 @@ app.post('/createuser', async (req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
-  console.log(req.body);
   const { identifier, password } = req.body;
 
   try {
@@ -131,24 +130,23 @@ app.post('/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Faltan datos' });
     }
 
-
     const user = await userService.resolveUserByExactUsername(identifier);
-
     if (!user) {
       return res.status(400).json({ error: 'Usuario no encontrado' });
     }
 
-    console.log('User found:', user, 'Comparing password with hash:', user.password);
-
-    // Comparar contraseñas usando bcrypt
     const bcrypt = require('bcrypt');
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ error: 'Usuario o Contraseña incorrecta' });
     }
 
-    res.status(200).json({ message: 'Login correcto', user: user.username });
+    const tokens = tokenService.issueTokenPair({ userId: user.id, username: user.username });
+
+    res.status(200).json({
+      user: { id: user.id, username: user.username, email: user.email },
+      ...tokens,
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });

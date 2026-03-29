@@ -43,10 +43,6 @@ class GameRepository {
     return await this.db.updateUserBotStats(userId, score, connection);
   }
 
-  async findUserByUsernameExact(username, connection) {
-    return await this.db.findUserByUsernameExact(username, connection);
-  }
-
   async getLeaderboardPage(page, pageSize, connection) {
     return await this.db.getLeaderboardPage(page, pageSize, connection);
   }

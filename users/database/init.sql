@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+alter table users
+  add column email varchar(255) not null unique,
+  add column password varchar(255) not null;
+
 CREATE TABLE IF NOT EXISTS bots (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,  -- Nombre del bot

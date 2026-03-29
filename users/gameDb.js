@@ -94,19 +94,7 @@ async function updateUserBotStats(userId, score, connection) {
   );
 }
 
-async function findUserByUsernameExact(username, connection) {
-  const activeConnection = await resolveConnection(connection);
-  const normalizedUsername = String(username || '').trim().toLowerCase();
-  const [rows] = await activeConnection.execute(
-    `SELECT id, username, created_at, COALESCE(best_score, 0) AS best_score,
-            COALESCE(total_games_1vsbot, 0) AS total_games_1vsbot
-     FROM users
-     WHERE LOWER(TRIM(username)) = ?
-     LIMIT 1`,
-    [normalizedUsername]
-  );
-  return rows[0] || null;
-}
+
 
 async function getLeaderboardPage(page, pageSize, connection) {
   const activeConnection = await resolveConnection(connection);
@@ -317,11 +305,9 @@ module.exports = {
   insertUserBotGame,
   insertBotGame,
   updateGameWinner,
-  findUserIdByUsername,
   findBotIdByDifficulty,
   insertFinishedGame,
   updateUserBotStats,
-  findUserByUsernameExact,
   getLeaderboardPage,
   getUserRankById,
   getLeaderboardPageCenteredByUserId,

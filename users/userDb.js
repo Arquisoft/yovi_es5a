@@ -1,12 +1,49 @@
 const { getConnection } = require('./db');
 
-async function insertUser(username) {
+async function insertUser(username, email, password) {
   const connection = await getConnection();
   const [result] = await connection.execute(
-    'INSERT INTO users (username) VALUES (?)',
-    [username]
+    'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+    [username, email, password]
   );
   return result.insertId;
 }
 
-module.exports = { insertUser };
+async function getUsersFromDB() {
+  const connection = await getConnection();
+  const [rows] = await connection.execute(
+    'SELECT id, username, email, password, created_at FROM users'
+  );
+  return rows;
+}
+
+
+async function findUserByUsernameExact(username, connection) {
+  const activeConnection = await resolveConnection(connection);
+  const normalizedUsername = String(username || '').trim().toLowerCase();
+  const [rows] = await activeConnection.execute(
+    `SELECT id, username, created_at, COALESCE(best_score, 0) AS best_score,
+            COALESCE(total_games_1vsbot, 0) AS total_games_1vsbot
+     FROM users
+     WHERE LOWER(TRIM(username)) = ?
+     LIMIT 1`,
+    [normalizedUsername]
+  );
+  return rows[0] || null;
+}
+
+async function findUserByEmailExact(email, connection) {
+  const activeConnection = await resolveConnection(connection);
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const [rows] = await activeConnection.execute(
+    `SELECT id, username, email, created_at, COALESCE(best_score, 0) AS best_score,
+            COALESCE(total_games_1vsbot, 0) AS total_games_1vsbot
+     FROM users
+     WHERE LOWER(TRIM(email)) = ?
+     LIMIT 1`,
+    [normalizedEmail]
+  );
+  return rows[0] || null;
+}
+
+module.exports = { insertUser, findUserByUsernameExact, findUserByEmailExact, getUsersFromDB };

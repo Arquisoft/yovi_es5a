@@ -5,7 +5,7 @@ const swaggerUi = require('swagger-ui-express');
 const fs = require('node:fs');
 const YAML = require('js-yaml');
 const promBundle = require('express-prom-bundle');
-const { createUser } = require('./services/userService');
+const userService = require('./services/userService');
 const ScoreService = require('./services/scoreService');
 const gameService = require('./services/gameService');
 const leaderboardService = require('./services/leaderboardService');
@@ -85,15 +85,70 @@ function validateFinishedMatchPayload(matchSummary) {
 }
 
 app.post('/createuser', async (req, res) => {
-  const username = req.body && req.body.username;
+  const { username, email, password } = req.body;
   try {
-    const message = await createUser(username);
+    if (!username) {
+      return res.status(400).json({ error: 'Faltan el usuario' });
+    }
+    if (!email) {
+      return res.status(400).json({ error: 'Faltan el correo electrónico' });
+    }
+
+    if (!password) {
+      return res.status(400).json({ error: 'Faltan la contraseña' });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: 'Email no válido' });
+    }
+
+    if (await emailExists(email)) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
+    //Necesitamos instalar bcrypt, npm install bcrypt.
+    //Esto es una libreria para hashear la contraseña, es decir, convertirla en una cadena de texto que no se pueda revertir a la contraseña original, para proteger la seguridad de los usuarios en caso de que la base de datos sea comprometida.
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(password, 10);
+    //Poner el numero 10 ahi implica que se aplicaran 10 rondas de hashing, lo que hace que el proceso sea mas lento y por lo tanto mas seguro contra ataques de fuerza bruta.
+
+    await createUser(username, email, hashedPassword);
     res.status(200).json({ message });
   } catch (err) {
     console.error('Error:', err.message);
     res.status(400).json({ error: err.message });
   }
 });
+
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Faltan datos' });
+    }
+
+
+    const user = await userService.resolveUserByExactUsername(username);
+
+    if (!user) {
+      return res.status(400).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Comparar contraseñas usando bcrypt
+    const bcrypt = require('bcrypt');
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Usuario o Contraseña incorrecta' });
+    }
+
+    res.status(200).json({ message: 'Login correcto', user: user.username });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 app.post('/finished-match', async (req, res) => {
   const matchSummary = req.body;
@@ -147,7 +202,7 @@ app.get('/users/resolve', async (req, res) => {
       return res.status(400).json({ message: 'username es obligatorio' });
     }
 
-    const user = await leaderboardService.resolveUserByExactUsername(username);
+    const user = await userService.resolveUserByExactUsername(username);
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }

@@ -205,4 +205,49 @@ describe("GameBoard", () => {
     expect(await screen.findByRole("heading", { name: /¡victoria!/i })).toBeInTheDocument();
     expect(screen.getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();
   });
+
+  it("si gameMode no está configurado, usa playTurn en clic", async () => {
+    const user = userEvent.setup();
+    actions.playTurn.mockReturnValue(true);
+
+    setMockStore({ gameMode: null });
+    renderGameBoard();
+
+    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+    expect(actions.playTurn).toHaveBeenCalledWith("0,0");
+  });
+
+  it("1vs1: si gana player2 envía resumen de invitado en VictoryMenu", async () => {
+    const user = userEvent.setup();
+
+    setMockStore({
+      turnNumber: 2,
+      players: { player1Name: "Ana", player2Name: "Invitado", isBotSecondPlayer: false },
+    });
+
+    actions.setCellOwner.mockReturnValue(true);
+    validateTwoPlayerMove.mockResolvedValue({
+      isValidMove: true,
+      hasWon: true,
+      message: "",
+    });
+
+    renderGameBoard();
+    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+    expect(await screen.findByText(/invitado ha ganado la partida/i)).toBeInTheDocument();
+  });
+
+  it("sugerencia muestra error cuando API falla", async () => {
+    const user = userEvent.setup();
+
+    setMockStore({ gameMode: "1vs1" });
+    requestBotMove.mockRejectedValue(new Error("boom"));
+
+    renderGameBoard();
+    await user.click(screen.getByRole("button", { name: /sugerencia/i }));
+
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
+  });
 });

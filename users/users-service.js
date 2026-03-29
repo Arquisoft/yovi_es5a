@@ -10,6 +10,8 @@ const ScoreService = require('./services/scoreService');
 const gameService = require('./services/gameService');
 const leaderboardService = require('./services/leaderboardService');
 const { getConnection } = require('./db');
+const tokenService = require('./auth/tokenService');
+const { authenticateAccessToken } = require('./middleware/authMiddleware');
 
 const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
@@ -24,7 +26,7 @@ try {
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -52,10 +54,14 @@ function validateFinishedMatchPayload(matchSummary) {
   }
 
   if (matchSummary.mode === '1vs1') {
-    const winnerName = String(matchSummary.winnerName || '').trim();
-    const loserName = String(matchSummary.loserName || '').trim();
-    if (!winnerName || !loserName) {
-      return 'winnerName y loserName son obligatorios en 1vs1';
+    const playerName = String(matchSummary.playerName || '').trim();
+    const guestName = String(matchSummary.guestName || '').trim();
+    const winner = String(matchSummary.winner || '').trim();
+    if (!playerName || !guestName) {
+      return 'playerName y guestName son obligatorios en 1vs1';
+    }
+    if (!['player', 'guest', 'draw'].includes(winner)) {
+      return 'winner debe ser player, guest o draw en 1vs1';
     }
     return null;
   }
@@ -98,9 +104,6 @@ app.post('/createuser', async (req, res) => {
       return res.status(400).json({ error: 'Faltan la contraseña' });
     }
 
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: 'Email no válido' });
-    }
 
     if (await emailExists(email)) {
       return res.status(400).json({ error: 'El email ya está registrado' });
@@ -119,20 +122,23 @@ app.post('/createuser', async (req, res) => {
   }
 });
 
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+app.post('/auth/login', async (req, res) => {
+  console.log(req.body);
+  const { identifier, password } = req.body;
 
   try {
-    if (!username || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({ error: 'Faltan datos' });
     }
 
 
-    const user = await userService.resolveUserByExactUsername(username);
+    const user = await userService.resolveUserByExactUsername(identifier);
 
     if (!user) {
       return res.status(400).json({ error: 'Usuario no encontrado' });
     }
+
+    console.log('User found:', user, 'Comparing password with hash:', user.password);
 
     // Comparar contraseñas usando bcrypt
     const bcrypt = require('bcrypt');
@@ -150,7 +156,58 @@ app.post('/login', async (req, res) => {
 });
 
 
-app.post('/finished-match', async (req, res) => {
+app.post('/auth/refresh', async (req, res) => {
+  // Para persistencia real en producción debe guardarse la rotación en DB (refresh token hash, revocación y cadena de reemplazo).
+  const refreshToken = String(req.body?.refreshToken || '').trim();
+  if (!refreshToken) {
+    return res.status(400).json({ message: 'refreshToken es obligatorio' });
+  }
+
+  try {
+    const rotatedTokens = tokenService.rotateRefreshToken(refreshToken);
+    return res.status(200).json(rotatedTokens);
+  } catch (err) {
+    const statusCode = err.statusCode || 401;
+    return res.status(statusCode).json({ message: err.message });
+  }
+});
+
+app.post('/auth/register', async (req, res) => {
+  const { email, username, password, confirmPassword } = req.body;
+  try {    if (!email || !username || !password || !confirmPassword) {
+      return res.status(400).json({ error: 'Faltan datos' });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: 'Las contraseñas no coinciden' });
+    }
+   
+    if (await userService.resolveUserByExactEmail(email)) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
+    //Hashear la contraseña antes de guardarla en la base de datos.
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await userService.createUser(username, email, hashedPassword);
+    res.status(200).json({ message: 'Registro correcto' });
+  } catch (err) {
+    console.error('Error:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+
+});
+
+app.post('/auth/logout', async (req, res) => {
+  // Para persistencia real en producción debe invalidarse también la sesión en almacenamiento persistente compartido.
+  const refreshToken = String(req.body?.refreshToken || '').trim();
+  if (!refreshToken) {
+    return res.status(400).json({ message: 'refreshToken es obligatorio' });
+  }
+
+  const revoked = tokenService.revokeRefreshToken(refreshToken);
+  return res.status(200).json({ revoked });
+});
+
+app.post('/finished-match', authenticateAccessToken, async (req, res) => {
   const matchSummary = req.body;
   console.log('Received finished match:', matchSummary);
   const validationError = validateFinishedMatchPayload(matchSummary);
@@ -160,7 +217,7 @@ app.post('/finished-match', async (req, res) => {
 
   try {
     const score = ScoreService.calculate(matchSummary);
-    const gameId = await gameService.recordFinishedMatch(matchSummary, score);
+    const gameId = await gameService.recordFinishedMatch(matchSummary, score, req.auth);
     return res.json({ score, saved: true, gameId });
   } catch (err) {
     console.error('Error al finalizar partida:', err.message);

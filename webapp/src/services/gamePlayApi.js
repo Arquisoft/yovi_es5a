@@ -1,5 +1,6 @@
 //const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
 const GAMEY_BASE_URL = "http://localhost:4000";
+
 function createPlayUrl() {
   const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/")
     ? GAMEY_BASE_URL.slice(0, -1)
@@ -7,11 +8,20 @@ function createPlayUrl() {
   return `${normalizedBaseUrl}/game/play/`;
 }
 
-function createBotUrl(botId = "random_bot") {
+function createBotUrl(botId) {
   const url = new URL(GAMEY_BASE_URL);
   url.port = "4001";
   url.pathname = `/v1/ybot/choose/${botId}`;
   return url.toString();
+}
+
+function difficultyToBotId(difficulty) {
+  switch (difficulty) {
+    case "Facil":   return "random_bot";
+    case "Media":   return "medium_bot";
+    case "Dificil": return "hard_bot"; // sin implementar
+    default:        return "random_bot";
+  }
 }
 
 export async function validateTwoPlayerMove({ board, selectedCell }) {
@@ -45,7 +55,8 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
   };
 }
 
-export async function requestBotMove({ board, botId = "random_bot" }) {
+export async function requestBotMove({ board, difficulty = "Facil" }) {
+  const botId = difficultyToBotId(difficulty);
   const response = await fetch(createBotUrl(botId), {
     method: "POST",
     headers: {

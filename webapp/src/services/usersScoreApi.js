@@ -1,3 +1,6 @@
+import { refreshToken as refreshAccessToken } from "./authApi";
+import { useSessionStore } from "../store/sessionStore";
+
 //const USERS_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const USERS_BASE_URL = "http://localhost:3000";
 
@@ -21,8 +24,9 @@ function buildFinishedMatchPayload(matchSummary) {
   if (mode === "1vs1") {
     return {
       ...commonPayload,
-      winnerName: matchSummary.winnerName,
-      loserName: matchSummary.loserName,
+      playerName: matchSummary.playerName,
+      guestName: matchSummary.guestName,
+      winner: matchSummary.winner,
     };
   }
 
@@ -57,21 +61,44 @@ export async function requestMatchScore(matchSummary) {
   }
 
   const pendingRequest = (async () => {
-    //cargaros el try catch cuando este el backend, esto lo hago para mockearlo y probar. Asi ademas sabeis ya que me teneis que devolver
-    try {
-      const response = await fetch(createFinishedMatchUrl(), {
+    const { accessToken, refreshToken } = useSessionStore.getState();
+
+    async function sendRequest(token) {
+      return fetch(createFinishedMatchUrl(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
+    }
 
+    async function parseResponse(response) {
       let data = null;
       try {
         data = await response.json();
       } catch {
         data = null;
+      }
+      return data;
+    }
+
+    try {
+      let response = await sendRequest(accessToken);
+      let data = await parseResponse(response);
+
+      if (response.status === 401 && refreshToken) {
+        const rotated = await refreshAccessToken({ refreshToken });
+        useSessionStore.getState().updateTokenPair({
+          accessToken: rotated.accessToken,
+          refreshToken: rotated.refreshToken,
+          accessTokenExpiresIn: rotated.accessTokenExpiresIn,
+          refreshTokenExpiresIn: rotated.refreshTokenExpiresIn,
+        });
+
+        response = await sendRequest(rotated.accessToken);
+        data = await parseResponse(response);
       }
 
       if (!response.ok) {
@@ -92,11 +119,7 @@ export async function requestMatchScore(matchSummary) {
       };
     } catch (error) {
       console.error("Error calculando score:", error);
-      return {
-        score: 200,
-        saved: false,
-        gameId: null,
-      };
+      throw error;
     } finally {
       inFlightRequests.delete(requestKey);
     }

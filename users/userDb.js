@@ -1,7 +1,11 @@
 const { getConnection } = require('./db');
 
+async function resolveConnection(connection) {
+  return connection || getConnection();
+}
+
 async function insertUser(username, email, password) {
-  const connection = await getConnection();
+  const connection = await resolveConnection(connection);
   const [result] = await connection.execute(
     'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
     [username, email, password]
@@ -10,7 +14,7 @@ async function insertUser(username, email, password) {
 }
 
 async function getUsersFromDB() {
-  const connection = await getConnection();
+  const connection = await resolveConnection(connection);
   const [rows] = await connection.execute(
     'SELECT id, username, email, password, created_at FROM users'
   );
@@ -23,7 +27,7 @@ async function findUserByUsernameExact(username, connection) {
   const normalizedUsername = String(username || '').trim().toLowerCase();
   const [rows] = await activeConnection.execute(
     `SELECT id, username, created_at, COALESCE(best_score, 0) AS best_score,
-            COALESCE(total_games_1vsbot, 0) AS total_games_1vsbot
+            COALESCE(total_games_1vsbot, 0) AS total_games_1vsbot, password
      FROM users
      WHERE LOWER(TRIM(username)) = ?
      LIMIT 1`,

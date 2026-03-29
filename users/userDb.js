@@ -5,7 +5,7 @@ async function resolveConnection(connection) {
 }
 
 async function insertUser(username, email, password) {
-  const connection = await resolveConnection(connection);
+  const connection = await getConnection();
   const [result] = await connection.execute(
     'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
     [username, email, password]
@@ -14,7 +14,7 @@ async function insertUser(username, email, password) {
 }
 
 async function getUsersFromDB() {
-  const connection = await resolveConnection(connection);
+  const connection = await getConnection();
   const [rows] = await connection.execute(
     'SELECT id, username, email, password, created_at FROM users'
   );

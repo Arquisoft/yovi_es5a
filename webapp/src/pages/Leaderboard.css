@@ -1,52 +1,44 @@
+/* LeaderboardPage.css
+   Paleta fija dark-navy — no responde al tema del navegador */
+
 .leaderboardPage {
-  --lb-bg: #ffffff;
-  --lb-text: #101828;
-  --lb-muted: #475467;
-  --lb-border: #d0d5dd;
-  --lb-header-bg: #f2f4f7;
-  --lb-row-bg: #ffffff;
-  --lb-row-alt-bg: #fbfcfd;
-  --lb-highlight-bg: #fff0c7;
-  --lb-link: #0f59d1;
-  --lb-link-hover: #0a3f99;
-  --lb-error: #b42318;
-  --lb-card-bg: #ffffff;
-  --lb-chip-bg: #f8fafc;
+  /* ── Tokens fijos (nunca cambian) ────────────────────── */
+  --lb-bg:            #111827;
+  --lb-text:          #e5e7eb;
+  --lb-muted:         #9ca3af;
+  --lb-border:        #2d3a52;
+  --lb-header-bg:     #1e2d45;
+  --lb-row-bg:        #131c2e;
+  --lb-row-alt-bg:    #0f172a;
+  --lb-highlight-bg:  #2c3a1a;
+  --lb-link:          #60a5fa;
+  --lb-link-hover:    #93c5fd;
+  --lb-error:         #fca5a5;
+  --lb-card-bg:       #0b1220;
+  --lb-chip-bg:       #1f2937;
 
   max-width: 56rem;
   margin: 0 auto;
+  padding: 2rem 1rem;
   text-align: left;
   color: var(--lb-text);
-}
-
-@media (prefers-color-scheme: dark) {
-  .leaderboardPage {
-    --lb-bg: #111827;
-    --lb-text: #e5e7eb;
-    --lb-muted: #cbd5e1;
-    --lb-border: #334155;
-    --lb-header-bg: #1f2937;
-    --lb-row-bg: #0f172a;
-    --lb-row-alt-bg: #111b31;
-    --lb-highlight-bg: #3f2e0c;
-    --lb-link: #7dd3fc;
-    --lb-link-hover: #bae6fd;
-    --lb-error: #fca5a5;
-    --lb-card-bg: #0b1220;
-    --lb-chip-bg: #1f2937;
-  }
-}
-
-.leaderboardPage {
   background: transparent;
 }
+
+/* ── Ningún @media prefers-color-scheme aquí ── */
 
 .pageHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pageHeader h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--lb-text);
 }
 
 .pageLinks {
@@ -59,17 +51,32 @@
   display: inline-block;
   text-decoration: none;
   border: 0.0625rem solid var(--lb-border);
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.85rem;
+  border-radius: 0.6rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--lb-text);
   background: var(--lb-chip-bg);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.secondaryLinkButton:hover {
+  background: var(--lb-header-bg);
+  border-color: var(--lb-link);
 }
 
 .primaryLinkButton {
-  background: var(--lb-link);
-  color: #ffffff;
+  background: var(--lb-chip-bg);
+  color: var(--lb-text);
+  border-color: var(--lb-border);
 }
 
+.primaryLinkButton:hover {
+  background: var(--lb-header-bg);
+}
+
+/* ── Búsqueda ────────────────────────────────────────── */
 .searchWrap {
   position: relative;
   margin-bottom: 1rem;
@@ -77,12 +84,23 @@
 
 .searchInput {
   width: 100%;
-  padding: 0.7rem 0.85rem;
+  padding: 0.65rem 1.1rem;
   border-radius: 9999px;
   border: 0.0625rem solid var(--lb-border);
-  background: var(--lb-bg);
+  background: var(--lb-chip-bg);
   color: var(--lb-text);
   font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.searchInput::placeholder {
+  color: var(--lb-muted);
+}
+
+.searchInput:focus {
+  border-color: var(--lb-link);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 .suggestionsList {
@@ -91,7 +109,7 @@
   padding: 0.2rem;
   border: 0.0625rem solid var(--lb-border);
   border-radius: 0.75rem;
-  background: var(--lb-bg);
+  background: var(--lb-chip-bg);
 }
 
 .suggestionsList li button {
@@ -100,19 +118,23 @@
   border: none;
   background: transparent;
   color: var(--lb-text);
-  padding: 0.55rem 0.7rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
 }
 
 .suggestionsList li button:hover {
-  background: var(--lb-row-alt-bg);
+  background: var(--lb-header-bg);
 }
 
+/* ── Tabla ───────────────────────────────────────────── */
 .tableWrap {
   border: 0.0625rem solid var(--lb-border);
   border-radius: 0.75rem;
   overflow: hidden;
   min-height: 12rem;
-  background: var(--lb-bg);
+  background: var(--lb-row-bg);
 }
 
 .tablePlaceholder {
@@ -128,18 +150,27 @@
 
 .leaderboardTable th,
 .leaderboardTable td {
-  padding: 0.55rem 0.65rem;
+  padding: 0.6rem 0.8rem;
   border-bottom: 0.0625rem solid var(--lb-border);
-  background: var(--lb-row-bg);
 }
 
 .leaderboardTable th {
   background: var(--lb-header-bg);
   color: var(--lb-text);
+  font-weight: 600;
+  text-align: left;
+}
+
+.leaderboardTable tbody tr td {
+  background: var(--lb-row-bg);
 }
 
 .leaderboardTable tbody tr:nth-child(even) td {
   background: var(--lb-row-alt-bg);
+}
+
+.leaderboardTable tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .highlightRow {
@@ -151,6 +182,7 @@
   background: var(--lb-highlight-bg) !important;
 }
 
+/* ── Links ───────────────────────────────────────────── */
 .usernameLink {
   color: var(--lb-link);
   text-decoration: underline;
@@ -162,6 +194,7 @@
   color: var(--lb-link-hover);
 }
 
+/* ── Paginación ──────────────────────────────────────── */
 .paginationControls {
   display: flex;
   align-items: center;
@@ -170,6 +203,28 @@
   margin-top: 0.75rem;
 }
 
+.paginationControls button,
+.paginationControls select {
+  background: var(--lb-chip-bg);
+  color: var(--lb-text);
+  border: 0.0625rem solid var(--lb-border);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.paginationControls button:hover:not(:disabled) {
+  background: var(--lb-header-bg);
+}
+
+.paginationControls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Tarjeta de perfil ───────────────────────────────── */
 .profileCard {
   border: 0.0625rem solid var(--lb-border);
   border-radius: 0.75rem;
@@ -179,16 +234,19 @@
   color: var(--lb-text);
 }
 
+/* ── Estados ─────────────────────────────────────────── */
 .loadingText,
 .emptyState,
 .errorText {
   margin: 0.6rem 0;
+  color: var(--lb-muted);
 }
 
 .errorText {
   color: var(--lb-error);
 }
 
+/* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 43.75rem) {
   .pageHeader {
     flex-direction: column;

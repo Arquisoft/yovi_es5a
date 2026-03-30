@@ -24,12 +24,19 @@ function HomePage() {
 
   return (
     <div className="App">
-      <h1>Juego Y</h1>
-      {user ? <p>Sesión iniciada: {user.username}</p> : null}
-      <div className="homeActions">
-        <Link className="primaryLinkButton" to="/puntuaciones">
-          Ver puntuaciones
-        </Link>
+      <div className="homeHero">
+        <h1 className="homeTitle">Juego Y</h1>
+        {user ? (
+          <p className="homeSessionBadge">
+            <span className="homeSessionBadge__dot" />
+            {user.username}
+          </p>
+        ) : null}
+        <div className="homeActions">
+          <Link className="primaryLinkButton" to="/puntuaciones">
+            Ver puntuaciones
+          </Link>
+        </div>
       </div>
       {isConfigured ? <GameBoard /> : <StartGameForm />}
     </div>

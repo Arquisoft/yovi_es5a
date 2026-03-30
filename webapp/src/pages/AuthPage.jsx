@@ -44,16 +44,7 @@ export default function AuthPage() {
         identifier: loginIdentifier.trim(),
         password: loginPassword,
       });
-      console.log("Respuesta login:", response);
 
-      // Ejemplo de respuesta válida esperada por el frontend:
-      // {
-      //   user: { id: 1, username: "ana", email: "ana@example.com" },
-      //   accessToken: "jwt_access",
-      //   refreshToken: "jwt_refresh",
-      //   accessTokenExpiresIn: 900,
-      //   refreshTokenExpiresIn: 259200
-      // }
       setSession({
         user: response.user,
         accessToken: response.accessToken,
@@ -113,8 +104,10 @@ export default function AuthPage() {
   return (
     <section className="authPage">
       <article className="authCard">
-        <h1>Juego Y</h1>
-        <p className="authSubtitle">Accede para empezar la partida</p>
+        <header className="authHeader">
+          <h1 className="authTitle">Juego Y</h1>
+          <p className="authSubtitle">Accede para empezar la partida</p>
+        </header>
 
         <div className="authTabs" role="tablist" aria-label="Autenticación">
           <button

@@ -3,7 +3,7 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
@@ -37,6 +37,7 @@ body {
   place-items: center;
   min-width: 20rem;
   min-height: 100vh;
+  background-color: #242424;
 }
 
 h1 {
@@ -61,17 +62,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 0.25rem auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

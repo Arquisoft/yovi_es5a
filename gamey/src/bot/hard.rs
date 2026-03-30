@@ -11,8 +11,12 @@ fn evaluate_position(game: &GameY, bot_player: PlayerId) -> i32 {
 
     if game.check_game_over() {
         // Supongamos que game.winner() devuelve Option<PlayerId>
-        if let Some(winner) = game.winner() {
-            if winner == bot_player {
+        if let Some(last) = game.history().last() {
+            let last_player = match last {
+                Movement::Placement { player, .. } => *player,
+                Movement::Action { player, .. } => *player,
+            };
+            if last_player == bot_player {
                 return 10_000;
             } else {
                 return -10_000;

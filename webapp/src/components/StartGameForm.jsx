@@ -22,6 +22,7 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
+<<<<<<< iniciarSession
       const normalizedPlayerName = String(user?.username || "").trim();
       if (!normalizedPlayerName) {
         throw new Error("No hay sesión activa. Inicia sesión de nuevo.");
@@ -30,6 +31,13 @@ export default function StartGameForm() {
       if (gameMode === "1vs1" && !String(guestName || "").trim()) {
         throw new Error("Debes indicar el nombre del invitado.");
       }
+=======
+      await createUser(player1Name);
+      
+      if (gameMode === "1vs1") {
+       await createUser(player2Name);
+      } 
+>>>>>>> development
 
       setGameConfig({
         gameMode,

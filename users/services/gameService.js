@@ -128,22 +128,24 @@ async function recordFinishedMatch(matchSummary, score, auth) {
         throw createClientError(`Usuario no encontrado: ${playerName}`);
       }
 
-      const winnerValue = winner === 'player'
+    const winnerValue = winner === 'player'
         ? 'player1'
         : winner === 'guest'
           ? 'player2'
           : 'draw';
 
-      gameId = await gameRepo.insertFinishedGame({
-        boardSize,
-        mode: '1vs1',
-        winner: isDraw ? 'draw' : winnerValue,
-        totalTurns,
-        elapsedSeconds,
-        score
+    const finishedGame = await gameRepo.insertFinishedGame({
+            boardSize,
+            mode: '1vs1',
+            winner: isDraw ? 'draw' : winnerValue,
+            totalTurns,
+            elapsedSeconds,
+            score
       }, connection);
 
-      await gameRepo.insertUserGame(gameId, playerUserId, null, guestName, connection);
+
+
+    await gameRepo.insertUserGame(finishedGame, playerUserId.id, null, guestName, connection);
     } else if (mode === '1vsbot') {
       const playerName = String(matchSummary.playerName || '').trim();
       const winner = normalizeUserVsBotWinner(matchSummary.winner, isDraw);
@@ -171,7 +173,7 @@ async function recordFinishedMatch(matchSummary, score, auth) {
         throw createClientError(`No existe bot para dificultad: ${difficulty}`);
       }
 
-      gameId = await gameRepo.insertFinishedGame({
+      const finishedGame = await gameRepo.insertFinishedGame({
         boardSize,
         mode: '1vsbot',
         winner,
@@ -179,9 +181,10 @@ async function recordFinishedMatch(matchSummary, score, auth) {
         elapsedSeconds,
         score
       }, connection);
+      
 
-      await gameRepo.insertUserBotGame(gameId, userId, botId, difficulty, connection);
-      await gameRepo.updateUserBotStats(userId, score, connection);
+      await gameRepo.insertUserBotGame(finishedGame, userId.id, botId, difficulty, connection);
+      await gameRepo.updateUserBotStats(userId.id, score, connection);
     } else {
       throw createClientError('Modo de partida no soportado');
     }

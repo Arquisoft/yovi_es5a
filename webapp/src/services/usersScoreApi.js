@@ -85,45 +85,62 @@ export async function requestMatchScore(matchSummary) {
     }
 
     try {
-      let response = await sendRequest(accessToken);
-      let data = await parseResponse(response);
+      let response;
+      let data;
 
-      if (response.status === 401 && refreshToken) {
-        const rotated = await refreshAccessToken({ refreshToken });
-        useSessionStore.getState().updateTokenPair({
-          accessToken: rotated.accessToken,
-          refreshToken: rotated.refreshToken,
-          accessTokenExpiresIn: rotated.accessTokenExpiresIn,
-          refreshTokenExpiresIn: rotated.refreshTokenExpiresIn,
-        });
-
-        response = await sendRequest(rotated.accessToken);
+      try {
+        response = await sendRequest(accessToken);
         data = await parseResponse(response);
+
+        if (response.status === 401 && refreshToken) {
+          try {
+            const rotated = await refreshAccessToken({ refreshToken });
+
+            useSessionStore.getState().updateTokenPair({
+              accessToken: rotated.accessToken,
+              refreshToken: rotated.refreshToken,
+              accessTokenExpiresIn: rotated.accessTokenExpiresIn,
+              refreshTokenExpiresIn: rotated.refreshTokenExpiresIn,
+              });
+
+            response = await sendRequest(rotated.accessToken);
+            data = await parseResponse(response);
+
+          } catch (refreshError) {
+        
+            useSessionStore.getState().clearSession?.();
+            throw new Error("SESSION_EXPIRED");
+          }
+        }
+
+      } catch (authError) {
+          console.error("Error de autenticación:", authError);
+          throw authError;
       }
 
-      if (!response.ok) {
-        throw new Error(data?.message || "No se pudo calcular la puntuación en users.");
+        if (!response.ok) {
+          throw new Error(data?.message || "No se pudo calcular la puntuación en users.");
+        }
+
+        const rawScore = data?.score ?? data?.points ?? data?.puntuacion;
+        const parsedScore = Number(rawScore);
+
+        if (Number.isNaN(parsedScore)) {
+          throw new Error("La respuesta de users no incluye una puntuación válida.");
+        }
+
+        return {
+          score: parsedScore,
+          saved: Boolean(data?.saved),
+          gameId: data?.gameId ?? null,
+        };
+      } catch (error) {
+        console.error("Error calculando score:", error);
+        throw error;
+      } finally {
+        inFlightRequests.delete(requestKey);
       }
-
-      const rawScore = data?.score ?? data?.points ?? data?.puntuacion;
-      const parsedScore = Number(rawScore);
-
-      if (Number.isNaN(parsedScore)) {
-        throw new Error("La respuesta de users no incluye una puntuación válida.");
-      }
-
-      return {
-        score: parsedScore,
-        saved: Boolean(data?.saved),
-        gameId: data?.gameId ?? null,
-      };
-    } catch (error) {
-      console.error("Error calculando score:", error);
-      throw error;
-    } finally {
-      inFlightRequests.delete(requestKey);
-    }
-  })();
+    })();
 
   inFlightRequests.set(requestKey, pendingRequest);
   return pendingRequest;

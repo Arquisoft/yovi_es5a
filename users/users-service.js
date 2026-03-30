@@ -135,7 +135,9 @@ app.post('/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Usuario no encontrado' });
     }
 
+    //Hace falta hacer npm install
     const bcrypt = require('bcrypt');
+    //Compara la contraseña proporcionada por el usuario con la contraseña hasheada almacenada en la base de datos.
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: 'Usuario o Contraseña incorrecta' });

@@ -1,10 +1,12 @@
 const { getConnection } = require('../db');
 const gameDb = require('../gameDb');
+const userDb = require('../userDb');
 
 class GameRepository {
-  constructor(db = gameDb, conn = getConnection) {
+  constructor(db = gameDb, conn = getConnection, userdb = userDb) {
     this.db = db;
     this.conn = conn;
+    this.userdb = userdb;
   }
 
   async insertGame(boardSize, mode, connection) {
@@ -28,7 +30,7 @@ class GameRepository {
   }
 
   async findUserIdByUsername(username, connection) {
-    return await this.db.findUserIdByUsername(username, connection);
+    return await this.userdb.findUserByUsernameExact(username, connection);
   }
 
   async findBotIdByDifficulty(difficulty, connection) {

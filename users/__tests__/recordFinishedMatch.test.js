@@ -22,19 +22,18 @@ describe('recordFinishedMatch', () => {
   })
 
   it('guarda partida 1vs1 y relaciona ganador/perdedor', async () => {
-    gameRepo.findUserIdByUsername
-      .mockResolvedValueOnce(11)
-      .mockResolvedValueOnce(22)
+    gameRepo.findUserIdByUsername.mockResolvedValueOnce(11)
 
     const gameId = await recordFinishedMatch({
       mode: '1vs1',
       boardSize: 8,
       turnNumber: 12,
       elapsedSeconds: 33,
-      winnerName: 'Ana',
-      loserName: 'Luis',
+      playerName: 'Ana',
+      guestName: 'Luis',
+      winner: 'player',
       isDraw: false,
-    }, 250)
+    }, 250, { username: 'Ana' })
 
     expect(gameId).toBe(101)
     expect(gameRepo.insertFinishedGame).toHaveBeenCalledWith({
@@ -45,11 +44,11 @@ describe('recordFinishedMatch', () => {
       elapsedSeconds: 33,
       score: 250,
     }, conn)
-    expect(gameRepo.insertUserGame).toHaveBeenCalledWith(101, 11, 22, conn)
+    expect(gameRepo.insertUserGame).toHaveBeenCalledWith(101, 11, null, 'Luis', conn)
     expect(conn.commit).toHaveBeenCalledOnce()
   })
 
-  it('si no existe ganador en 1vs1 devuelve error de cliente y rollback', async () => {
+  it('si no existe usuario principal en 1vs1 devuelve error de cliente y rollback', async () => {
     gameRepo.findUserIdByUsername.mockResolvedValueOnce(null)
 
     await expect(recordFinishedMatch({
@@ -57,14 +56,30 @@ describe('recordFinishedMatch', () => {
       boardSize: 8,
       turnNumber: 9,
       elapsedSeconds: 20,
-      winnerName: 'Desconocido',
-      loserName: 'Luis',
-    }, 100)).rejects.toMatchObject({
+      playerName: 'Desconocido',
+      guestName: 'Luis',
+      winner: 'guest',
+    }, 100, { username: 'Desconocido' })).rejects.toMatchObject({
       statusCode: 400,
-      message: 'Usuario ganador no encontrado: Desconocido',
+      message: 'Usuario no encontrado: Desconocido',
     })
 
     expect(conn.rollback).toHaveBeenCalledOnce()
+  })
+
+  it('rechaza 1vs1 si el token no coincide con el usuario principal', async () => {
+    await expect(recordFinishedMatch({
+      mode: '1vs1',
+      boardSize: 8,
+      turnNumber: 10,
+      elapsedSeconds: 25,
+      playerName: 'Ana',
+      guestName: 'Luis',
+      winner: 'player',
+    }, 100, { username: 'Otra' })).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'El token no corresponde con playerName en 1vs1',
+    })
   })
 
   it('normaliza winner/difficulty en 1vsbot y actualiza stats de usuario', async () => {
@@ -80,7 +95,7 @@ describe('recordFinishedMatch', () => {
       winner: 'player2',
       difficulty: 'Media',
       isDraw: false,
-    }, 180)
+    }, 180, { username: 'Ana' })
 
     expect(gameId).toBe(101)
     expect(gameRepo.insertFinishedGame).toHaveBeenCalledWith({
@@ -105,7 +120,7 @@ describe('recordFinishedMatch', () => {
       playerName: 'Ana',
       winner: 'player',
       difficulty: 'imposible',
-    }, 180)).rejects.toMatchObject({
+    }, 180, { username: 'Ana' })).rejects.toMatchObject({
       statusCode: 400,
       message: 'Dificultad inválida para 1vsbot',
     })
@@ -119,7 +134,7 @@ describe('recordFinishedMatch', () => {
       boardSize: 8,
       turnNumber: 10,
       elapsedSeconds: 15,
-    }, 0)).rejects.toMatchObject({
+    }, 0, { username: 'Ana' })).rejects.toMatchObject({
       statusCode: 400,
       message: 'Modo de partida no soportado',
     })

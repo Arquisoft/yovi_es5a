@@ -1,18 +1,20 @@
 const { getConnection } = require('../db');
 const gameDb = require('../gameDb');
+const userDb = require('../userDb');
 
 class GameRepository {
-  constructor(db = gameDb, conn = getConnection) {
+  constructor(db = gameDb, conn = getConnection, userdb = userDb) {
     this.db = db;
     this.conn = conn;
+    this.userdb = userdb;
   }
 
   async insertGame(boardSize, mode, connection) {
     return await this.db.insertGame(boardSize, mode, connection);
   }
 
-  async insertUserGame(gameId, player1Id, player2Id, connection) {
-    return await this.db.insertUserGame(gameId, player1Id, player2Id, connection);
+  async insertUserGame(gameId, player1Id, player2Id, guestName, connection) {
+    return await this.db.insertUserGame(gameId, player1Id, player2Id, guestName, connection);
   }
 
   async insertUserBotGame(gameId, userId, botId, difficulty, connection) {
@@ -28,7 +30,7 @@ class GameRepository {
   }
 
   async findUserIdByUsername(username, connection) {
-    return await this.db.findUserIdByUsername(username, connection);
+    return await this.userdb.findUserByUsernameExact(username, connection);
   }
 
   async findBotIdByDifficulty(difficulty, connection) {
@@ -41,10 +43,6 @@ class GameRepository {
 
   async updateUserBotStats(userId, score, connection) {
     return await this.db.updateUserBotStats(userId, score, connection);
-  }
-
-  async findUserByUsernameExact(username, connection) {
-    return await this.db.findUserByUsernameExact(username, connection);
   }
 
   async getLeaderboardPage(page, pageSize, connection) {

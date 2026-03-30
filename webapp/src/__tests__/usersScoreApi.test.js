@@ -1,11 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { requestMatchScore } from "../services/usersScoreApi";
 
+vi.mock("../services/authApi", () => ({
+  refreshToken: vi.fn(),
+}));
+
+vi.mock("../store/sessionStore", () => ({
+  useSessionStore: {
+    getState: vi.fn(),
+  },
+}));
+
+import { refreshToken } from "../services/authApi";
+import { useSessionStore } from "../store/sessionStore";
+
 describe("usersScoreApi - requestMatchScore", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
     global.fetch = vi.fn();
+    useSessionStore.getState.mockReturnValue({
+      accessToken: "old_access",
+      refreshToken: "old_refresh",
+      updateTokenPair: vi.fn(),
+    });
   });
 
   afterEach(() => {
@@ -19,8 +37,9 @@ describe("usersScoreApi - requestMatchScore", () => {
       elapsedSeconds: 120,
       turnNumber: 15,
       boardSize: 8,
-      winnerName: "Alice",
-      loserName: "Bob",
+      playerName: "Alice",
+      guestName: "Bob",
+      winner: "player",
     };
 
     const mockResponse = {
@@ -38,6 +57,7 @@ describe("usersScoreApi - requestMatchScore", () => {
     expect(url.endsWith("/finished-match")).toBe(true);
     expect(options.method).toBe("POST");
     expect(options.headers["Content-Type"]).toBe("application/json");
+    expect(options.headers.Authorization).toBe("Bearer old_access");
 
     const body = JSON.parse(options.body);
     expect(body).toEqual({
@@ -46,8 +66,9 @@ describe("usersScoreApi - requestMatchScore", () => {
       boardSize: 8,
       isDraw: false,
       mode: "1vs1",
-      winnerName: "Alice",
-      loserName: "Bob",
+      playerName: "Alice",
+      guestName: "Bob",
+      winner: "player",
     });
 
     expect(result).toEqual({ score: 350, saved: true, gameId: 11 });
@@ -96,8 +117,9 @@ describe("usersScoreApi - requestMatchScore", () => {
       elapsedSeconds: 30,
       turnNumber: 5,
       boardSize: 6,
-      winnerName: "A",
-      loserName: "B",
+      playerName: "A",
+      guestName: "B",
+      winner: "player",
     };
 
     const mockResponse = {
@@ -111,14 +133,15 @@ describe("usersScoreApi - requestMatchScore", () => {
     expect(result).toEqual({ score: 99, saved: true, gameId: 13 });
   });
 
-  it("si response.ok es false o score no es numérico, devuelve score 200 (Simulado)", async () => {
+  it("si response.ok es false, lanza error", async () => {
     const matchSummary = {
       mode: "1vs1",
       elapsedSeconds: 10,
       turnNumber: 2,
       boardSize: 8,
-      winnerName: "A",
-      loserName: "B",
+      playerName: "A",
+      guestName: "B",
+      winner: "player",
     };
 
     const mockResponse = {
@@ -128,11 +151,10 @@ describe("usersScoreApi - requestMatchScore", () => {
 
     global.fetch.mockResolvedValue(mockResponse);
 
-    const result = await requestMatchScore(matchSummary);
-    expect(result).toEqual({ score: 200, saved: false, gameId: null });
+    await expect(requestMatchScore(matchSummary)).rejects.toThrow(/no se pudo calcular la puntuación/i);
   });
 
-  it("si fetch lanza error, también devuelve score 200", async () => {
+  it("si fetch lanza error, propaga excepción", async () => {
     const matchSummary = {
       mode: "1vsbot",
       elapsedSeconds: 50,
@@ -145,7 +167,47 @@ describe("usersScoreApi - requestMatchScore", () => {
 
     global.fetch.mockRejectedValue(new Error("network error"));
 
+    await expect(requestMatchScore(matchSummary)).rejects.toThrow(/network error/i);
+  });
+
+  it("si /finished-match devuelve 401, intenta refresh y reintenta una vez", async () => {
+    const matchSummary = {
+      mode: "1vsbot",
+      elapsedSeconds: 40,
+      turnNumber: 7,
+      boardSize: 7,
+      playerName: "Pepe",
+      difficulty: "Facil",
+      winner: "player",
+    };
+
+    const updateTokenPair = vi.fn();
+    useSessionStore.getState.mockReturnValue({
+      accessToken: "expired_access",
+      refreshToken: "refresh_1",
+      updateTokenPair,
+    });
+
+    global.fetch
+      .mockResolvedValueOnce({ status: 401, ok: false, json: vi.fn().mockResolvedValue({ message: "unauthorized" }) })
+      .mockResolvedValueOnce({ status: 200, ok: true, json: vi.fn().mockResolvedValue({ score: 321, saved: true, gameId: 90 }) });
+
+    refreshToken.mockResolvedValue({
+      accessToken: "new_access",
+      refreshToken: "new_refresh",
+      accessTokenExpiresIn: 900,
+      refreshTokenExpiresIn: 259200,
+    });
+
     const result = await requestMatchScore(matchSummary);
-    expect(result).toEqual({ score: 200, saved: false, gameId: null });
+
+    expect(refreshToken).toHaveBeenCalledWith({ refreshToken: "refresh_1" });
+    expect(updateTokenPair).toHaveBeenCalledWith({
+      accessToken: "new_access",
+      refreshToken: "new_refresh",
+      accessTokenExpiresIn: 900,
+      refreshTokenExpiresIn: 259200,
+    });
+    expect(result.score).toBe(321);
   });
 });

@@ -1,6 +1,7 @@
 const GameRepository = require('../repositories/gameRepository');
 
 const gameRepo = new GameRepository();
+const userService = require('./userService');
 
 const ALLOWED_PAGE_SIZES = new Set([25, 50, 100]);
 
@@ -53,16 +54,10 @@ async function getUserSuggestions(query) {
   return rows.map((row) => row.username);
 }
 
-async function resolveUserByExactUsername(username) {
-  const normalized = String(username || '').trim();
-  if (!normalized) {
-    return null;
-  }
-  return gameRepo.findUserByUsernameExact(normalized);
-}
+
 
 async function getUserProfile(username) {
-  const user = await resolveUserByExactUsername(username);
+  const user = await userService.resolveUserByExactUsername(username);
   if (!user) {
     const error = new Error('Usuario no encontrado');
     error.statusCode = 404;
@@ -82,7 +77,7 @@ async function getUserProfile(username) {
 }
 
 async function getUserHistory(username, { page, pageSize, botPage, botPageSize, pvpPage, pvpPageSize }) {
-  const user = await resolveUserByExactUsername(username);
+  const user = await userService.resolveUserByExactUsername(username);
   if (!user) {
     const error = new Error('Usuario no encontrado');
     error.statusCode = 404;
@@ -155,7 +150,7 @@ async function getUserHistory(username, { page, pageSize, botPage, botPageSize, 
 }
 
 async function getCenteredLeaderboard(username, { page, pageSize }) {
-  const user = await resolveUserByExactUsername(username);
+  const user = await userService.resolveUserByExactUsername(username);
   if (!user) {
     const error = new Error('Usuario no encontrado');
     error.statusCode = 404;
@@ -181,7 +176,6 @@ module.exports = {
   gameRepo,
   getLeaderboard,
   getUserSuggestions,
-  resolveUserByExactUsername,
   getUserProfile,
   getUserHistory,
   getCenteredLeaderboard,

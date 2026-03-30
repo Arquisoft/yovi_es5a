@@ -14,11 +14,20 @@ async function insertGame(boardSize, mode = null, connection) {
   return result.insertId;  // Retorna el ID de la partida
 }
 
-async function insertUserGame(gameId, player1Id, player2Id, connection) {
-  const activeConnection = await resolveConnection(connection);
+async function insertUserGame(gameId, player1Id, player2Id, guestNameOrConnection, connection) {
+  const guestName =
+    guestNameOrConnection && typeof guestNameOrConnection === 'object' && typeof guestNameOrConnection.execute === 'function'
+      ? null
+      : guestNameOrConnection;
+  const inferredConnection =
+    guestNameOrConnection && typeof guestNameOrConnection === 'object' && typeof guestNameOrConnection.execute === 'function'
+      ? guestNameOrConnection
+      : connection;
+
+  const activeConnection = await resolveConnection(inferredConnection);
   await activeConnection.execute(
-    'INSERT INTO userGames (id, player1_id, player2_id) VALUES (?, ?, ?)',
-    [gameId, player1Id, player2Id]
+    'INSERT INTO userGames (id, player1_id, player2_id, guest_name) VALUES (?, ?, ?, ?)',
+    [gameId, player1Id, player2Id ?? null, guestName ?? null]
   );
 }
 
@@ -94,19 +103,7 @@ async function updateUserBotStats(userId, score, connection) {
   );
 }
 
-async function findUserByUsernameExact(username, connection) {
-  const activeConnection = await resolveConnection(connection);
-  const normalizedUsername = String(username || '').trim().toLowerCase();
-  const [rows] = await activeConnection.execute(
-    `SELECT id, username, created_at, COALESCE(best_score, 0) AS best_score,
-            COALESCE(total_games_1vsbot, 0) AS total_games_1vsbot
-     FROM users
-     WHERE LOWER(TRIM(username)) = ?
-     LIMIT 1`,
-    [normalizedUsername]
-  );
-  return rows[0] || null;
-}
+
 
 async function getLeaderboardPage(page, pageSize, connection) {
   const activeConnection = await resolveConnection(connection);
@@ -275,8 +272,8 @@ async function getUserVsUserMatchHistory(userId, page, pageSize, connection) {
      FROM game g
      INNER JOIN userGames ug ON ug.id = g.id
      WHERE g.mode = '1vs1'
-       AND (ug.player1_id = ? OR ug.player2_id = ?)`,
-    [userId, userId]
+       AND ug.player1_id = ?`,
+    [userId]
   );
   const total = Number(countRows[0]?.total || 0);
 
@@ -290,22 +287,22 @@ async function getUserVsUserMatchHistory(userId, page, pageSize, connection) {
        g.winner,
        g.finished_at,
        p1.username AS player1_name,
-       p2.username AS player2_name,
+       COALESCE(ug.guest_name, p2.username, 'Invitado') AS player2_name,
        CASE
          WHEN g.winner = 'player1' THEN p1.username
-         WHEN g.winner = 'player2' THEN p2.username
+         WHEN g.winner = 'player2' THEN COALESCE(ug.guest_name, p2.username, 'Invitado')
          WHEN g.winner = 'draw' THEN 'Empate'
          ELSE 'Desconocido'
        END AS winner_name
      FROM game g
      INNER JOIN userGames ug ON ug.id = g.id
      INNER JOIN users p1 ON p1.id = ug.player1_id
-     INNER JOIN users p2 ON p2.id = ug.player2_id
+     LEFT JOIN users p2 ON p2.id = ug.player2_id
      WHERE g.mode = '1vs1'
-       AND (ug.player1_id = ? OR ug.player2_id = ?)
+       AND ug.player1_id = ?
      ORDER BY g.finished_at DESC, g.id DESC
      LIMIT ${safePageSize} OFFSET ${offset}`,
-    [userId, userId]
+    [userId]
   );
 
   return { rows, total };
@@ -317,11 +314,9 @@ module.exports = {
   insertUserBotGame,
   insertBotGame,
   updateGameWinner,
-  findUserIdByUsername,
   findBotIdByDifficulty,
   insertFinishedGame,
   updateUserBotStats,
-  findUserByUsernameExact,
   getLeaderboardPage,
   getUserRankById,
   getLeaderboardPageCenteredByUserId,

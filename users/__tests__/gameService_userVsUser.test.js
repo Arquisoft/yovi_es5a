@@ -38,7 +38,7 @@ describe('createUserVsUserGame', () => {
 
     expect(mockConn.beginTransaction).toHaveBeenCalled()
     expect(gameRepo.insertGame).toHaveBeenCalledWith(8, '1vs1', mockConn)
-    expect(gameRepo.insertUserGame).toHaveBeenCalledWith(10, 1, 2, mockConn)
+    expect(gameRepo.insertUserGame).toHaveBeenCalledWith(10, 1, 2, null, mockConn)
     expect(mockConn.commit).toHaveBeenCalled()
     expect(msg).toBe('Game created with ID: 10')
   })

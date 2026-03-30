@@ -1,3 +1,11 @@
+.gameBoard {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .dificultad {
   font-weight: bold;
   color: #1d4ed8;
@@ -6,28 +14,22 @@
   padding: 0.375rem 0.75rem;
   display: inline-block;
   margin-bottom: 0.75rem;
+  align-self: center;
 }
 
-.turnError {
-  color: #e63946;
-  font-weight: 600;
-  margin-top: 0.6rem;
-}
-
-.gameBoard {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Tablero centrado, botón anclado a la derecha */
 .boardWithSidebar {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
-/* Panel lateral — anclado a la derecha del contenedor */
+.boardWithSidebar__board {
+  display: flex;
+  justify-content: center;
+}
+
 .suggestionPanel {
   position: absolute;
   right: 24px;
@@ -40,7 +42,6 @@
   min-width: 120px;
 }
 
-/* Botón de sugerencia */
 .suggestionBtn {
   display: flex;
   flex-direction: column;
@@ -83,7 +84,6 @@
   letter-spacing: 0.02em;
 }
 
-/* Spinner animado */
 .suggestionBtn__spinner {
   display: inline-block;
   width: 22px;
@@ -98,7 +98,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Texto de sugerencia */
 .suggestionText {
   margin: 0;
   font-size: 0.8rem;
@@ -113,12 +112,15 @@
   animation: fadeIn 0.2s ease;
 }
 
+.suggestionText--hidden {
+  visibility: hidden;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Área de mensajes de estado */
 .boardStatusArea {
   min-height: 28px;
   margin-top: 8px;
@@ -147,4 +149,9 @@
   color: #e63946;
   font-weight: 600;
 }
- 
+
+.turnError {
+  color: #e63946;
+  font-weight: 600;
+  margin-top: 0.6rem;
+}

@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import GameBoard from "../components/GameBoard";
 
 vi.mock("../store/boardStore", () => ({ useBoardStore: vi.fn() }));
@@ -40,6 +41,14 @@ vi.mock("../services/gamePlayApi", () => ({
 import { useBoardStore } from "../store/boardStore";
 import { parseCellId, boardToYen, barycentricToCell } from "../parsers/yenParser";
 import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
+
+function renderGameBoard() {
+  return render(
+    <MemoryRouter>
+      <GameBoard />
+    </MemoryRouter>
+  );
+}
 
 describe("GameBoard", () => {
   const actions = {
@@ -85,14 +94,14 @@ describe("GameBoard", () => {
 
   //    Verifica que el tablero se muestra correctamente al inicio.
   it("renderiza el tablero cuando hay celdas disponibles", () => {
-    render(<GameBoard />);
+    renderGameBoard();
     expect(screen.getByText("Header")).toBeInTheDocument();
   });
 
  
   it("si la celda seleccionada es inválida (1vs1), muestra error y no llama API", async () => {
     const user = userEvent.setup();
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
 
@@ -111,7 +120,7 @@ describe("GameBoard", () => {
       message: "",
     });
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
@@ -129,7 +138,7 @@ describe("GameBoard", () => {
       message: "Movimiento inválido",
     });
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
@@ -161,7 +170,7 @@ describe("GameBoard", () => {
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true);
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
@@ -189,11 +198,56 @@ describe("GameBoard", () => {
 
     actions.setCellOwner.mockReturnValue(true);
 
-    render(<GameBoard />);
+    renderGameBoard();
 
     await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
     expect(await screen.findByRole("heading", { name: /¡victoria!/i })).toBeInTheDocument();
     expect(screen.getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();
+  });
+
+  it("si gameMode no está configurado, usa playTurn en clic", async () => {
+    const user = userEvent.setup();
+    actions.playTurn.mockReturnValue(true);
+
+    setMockStore({ gameMode: null });
+    renderGameBoard();
+
+    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+    expect(actions.playTurn).toHaveBeenCalledWith("0,0");
+  });
+
+  it("1vs1: si gana player2 envía resumen de invitado en VictoryMenu", async () => {
+    const user = userEvent.setup();
+
+    setMockStore({
+      turnNumber: 2,
+      players: { player1Name: "Ana", player2Name: "Invitado", isBotSecondPlayer: false },
+    });
+
+    actions.setCellOwner.mockReturnValue(true);
+    validateTwoPlayerMove.mockResolvedValue({
+      isValidMove: true,
+      hasWon: true,
+      message: "",
+    });
+
+    renderGameBoard();
+    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+    expect(await screen.findByText(/invitado ha ganado la partida/i)).toBeInTheDocument();
+  });
+
+  it("sugerencia muestra error cuando API falla", async () => {
+    const user = userEvent.setup();
+
+    setMockStore({ gameMode: "1vs1" });
+    requestBotMove.mockRejectedValue(new Error("boom"));
+
+    renderGameBoard();
+    await user.click(screen.getByRole("button", { name: /sugerencia/i }));
+
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
 });

@@ -8,6 +8,10 @@ export default defineConfig({
     include: ["src/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     coverage: {
       reporter: ["text", "lcov"],
+      exclude: ["**/*.css", "src/env.d.ts"],
+      thresholds: {
+        lines: 85,
+      },
     },
   },
 });

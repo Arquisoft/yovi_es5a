@@ -36,7 +36,7 @@ async function createUserVsUserGame(player1Id, player2Id, boardSize) {
   try {
     await connection.beginTransaction();
     const gameId = await gameRepo.insertGame(boardSize, '1vs1', connection);
-    await gameRepo.insertUserGame(gameId, player1Id, player2Id, connection);
+    await gameRepo.insertUserGame(gameId, player1Id, player2Id, null, connection);
     await connection.commit();
     return `Game created with ID: ${gameId}`;
   } catch (err) {
@@ -97,7 +97,7 @@ async function finishGame(gameId, winner) {
   }
 }
 
-async function recordFinishedMatch(matchSummary, score) {
+async function recordFinishedMatch(matchSummary, score, auth) {
   const connection = await gameRepo.getConnection();
   await connection.beginTransaction();
 
@@ -111,33 +111,49 @@ async function recordFinishedMatch(matchSummary, score) {
     let gameId;
 
     if (mode === '1vs1') {
-      const winnerName = String(matchSummary.winnerName || '').trim();
-      const loserName = String(matchSummary.loserName || '').trim();
+      const playerName = String(matchSummary.playerName || '').trim();
+      const guestName = String(matchSummary.guestName || '').trim();
+      const winner = String(matchSummary.winner || '').trim().toLowerCase();
 
-      const winnerUserId = await gameRepo.findUserIdByUsername(winnerName, connection);
-      if (!winnerUserId) {
-        throw createClientError(`Usuario ganador no encontrado: ${winnerName}`);
+      if (auth?.username !== playerName) {
+        throw createClientError('El token no corresponde con playerName en 1vs1');
       }
 
-      const loserUserId = await gameRepo.findUserIdByUsername(loserName, connection);
-      if (!loserUserId) {
-        throw createClientError(`Usuario perdedor no encontrado: ${loserName}`);
+      if (!['player', 'guest', 'draw'].includes(winner)) {
+        throw createClientError('winner debe ser player, guest o draw en 1vs1');
       }
 
-      gameId = await gameRepo.insertFinishedGame({
-        boardSize,
-        mode: '1vs1',
-        winner: isDraw ? 'draw' : 'player1',
-        totalTurns,
-        elapsedSeconds,
-        score
+      const playerUserId = await gameRepo.findUserIdByUsername(playerName, connection);
+      if (!playerUserId) {
+        throw createClientError(`Usuario no encontrado: ${playerName}`);
+      }
+
+    const winnerValue = winner === 'player'
+        ? 'player1'
+        : winner === 'guest'
+          ? 'player2'
+          : 'draw';
+
+    const finishedGame = await gameRepo.insertFinishedGame({
+            boardSize,
+            mode: '1vs1',
+            winner: isDraw ? 'draw' : winnerValue,
+            totalTurns,
+            elapsedSeconds,
+            score
       }, connection);
 
-      await gameRepo.insertUserGame(gameId, winnerUserId, loserUserId, connection);
+
+
+    await gameRepo.insertUserGame(finishedGame, playerUserId.id, null, guestName, connection);
     } else if (mode === '1vsbot') {
       const playerName = String(matchSummary.playerName || '').trim();
       const winner = normalizeUserVsBotWinner(matchSummary.winner, isDraw);
       const difficulty = normalizeDifficulty(matchSummary.difficulty);
+
+      if (auth?.username !== playerName) {
+        throw createClientError('El token no corresponde con playerName en 1vsbot');
+      }
 
       if (!winner) {
         throw createClientError('El campo winner debe ser player, bot o draw');
@@ -157,7 +173,7 @@ async function recordFinishedMatch(matchSummary, score) {
         throw createClientError(`No existe bot para dificultad: ${difficulty}`);
       }
 
-      gameId = await gameRepo.insertFinishedGame({
+      const finishedGame = await gameRepo.insertFinishedGame({
         boardSize,
         mode: '1vsbot',
         winner,
@@ -165,8 +181,10 @@ async function recordFinishedMatch(matchSummary, score) {
         elapsedSeconds,
         score
       }, connection);
+      
 
-      await gameRepo.insertUserBotGame(gameId, userId, botId, difficulty, connection);
+      await gameRepo.insertUserBotGame(finishedGame, userId.id, botId, difficulty, connection);
+      await gameRepo.updateUserBotStats(userId.id, score, connection);
     } else {
       throw createClientError('Modo de partida no soportado');
     }

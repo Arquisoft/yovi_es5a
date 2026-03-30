@@ -24,7 +24,7 @@ describe("PlayerBadge", () => {
   it("cuando active=false no aplica sombra y baja un poco la opacidad", () => {
     render(<PlayerBadge label="J1" active={false} />);
     const circle = screen.getByText("J1").previousSibling;
-    expect(circle).toHaveStyle({ boxShadow: "none" });
+    expect(circle).toHaveStyle({ border: "3px solid transparent" });
     expect(circle).toHaveStyle({ opacity: "0.9" });
   });
 
@@ -33,7 +33,7 @@ describe("PlayerBadge", () => {
     const circle = screen.getByText("J1").previousSibling;
 
     expect(circle).toHaveStyle({
-      boxShadow: "0 6px 14px rgba(100,112,255,0.22)",
+      border: "3px solid white",
     });
     expect(circle).toHaveStyle({ opacity: "1" });
   });

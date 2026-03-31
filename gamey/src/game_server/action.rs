@@ -105,11 +105,11 @@ pub async fn place(
     let mut is_valid = false;
     let mut has_won = false;
     let message ;
-  /*   println!(
+     println!(
         "org: ({}, {})",
         place.selected_cell.q, 
         place.selected_cell.r
-    ); */
+    ); 
     let (a, b, c) = axial_to_trilinear(place.selected_cell.q, place.selected_cell.r, size).expect("coordenadas transformadas inválidas");
     let coords = Coordinates::new(a,b,c);
   /*   println!(

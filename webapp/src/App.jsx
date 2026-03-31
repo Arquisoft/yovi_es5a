@@ -1,6 +1,6 @@
 import React from 'react';
 import "./App.css";
-import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 import StartGameForm from "./components/StartGameForm";
 import GameBoard from "./components/GameBoard";
@@ -10,6 +10,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 import AuthPage from "./pages/AuthPage";
 import { useSessionStore } from "./store/sessionStore";
 
+
 function RequireAuth({ children }) {
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
   if (!isAuthenticated) {
@@ -18,12 +19,32 @@ function RequireAuth({ children }) {
   return children;
 }
 
+
 function HomePage() {
   const isConfigured = useBoardStore((state) => state.isConfigured);
   const user = useSessionStore((state) => state.user);
+  const logout = useSessionStore((state) => state.logout);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
+  };
 
   return (
     <div className="App">
+      <div className="topBar">
+        <button className="logoutButton" onClick={handleLogout} aria-label="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Salir
+        </button>
+      </div>
+
       <div className="homeHero">
         <h1 className="homeTitle">Juego Y</h1>
         {user ? (
@@ -43,6 +64,7 @@ function HomePage() {
   );
 }
 
+
 function App() {
   return (
     <Routes>
@@ -60,5 +82,6 @@ function App() {
     </Routes>
   );
 }
+
 
 export default App;

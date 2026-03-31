@@ -315,6 +315,11 @@ app.get('/users/:username/centered-leaderboard', async (req, res) => {
   }
 });
 
+//Con esto ya validamos el token antes de crear tablero
+app.get('/auth/check', authenticateAccessToken, (req, res) => {
+  return res.json({ valid: true });
+});
+
 if (require.main === module) {
   getConnection().then(() => {
     console.log('Connected to MySQL database');

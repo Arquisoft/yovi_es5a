@@ -8,6 +8,10 @@ export default function StartGameForm() {
   const startGameFromConfig = useBoardStore((state) => state.startGameFromConfig);
   const user = useSessionStore((state) => state.user);
 
+  const accessToken = useSessionStore((state) => state.accessToken);
+  const clearSession = useSessionStore((state) => state.clearSession);
+
+
   const [gameMode, setGameMode] = React.useState("1vs1");
   const [guestName, setGuestName] = React.useState("");
   const [difficulty, setDifficulty] = React.useState("Facil");
@@ -30,6 +34,27 @@ export default function StartGameForm() {
       if (gameMode === "1vs1" && !String(guestName || "").trim()) {
         throw new Error("Debes indicar el nombre del invitado.");
       }
+
+      // 1. Validar que hay token
+      if (!accessToken) {
+        clearSession();
+        throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
+      }
+
+      const resp = await fetch("http://localhost:3000/auth/check", {
+        method: "GET",
+        headers: {
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    });
+
+
+    if (!resp.ok) {
+      clearSession();
+      throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
+    }
+
+
 
       setGameConfig({
         gameMode,

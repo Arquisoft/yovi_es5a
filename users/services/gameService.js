@@ -146,6 +146,7 @@ async function recordFinishedMatch(matchSummary, score, auth) {
 
 
     await gameRepo.insertUserGame(finishedGame, playerUserId.id, null, guestName, connection);
+    await gameRepo.updateUserBotStats(playerUserId.id, score, connection);
     } else if (mode === '1vsbot') {
       const playerName = String(matchSummary.playerName || '').trim();
       const winner = normalizeUserVsBotWinner(matchSummary.winner, isDraw);

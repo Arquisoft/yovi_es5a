@@ -1,8 +1,6 @@
 
 use crate::{Coordinates, GameY, Movement, PlayerId, YBot};
 
-pub struct Dificult;
-
 fn evaluate_position(game: &GameY, bot_player: PlayerId) -> i32 {
     // Ejemplos de términos:
     // +10000 si el bot ha ganado

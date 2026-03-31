@@ -90,6 +90,7 @@ async function insertFinishedGame(summary, connection) {
   return result.insertId;
 }
 
+
 async function updateUserBotStats(userId, score, connection) {
   const activeConnection = await resolveConnection(connection);
   await activeConnection.execute(

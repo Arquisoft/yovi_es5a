@@ -199,3 +199,4 @@ paths:
           description: Centered leaderboard page
         '404':
           description: User not found
+          

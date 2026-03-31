@@ -7,6 +7,7 @@ import { boardToYen, parseCellId, barycentricToCell } from "../parsers/yenParser
 import { requestBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
+
 export default function GameBoard() {
   const cells = useBoardStore((state) => state.cells);
   const size = useBoardStore((state) => state.size);
@@ -28,13 +29,15 @@ export default function GameBoard() {
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
   const [isFetchingSuggestion, setIsFetchingSuggestion] = React.useState(false);
-  const [suggestion, setSuggestion] = React.useState(null);
+  // Ahora guarda el cellId "q,r" en lugar de texto display
+  const [suggestionId, setSuggestionId] = React.useState(null);
 
   const PLAYER_COLORS = React.useMemo(
     () => ({
       player1: "#e63946",
       player2: "#1d4ed8",
       selected: "#2ecc71",
+      suggestion: "#f5c518",
       empty: "#ccc",
     }),
     []
@@ -49,13 +52,14 @@ export default function GameBoard() {
     return () => clearTimeout(timer);
   }, [isSubmittingTurn]);
 
+  // Limpia la sugerencia al cambiar de turno
   React.useEffect(() => {
-    setSuggestion(null);
+    setSuggestionId(null);
   }, [turnNumber]);
 
   const handleSuggestion = React.useCallback(async () => {
     if (isFetchingSuggestion || isSubmittingTurn || gameOver) return;
-    setSuggestion(null);
+    setSuggestionId(null);
     setIsFetchingSuggestion(true);
     try {
       const board = boardToYen({ size, turnNumber, cells });
@@ -67,13 +71,14 @@ export default function GameBoard() {
         typeof botCoords.y !== "number" ||
         typeof botCoords.z !== "number"
       ) {
-        setSuggestion("Sin sugerencia");
+        // Sin sugerencia válida — no pintamos ninguna celda
         return;
       }
       const cell = barycentricToCell(botCoords, size);
-      setSuggestion(`(${cell.q}, ${cell.r})`);
+      // Guardamos el id de la celda para que KonvaRenderer la pinte de amarillo
+      setSuggestionId(`${cell.q},${cell.r}`);
     } catch {
-      setSuggestion("Error");
+      // Error silencioso — no pintamos nada
     } finally {
       setIsFetchingSuggestion(false);
     }
@@ -286,6 +291,7 @@ export default function GameBoard() {
             cells={cells}
             size={size}
             selectedId={selectedId}
+            suggestionId={suggestionId}
             onCellClick={handleCellClick}
             playerColors={PLAYER_COLORS}
           />
@@ -307,10 +313,6 @@ export default function GameBoard() {
                 {isFetchingSuggestion ? "Buscando..." : "Sugerencia"}
               </span>
             </button>
-
-            <p className={`suggestionText ${suggestion ? "" : "suggestionText--hidden"}`}>
-              {suggestion ? `📍 ${suggestion}` : "\u00A0"}
-            </p>
           </div>
         ) : null}
       </div>

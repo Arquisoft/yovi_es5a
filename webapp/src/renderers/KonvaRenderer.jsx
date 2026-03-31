@@ -26,7 +26,7 @@ function hexPoints(size) {
   return points;
 }
 
-export default memo(function KonvaRenderer({ cells, onCellClick, suggestionId, playerColors }) {
+export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, suggestionId, playerColors }) {
   const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
 
@@ -54,11 +54,14 @@ export default memo(function KonvaRenderer({ cells, onCellClick, suggestionId, p
             const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
 
             let fill = playerColors?.empty ?? "#ccc";
-            if (cell.state === "player1")    fill = playerColors?.player1   ?? "#e63946";
-            if (cell.state === "player2")    fill = playerColors?.player2   ?? "#1d4ed8";
-            if (cell.id === suggestionId)    fill = playerColors?.suggestion ?? "#f5c518";
+            if (cell.state === "player1") fill = playerColors?.player1 ?? "#e63946";
+            if (cell.state === "player2") fill = playerColors?.player2 ?? "#1d4ed8";
+            // Sugerencia solo si la celda está vacía
+            if (cell.id === suggestionId && cell.state == null) fill = playerColors?.suggestion ?? "#f5c518";
+            // selectedId tiene siempre prioridad visual
+            if (cell.id === selectedId) fill = playerColors?.selected ?? "#2ecc71";
 
-            const isSuggestion = cell.id === suggestionId;
+            const isSuggestion = cell.id === suggestionId && cell.state == null;
 
             return (
               <Line

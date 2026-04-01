@@ -467,6 +467,7 @@ dependencies = [
  "mime",
  "proptest",
  "rand",
+ "rayon",
  "rustyline",
  "serde",
  "serde_json",

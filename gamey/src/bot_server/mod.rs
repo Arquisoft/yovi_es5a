@@ -10,7 +10,7 @@ pub use choose::MoveResponse;
 pub use error::ErrorResponse;
 pub use version::*;
 
-use crate::{GameYError, Medium, RandomBot, YBotRegistry, state::AppState};
+use crate::{GameYError, Medium,Hard, RandomBot, YBotRegistry, state::AppState};
 
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
@@ -37,7 +37,9 @@ pub fn create_router(state: AppState) -> axum::Router {
 pub fn create_default_state() -> AppState {
     let bots = YBotRegistry::new()
         .with_bot(Arc::new(RandomBot))
-        .with_bot(Arc::new(Medium));  // ← registrar Medium
+        .with_bot(Arc::new(Medium))
+        .with_bot(Arc::new(Hard));
+
     AppState::new(bots)
 }
 

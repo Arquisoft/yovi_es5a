@@ -1,130 +1,442 @@
-
 use crate::{Coordinates, GameY, Movement, PlayerId, YBot};
+use std::collections::BinaryHeap;
+use std::cmp::Reverse;
+use std::sync::atomic::{AtomicI32, Ordering};
+use rayon::prelude::*;
 
-fn evaluate_position(game: &GameY, bot_player: PlayerId) -> i32 {
-    // Ejemplos de términos:
-    // +10000 si el bot ha ganado
-    // -10000 si el humano ha ganado
-    // luego, heurística tipo “Medium” como refinamiento
+// ──────────────────────────────────────────────
+// Tablas auxiliares
+// ──────────────────────────────────────────────
 
+/// Construye un array indexado por índice de celda que indica qué jugador
+/// ocupa cada celda (None si está vacía). Permite acceso O(1) en lugar de
+/// buscar en el HashMap de GameY en cada consulta.
+fn build_owner_table(game: &GameY) -> Vec<Option<PlayerId>> {
+    let size = game.board_size();
+    let total = (size * (size + 1)) / 2;
+    let mut table = vec![None; total as usize];
+    for (coords, (_, player)) in game.board_map() {
+        table[coords.to_index(size) as usize] = Some(*player);
+    }
+    table
+}
+
+/// Precalcula los vecinos de cada celda como índices lineales.
+/// En el juego Y con coordenadas baricéntricas, cada celda tiene hasta 6 vecinos:
+/// modificamos uno de los tres ejes en +1 y otro en -1 para obtenerlos.
+/// Al calcularlo una sola vez evitamos repetir la aritmética baricéntrica
+/// en cada nodo del árbol de búsqueda.
+fn build_neighbor_table(board_size: u32) -> Vec<Vec<u32>> {
+    let total = (board_size * (board_size + 1)) / 2;
+    (0..total)
+        .map(|idx| {
+            let c = Coordinates::from_index(idx, board_size);
+            let (x, y, z) = (c.x(), c.y(), c.z());
+            let mut n = Vec::with_capacity(6);
+            if x > 0 {
+                n.push(Coordinates::new(x - 1, y + 1, z).to_index(board_size));
+                n.push(Coordinates::new(x - 1, y, z + 1).to_index(board_size));
+            }
+            if y > 0 {
+                n.push(Coordinates::new(x + 1, y - 1, z).to_index(board_size));
+                n.push(Coordinates::new(x, y - 1, z + 1).to_index(board_size));
+            }
+            if z > 0 {
+                n.push(Coordinates::new(x + 1, y, z - 1).to_index(board_size));
+                n.push(Coordinates::new(x, y + 1, z - 1).to_index(board_size));
+            }
+            n
+        })
+        .collect()
+}
+
+/// Devuelve los índices de las celdas que tocan cada uno de los tres lados
+/// del tablero triangular (lado A: x==0, lado B: y==0, lado C: z==0).
+/// Estas celdas son los puntos de partida de Dijkstra para calcular
+/// la distancia mínima de conexión entre lados.
+fn side_cells(board_size: u32) -> (Vec<u32>, Vec<u32>, Vec<u32>) {
+    let total = (board_size * (board_size + 1)) / 2;
+    let mut a = vec![];
+    let mut b = vec![];
+    let mut c = vec![];
+    for idx in 0..total {
+        let coords = Coordinates::from_index(idx, board_size);
+        if coords.x() == 0 { a.push(idx); }
+        if coords.y() == 0 { b.push(idx); }
+        if coords.z() == 0 { c.push(idx); }
+    }
+    (a, b, c)
+}
+
+// ──────────────────────────────────────────────
+// Dijkstra
+// ──────────────────────────────────────────────
+
+/// Algoritmo de Dijkstra adaptado al juego Y:
+/// - Celda propia del jugador: coste 0 (ya conquistada, se atraviesa gratis)
+/// - Celda vacía: coste 1 (habría que colocar una ficha)
+/// - Celda del rival: bloqueada, no se puede atravesar
+///
+/// Devuelve un array con la distancia mínima desde cualquiera de las
+/// `sources` hasta cada celda del tablero. Las celdas inalcanzables
+/// quedan con valor u32::MAX.
+fn dijkstra(
+    sources: &[u32],
+    player: PlayerId,
+    owner: &[Option<PlayerId>],
+    neighbors: &[Vec<u32>],
+    total: usize,
+) -> Vec<u32> {
+    let mut dist = vec![u32::MAX; total];
+    let mut heap = BinaryHeap::new(); // min-heap gracias a Reverse
+
+    // Inicializamos con todas las fuentes a coste 0
+    for &src in sources {
+        dist[src as usize] = 0;
+        heap.push(Reverse((0u32, src)));
+    }
+
+    while let Some(Reverse((cost, idx))) = heap.pop() {
+        // Si ya encontramos un camino más corto, descartamos esta entrada
+        if cost > dist[idx as usize] { continue; }
+        for &nidx in &neighbors[idx as usize] {
+            let cell_cost = match owner[nidx as usize] {
+                Some(p) if p == player => 0,  // propia: gratis
+                None => 1,                     // vacía: coste 1
+                Some(_) => continue,           // rival: bloqueada
+            };
+            let new_cost = cost + cell_cost;
+            if new_cost < dist[nidx as usize] {
+                dist[nidx as usize] = new_cost;
+                heap.push(Reverse((new_cost, nidx)));
+            }
+        }
+    }
+
+    dist
+}
+
+/// Construye la lista de celdas fuente para Dijkstra a partir de un lado:
+/// incluimos todas las celdas del lado que no estén ocupadas por el rival,
+/// ya que el rival bloquea el acceso a esas celdas del borde.
+fn combined_sources(
+    player: PlayerId,
+    owner: &[Option<PlayerId>],
+    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
+) -> Vec<u32> {
+    [&sides.0, &sides.1, &sides.2]
+        .iter()
+        .flat_map(|side| side.iter())
+        .filter(|&&idx| owner[idx as usize] != Some(opponent(player)))
+        .copied()
+        .collect()
+}
+
+/// Calcula el coste mínimo para que `player` conecte los tres lados del tablero.
+///
+/// Estrategia: lanzamos Dijkstra desde cada lado por separado (da, db, dc).
+/// Para cada celda del tablero, da[i] + db[i] + dc[i] representa el coste
+/// total de un camino que pase por esa celda conectando los tres lados.
+/// Restamos 2*cell_cost porque la celda aparece contada tres veces pero
+/// solo se paga una.
+///
+/// El mínimo sobre todas las celdas es el coste óptimo de conexión.
+fn connection_cost(
+    player: PlayerId,
+    owner: &[Option<PlayerId>],
+    neighbors: &[Vec<u32>],
+    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
+    total: usize,
+) -> i32 {
+    // Fuentes de cada lado: celdas del borde no bloqueadas por el rival
+    let src = |side: &Vec<u32>| -> Vec<u32> {
+        side.iter()
+            .filter(|&&idx| owner[idx as usize] != Some(opponent(player)))
+            .copied()
+            .collect()
+    };
+
+    // Tres Dijkstras independientes, uno desde cada lado
+    let da = dijkstra(&src(&sides.0), player, owner, neighbors, total);
+    let db = dijkstra(&src(&sides.1), player, owner, neighbors, total);
+    let dc = dijkstra(&src(&sides.2), player, owner, neighbors, total);
+
+    let mut min_cost = i32::MAX;
+    for idx in 0..total {
+        // Si algún lado es inalcanzable desde esta celda, la descartamos
+        if da[idx] == u32::MAX || db[idx] == u32::MAX || dc[idx] == u32::MAX { continue; }
+        // La celda actúa como punto de unión de los tres caminos;
+        // su coste se descuenta dos veces porque se sumó tres veces
+        let cell_cost = if owner[idx] == Some(player) { 0u32 } else { 1 };
+        let cost = (da[idx] + db[idx] + dc[idx]).saturating_sub(2 * cell_cost);
+        if (cost as i32) < min_cost {
+            min_cost = cost as i32;
+        }
+    }
+
+    // 1000 como valor de "imposible" si el jugador está completamente bloqueado
+    if min_cost == i32::MAX { 1000 } else { min_cost }
+}
+
+// ──────────────────────────────────────────────
+// Evaluación y ordenación
+// ──────────────────────────────────────────────
+
+/// Función de evaluación estática del tablero desde la perspectiva del bot.
+///
+/// - Si el juego terminó: +10000 si ganó el bot, -10000 si ganó el rival.
+/// - Si sigue en curso: `opp_cost * 2 - bot_cost`
+///   El factor 2 hace que el bot priorice bloquear al rival sobre avanzar,
+///   ya que reducir el camino del rival vale el doble que acortar el propio.
+fn evaluate_position(
+    game: &GameY,
+    bot_player: PlayerId,
+    owner: &[Option<PlayerId>],
+    neighbors: &[Vec<u32>],
+    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
+) -> i32 {
     if game.check_game_over() {
-        // Supongamos que game.winner() devuelve Option<PlayerId>
         if let Some(last) = game.history().last() {
             let last_player = match last {
                 Movement::Placement { player, .. } => *player,
                 Movement::Action { player, .. } => *player,
             };
-            if last_player == bot_player {
-                return 10_000;
-            } else {
-                return -10_000;
-            }
+            return if last_player == bot_player { 10_000 } else { -10_000 };
         }
     }
 
-    // Si no ha terminado, usa algo tipo “centralidad + conectividad”
-    // Aquí puedes empezar simple:
-    // suma de score_cell para las fichas del bot
-    // menos suma de score_cell para las fichas del rival
-    0
+    let total = owner.len();
+    let opp = opponent(bot_player);
+    let bot_cost = connection_cost(bot_player, owner, neighbors, sides, total);
+    let opp_cost = connection_cost(opp, owner, neighbors, sides, total);
+
+    opp_cost * 2 - bot_cost
 }
 
+/// Ordena los movimientos disponibles por relevancia estratégica para
+/// maximizar la eficiencia de la poda alfa-beta.
+///
+/// Usamos dos Dijkstras combinados (uno por jugador con todos los lados
+/// como fuente a la vez) para estimar qué celdas están en los caminos
+/// críticos de ambos jugadores. Una celda con distancia combinada baja
+/// es estratégicamente urgente: o acelera al bot o bloquea al rival.
+fn order_moves_with_tables(
+    cells: &[u32],
+    bot_player: PlayerId,
+    owner: &[Option<PlayerId>],
+    neighbors: &[Vec<u32>],
+    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
+    total: usize,
+) -> Vec<u32> {
+    let opp = opponent(bot_player);
+    // Un Dijkstra por jugador con todos sus lados como fuentes simultáneas
+    let dist_bot = dijkstra(&combined_sources(bot_player, owner, sides), bot_player, owner, neighbors, total);
+    let dist_opp = dijkstra(&combined_sources(opp, owner, sides), opp, owner, neighbors, total);
+
+    let mut scored: Vec<(u32, i32)> = cells
+        .iter()
+        .map(|&idx| {
+            let db = dist_bot[idx as usize] as i32;
+            let do_ = dist_opp[idx as usize] as i32;
+            // Tomamos el mínimo: la celda más urgente para cualquiera de los dos
+            // Negativo porque queremos ordenar de mayor a menor urgencia
+            (idx, -(db.min(do_)))
+        })
+        .collect();
+
+    // Ordenamos de más a menos urgente (mayor score = más prioritario)
+    scored.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+    scored.into_iter().map(|(idx, _)| idx).collect()
+}
+
+fn opponent(player: PlayerId) -> PlayerId {
+    if player.id() == 0 { PlayerId::new(1) } else { PlayerId::new(0) }
+}
+
+/// Ajusta la profundidad de búsqueda según las celdas disponibles.
+/// Con pocas celdas (endgame) podemos buscar más profundo porque el
+/// árbol de juego es más pequeño. En opening reducimos para mantener
+/// tiempos de respuesta razonables.
+fn dynamic_depth(available: usize) -> u32 {
+    match available {
+        0..=6   => 7,
+        7..=15  => 5,
+        16..=30 => 4,
+        _       => 3,
+    }
+}
+
+// ──────────────────────────────────────────────
+// Minimax secuencial (niveles internos)
+// ──────────────────────────────────────────────
+
+/// Minimax con poda alfa-beta para los niveles internos del árbol.
+///
+/// - `maximizing=true`: turno del bot, busca maximizar la evaluación.
+/// - `maximizing=false`: turno del rival, busca minimizar la evaluación.
+/// - `alpha`: mejor valor garantizado para el maximizador hasta ahora.
+/// - `beta`: mejor valor garantizado para el minimizador hasta ahora.
+/// - Si beta <= alpha, podamos la rama (el oponente nunca permitirá llegar aquí).
+///
+/// `neighbors` y `sides` se pasan por referencia y se reutilizan en toda
+/// la recursión ya que no cambian durante la búsqueda.
 fn minimax(
     game: &GameY,
     depth: u32,
-    alpha: i32,
-    beta: i32,
+    mut alpha: i32,
+    mut beta: i32,
     maximizing: bool,
     bot_player: PlayerId,
+    neighbors: &[Vec<u32>],
+    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
 ) -> i32 {
-    // 1. Condición de parada
+    // Reconstruimos la tabla de owners para este estado concreto del tablero
+    let owner = build_owner_table(game);
+    let total = owner.len();
+
+    // Condición de parada: profundidad agotada o juego terminado
     if depth == 0 || game.check_game_over() {
-        return evaluate_position(game, bot_player);
+        return evaluate_position(game, bot_player, &owner, neighbors, sides);
     }
 
-    let mut alpha = alpha;
-    let mut beta = beta;
+    let current = if maximizing { bot_player } else { opponent(bot_player) };
 
-    let available = game.available_cells();
+    // Ordenamos movimientos para explorar primero los más prometedores,
+    // lo que genera más cortes alfa-beta y reduce el árbol explorado
+    let ordered = order_moves_with_tables(
+        game.available_cells(), bot_player, &owner, neighbors, sides, total,
+    );
 
     if maximizing {
-        let mut best = i32::MIN;
-        for cell in available {
-            let coords = Coordinates::from_index(*cell, game.board_size());
+        let mut best = i32::MIN + 1;
+        for cell in ordered {
+            let coords = Coordinates::from_index(cell, game.board_size());
             let mut copy = game.clone();
-            let mv = Movement::Placement {
-                player: bot_player,
-                coords,
-            };
-            if copy.add_move(mv).is_err() {
-                continue;
-            }
-            let value = minimax(&copy, depth - 1, alpha, beta, false, bot_player);
+            if copy.add_move(Movement::Placement { player: current, coords }).is_err() { continue; }
+            let value = minimax(&copy, depth - 1, alpha, beta, false, bot_player, neighbors, sides);
             best = best.max(value);
             alpha = alpha.max(best);
-            if beta <= alpha {
-                break; // poda beta
-            }
+            if beta <= alpha { break; } // poda beta: el minimizador no permite esto
         }
         best
     } else {
         let mut best = i32::MAX;
-        let opp = if bot_player.id() == 0 {
-            PlayerId::new(1)
-        } else {
-            PlayerId::new(0)
-        };
-        for cell in available {
-            let coords = Coordinates::from_index(*cell, game.board_size());
+        for cell in ordered {
+            let coords = Coordinates::from_index(cell, game.board_size());
             let mut copy = game.clone();
-            let mv = Movement::Placement {
-                player: opp,
-                coords,
-            };
-            if copy.add_move(mv).is_err() {
-                continue;
-            }
-            let value = minimax(&copy, depth - 1, alpha, beta, true, bot_player);
+            if copy.add_move(Movement::Placement { player: current, coords }).is_err() { continue; }
+            let value = minimax(&copy, depth - 1, alpha, beta, true, bot_player, neighbors, sides);
             best = best.min(value);
             beta = beta.min(best);
-            if beta <= alpha {
-                break; // poda alpha
-            }
+            if beta <= alpha { break; } // poda alpha: el maximizador no permite esto
         }
         best
     }
 }
 
+// ──────────────────────────────────────────────
+// Nivel raíz paralelo con Rayon
+// ──────────────────────────────────────────────
+
+/// Evalúa los movimientos del nivel raíz en paralelo usando Rayon.
+///
+/// La poda alfa-beta clásica es inherentemente secuencial (cada nodo
+/// necesita el resultado del anterior para actualizar alpha/beta).
+/// En el nivel raíz rompemos esa dependencia: evaluamos todos los hijos
+/// en paralelo y tomamos el máximo al final.
+///
+/// Compensación: perdemos algunos cortes alfa-beta en el nivel 0,
+/// pero ganamos todos los núcleos de la CPU, lo que es mucho más rentable.
+///
+/// El `AtomicI32` permite que los hilos compartan el mejor score visto
+/// hasta ahora para una poda temprana optimista: si un hilo ya encontró
+/// una victoria segura (score >= 9000), los demás pueden saltarse su trabajo.
+fn parallel_root(
+    board: &GameY,
+    depth: u32,
+    bot_player: PlayerId,
+    ordered: Vec<u32>,
+    neighbors: &[Vec<u32>],
+    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
+) -> Option<(i32, Coordinates)> {
+    let best_so_far = AtomicI32::new(i32::MIN + 1);
+
+    let results: Vec<Option<(i32, Coordinates)>> = ordered
+        .par_iter() // Rayon: cada iteración se ejecuta en un hilo distinto
+        .map(|&cell| {
+            // Poda temprana: si otro hilo ya encontró una victoria segura,
+            // no tiene sentido seguir evaluando más movimientos
+            if best_so_far.load(Ordering::Relaxed) >= 9_000 {
+                return None;
+            }
+
+            let coords = Coordinates::from_index(cell, board.board_size());
+            let mut copy = board.clone();
+            if copy.add_move(Movement::Placement { player: bot_player, coords }).is_err() {
+                return None;
+            }
+
+            // Llamada secuencial al minimax para los niveles internos
+            let score = minimax(
+                &copy, depth, i32::MIN + 1, i32::MAX,
+                false, bot_player, neighbors, sides,
+            );
+
+            // Actualizamos el mejor score global de forma atómica (sin mutex)
+            // usando compare_exchange_weak en un bucle CAS (Compare-And-Swap)
+            let mut prev = best_so_far.load(Ordering::Relaxed);
+            while score > prev {
+                match best_so_far.compare_exchange_weak(prev, score, Ordering::Relaxed, Ordering::Relaxed) {
+                    Ok(_) => break,
+                    Err(current) => prev = current, // otro hilo actualizó antes, reintentamos
+                }
+            }
+
+            Some((score, coords))
+        })
+        .collect();
+
+    // De todos los resultados paralelos, tomamos el movimiento con mayor score
+    results
+        .into_iter()
+        .flatten()
+        .max_by_key(|(score, _)| *score)
+}
+
+// ──────────────────────────────────────────────
+// Bot
+// ──────────────────────────────────────────────
+
 pub struct Hard;
 
 impl YBot for Hard {
-    fn name(&self) -> &str {
-        "hard_bot"
-    }
+    fn name(&self) -> &str { "hard_bot" }
 
     fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
         let bot_player = board.next_player()?;
-        let mut best_score = i32::MIN;
-        let mut best_move = None;
+        let size = board.board_size();
 
-        for cell in board.available_cells() {
-            let coords = Coordinates::from_index(*cell, board.board_size());
-            let mut copy = board.clone();
-            let mv = Movement::Placement {
-                player: bot_player,
-                coords,
-            };
-            if copy.add_move(mv).is_err() {
-                continue;
-            }
-            let score = minimax(&copy, 3, i32::MIN, i32::MAX, false, bot_player);
-            if score > best_score {
-                best_score = score;
-                best_move = Some(coords);
-            }
-        }
+        // Precalculamos las estructuras que no cambian durante la búsqueda:
+        // - neighbors: vecinos de cada celda (depende solo del tamaño del tablero)
+        // - sides: índices de celdas en cada borde (idem)
+        // - owner: estado actual del tablero (snapshot inicial)
+        // Pasarlas por referencia a toda la recursión evita recalcularlas
+        let neighbors = build_neighbor_table(size);
+        let sides = side_cells(size);
+        let owner = build_owner_table(board);
+        let total = owner.len();
 
-        best_move
+        // Profundidad adaptativa según fase de la partida
+        let depth = dynamic_depth(board.available_cells().len());
+
+        // Ordenamos los movimientos raíz antes de lanzar los hilos
+        // para que Rayon distribuya primero los trabajos más prometedores
+        let ordered = order_moves_with_tables(
+            board.available_cells(), bot_player, &owner, &neighbors, &sides, total,
+        );
+
+        // Evaluación paralela del nivel raíz → elegimos el mejor movimiento
+        parallel_root(board, depth, bot_player, ordered, &neighbors, &sides)
+            .map(|(_, coords)| coords)
     }
 }
-

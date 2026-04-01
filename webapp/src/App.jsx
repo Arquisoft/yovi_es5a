@@ -9,6 +9,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AuthPage from "./pages/AuthPage";
 import { useSessionStore } from "./store/sessionStore";
+import { logout as logoutApi } from "./services/authApi";
 
 
 function RequireAuth({ children }) {
@@ -23,12 +24,19 @@ function RequireAuth({ children }) {
 function HomePage() {
   const isConfigured = useBoardStore((state) => state.isConfigured);
   const user = useSessionStore((state) => state.user);
-  const logout = useSessionStore((state) => state.logout);
+  const refreshToken = useSessionStore((state) => state.refreshToken);
+  const clearSession = useSessionStore((state) => state.clearSession);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
+  const handleLogout = async () => {
+    try {
+      await logoutApi({ refreshToken });
+    } catch {
+      // Si falla el servidor, cerramos sesión localmente igualmente
+    } finally {
+      clearSession();
+      navigate("/auth");
+    }
   };
 
   return (

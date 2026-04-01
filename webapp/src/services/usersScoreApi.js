@@ -1,5 +1,6 @@
 import { refreshToken as refreshAccessToken } from "./authApi";
 import { useSessionStore } from "../store/sessionStore";
+import { match } from "assert";
 
 //const USERS_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const USERS_BASE_URL = "http://localhost:3000";
@@ -13,6 +14,7 @@ function createFinishedMatchUrl() {
 
 function buildFinishedMatchPayload(matchSummary) {
   const mode = matchSummary.mode;
+  console.log("Construyendo payload para matchSummary:", matchSummary);
   const commonPayload = {
     elapsedSeconds: matchSummary.elapsedSeconds,
     turnNumber: matchSummary.turnNumber,
@@ -33,7 +35,7 @@ function buildFinishedMatchPayload(matchSummary) {
   if (mode === "1vsbot") {
     return {
       ...commonPayload,
-      playerName: matchSummary.playerName,
+      playerName: matchSummary.playerName ? matchSummary.playerName : "BOT",
       difficulty: matchSummary.difficulty,
       winner: matchSummary.winner,
     };

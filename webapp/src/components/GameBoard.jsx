@@ -230,8 +230,10 @@ export default function GameBoard() {
               elapsedSeconds,
               turnNumber: turnNumber + 1,
               boardSize: size,
-              winnerName: players.player2Name,
-              loserName: players.player1Name,
+              playerName: players.player1Name,
+              difficulty,
+              isDraw: false,
+              winner: players.player2Name,
             },
           });
           return;

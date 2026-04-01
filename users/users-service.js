@@ -67,7 +67,7 @@ function validateFinishedMatchPayload(matchSummary) {
   }
 
   if (matchSummary.mode === '1vsbot') {
-    const playerName = String(matchSummary.playerName || '').trim();
+    const playerName = matchSummary.playerName ? String(matchSummary.playerName || '').trim() : "BOT";
     const difficulty = String(matchSummary.difficulty || '').trim();
     const isDraw = Boolean(matchSummary.isDraw);
     const winner = String(matchSummary.winner || '').trim();

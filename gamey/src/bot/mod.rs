@@ -10,9 +10,11 @@
 
 pub mod random;
 pub mod medium;
+pub mod hard;
 pub mod ybot;
 pub mod ybot_registry;
 pub use random::*;
 pub use medium::*;   // ← faltaba esto
+pub use hard::*;
 pub use ybot::*;
 pub use ybot_registry::*;

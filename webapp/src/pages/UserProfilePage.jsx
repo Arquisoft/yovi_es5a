@@ -165,7 +165,7 @@ export default function UserProfilePage() {
           <p><strong>Nombre:</strong> {profile.username}</p>
           <p><strong>Posición global:</strong> {profile.globalPosition}</p>
           <p><strong>Puntuación máxima:</strong> {profile.bestScore}</p>
-          <p><strong>Partidas totales (1vsbot):</strong> {profile.totalGames}</p>
+          <p><strong>Partidas totales:</strong> {profile.totalGames}</p>
         </article>
       ) : null}
 

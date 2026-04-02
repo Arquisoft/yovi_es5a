@@ -4,9 +4,11 @@ import { login, register } from "../services/authApi";
 import { useSessionStore } from "../store/sessionStore";
 import "./AuthPage.css";
 
+
 function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
 }
+
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = React.useState("login");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [successMessage, setSuccessMessage] = React.useState("");
 
   const [loginIdentifier, setLoginIdentifier] = React.useState("");
   const [loginPassword, setLoginPassword] = React.useState("");
@@ -24,9 +27,14 @@ export default function AuthPage() {
   const [registerPassword, setRegisterPassword] = React.useState("");
   const [registerPasswordRepeat, setRegisterPasswordRepeat] = React.useState("");
 
+  function clearMessages() {
+    setError("");
+    setSuccessMessage("");
+  }
+
   async function handleLoginSubmit(event) {
     event.preventDefault();
-    setError("");
+    clearMessages();
 
     if (!loginIdentifier.trim()) {
       setError("Debes indicar un usuario.");
@@ -62,7 +70,7 @@ export default function AuthPage() {
 
   async function handleRegisterSubmit(event) {
     event.preventDefault();
-    setError("");
+    clearMessages();
 
     if (!isEmail(registerEmail)) {
       setError("Debes indicar un correo electrónico válido.");
@@ -93,7 +101,7 @@ export default function AuthPage() {
         confirmPassword: registerPasswordRepeat,
       });
       setActiveTab("login");
-      setError("Registro enviado. Ya puedes iniciar sesión.");
+      setSuccessMessage("Registro enviado. Ya puedes iniciar sesión.");
     } catch (err) {
       setError(err.message || "No se pudo completar el registro.");
     } finally {
@@ -117,7 +125,7 @@ export default function AuthPage() {
             className={activeTab === "login" ? "isActive" : ""}
             onClick={() => {
               setActiveTab("login");
-              setError("");
+              clearMessages();
             }}
           >
             Iniciar sesión
@@ -129,7 +137,7 @@ export default function AuthPage() {
             className={activeTab === "register" ? "isActive" : ""}
             onClick={() => {
               setActiveTab("register");
-              setError("");
+              clearMessages();
             }}
           >
             Registro
@@ -204,6 +212,7 @@ export default function AuthPage() {
         )}
 
         {error ? <p className="authError">{error}</p> : null}
+        {successMessage ? <p className="authSuccess">{successMessage}</p> : null}
       </article>
     </section>
   );

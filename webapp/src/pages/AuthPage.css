@@ -166,3 +166,13 @@
   font-weight: 600;
   font-size: 0.85rem;
 }
+.authSuccess {
+  margin-top: 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.6rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  font-weight: 600;
+  font-size: 0.85rem;
+}

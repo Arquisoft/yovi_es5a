@@ -61,6 +61,18 @@ services:
     networks:
       - monitor-net
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - "8080:8080"
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    volumes:
+      - ./users/openapi.yaml:/openapi.yaml:ro
+    networks:
+      - monitor-net
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus

@@ -1,47 +1,203 @@
 openapi: 3.0.0
 info:
-  title: User Service API
+  title: Game API
   version: 1.0.0
-  description: API for managing users and leaderboard
+  description: >
+    API para gestionar usuarios, autenticación, partidas y leaderboard.
+    Diseñada para ser consumida tanto por clientes frontend como por bots.
+
+servers:
+  - url: http://localhost:3000
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "player1"
+        email:
+          type: string
+          example: "player1@email.com"
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+          example: "jwt-access-token"
+        refreshToken:
+          type: string
+          example: "jwt-refresh-token"
+
+    RegisterRequest:
+      type: object
+      required: [email, username, password, confirmPassword]
+      properties:
+        email:
+          type: string
+          example: "test@email.com"
+        username:
+          type: string
+          example: "testuser"
+        password:
+          type: string
+          example: "123456"
+        confirmPassword:
+          type: string
+          example: "123456"
+
+    LoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          example: "testuser"
+        password:
+          type: string
+          example: "123456"
+
+    FinishedMatch:
+      type: object
+      required: [mode, boardSize, turnNumber]
+      properties:
+        mode:
+          type: string
+          enum: [1vs1, 1vsbot]
+        boardSize:
+          type: integer
+          example: 8
+        turnNumber:
+          type: integer
+          example: 20
+        elapsedSeconds:
+          type: integer
+          example: 120
+        playerName:
+          type: string
+          example: "Alice"
+        guestName:
+          type: string
+          example: "Bob"
+        winner:
+          type: string
+          example: "player"
+        difficulty:
+          type: string
+          example: "easy"
+        isDraw:
+          type: boolean
+          example: false
+
 paths:
-  /createuser:
+
+  /auth/register:
     post:
-      summary: Creates a new user
-      description: Creates a new user with the given username.
+      summary: Registro de usuario
+      description: Crea un nuevo usuario en el sistema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registro correcto
+          content:
+            application/json:
+              example:
+                message: "Registro correcto"
+        '400':
+          description: Error de validación
+
+  /auth/login:
+    post:
+      summary: Login de usuario
+      description: Autentica al usuario y devuelve tokens JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Credenciales incorrectas
+
+  /auth/refresh:
+    post:
+      summary: Renovar tokens
+      description: Genera un nuevo accessToken y refreshToken
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - username
+              required: [refreshToken]
               properties:
-                username:
+                refreshToken:
                   type: string
-                  example: "testuser"
       responses:
         '200':
-          description: User created successfully
+          description: Tokens renovados
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Hello testuser! welcome to the course!"
-        '400':
-          description: Error creating user
+              example:
+                accessToken: "new-access-token"
+                refreshToken: "new-refresh-token"
+        '401':
+          description: Token inválido o expirado
+
+  /auth/logout:
+    post:
+      summary: Logout
+      description: Revoca el refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Sesión revocada
+          content:
+            application/json:
+              example:
+                revoked: true
+
   /finished-match:
     post:
-      summary: Registers a finished match
+      summary: Registrar partida finalizada
+      description: >
+        Guarda una partida completada y calcula la puntuación.
+        Requiere autenticación JWT.
       security:
         - bearerAuth: []
       requestBody:
@@ -49,53 +205,25 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/FinishedMatch'
       responses:
         '200':
-          description: Match saved and score calculated
+          description: Partida guardada correctamente
+          content:
+            application/json:
+              example:
+                score: 150
+                saved: true
+                gameId: 42
         '400':
-          description: Validation error
+          description: Error de validación
         '401':
-          description: Unauthorized
-  /auth/refresh:
-    post:
-      summary: Rotate refresh token and return a new token pair
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - refreshToken
-              properties:
-                refreshToken:
-                  type: string
-      responses:
-        '200':
-          description: Tokens rotated
-        '401':
-          description: Invalid or expired refresh token
-  /auth/logout:
-    post:
-      summary: Revoke a refresh token session
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - refreshToken
-              properties:
-                refreshToken:
-                  type: string
-      responses:
-        '200':
-          description: Refresh session revoked
+          description: No autorizado
+
   /leaderboard:
     get:
-      summary: Global leaderboard paginated
+      summary: Leaderboard global
+      description: Devuelve el ranking global de jugadores
       parameters:
         - in: query
           name: page
@@ -110,35 +238,22 @@ paths:
             default: 25
       responses:
         '200':
-          description: Leaderboard page
-  /leaderboard/suggest:
-    get:
-      summary: User suggestions for search autocomplete
-      parameters:
-        - in: query
-          name: q
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Suggestion list
-  /users/resolve:
-    get:
-      summary: Resolve exact username (trim and case-insensitive)
-      parameters:
-        - in: query
-          name: username
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: User found
-        '404':
-          description: User not found
+          description: Lista de jugadores ordenados por puntuación
+          content:
+            application/json:
+              example:
+                items:
+                  - username: "player1"
+                    score: 1200
+                  - username: "player2"
+                    score: 1100
+                page: 1
+                pageSize: 25
+
   /users/{username}:
     get:
-      summary: User profile with global position
+      summary: Perfil de usuario
+      description: Devuelve información del usuario y su posición
       parameters:
         - in: path
           name: username
@@ -147,37 +262,14 @@ paths:
             type: string
       responses:
         '200':
-          description: User profile
+          description: Perfil del usuario
         '404':
-          description: User not found
+          description: Usuario no encontrado
+
   /users/{username}/history:
     get:
-      summary: User match history (1vsbot) paginated
-      parameters:
-        - in: path
-          name: username
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-            enum: [25, 50, 100]
-            default: 25
-      responses:
-        '200':
-          description: User history page
-        '404':
-          description: User not found
-  /users/{username}/centered-leaderboard:
-    get:
-      summary: Leaderboard centered on user position
+      summary: Historial de partidas
+      description: Devuelve partidas jugadas por el usuario
       parameters:
         - in: path
           name: username
@@ -192,11 +284,22 @@ paths:
           name: pageSize
           schema:
             type: integer
-            enum: [25, 50, 100]
-            default: 25
+      
       responses:
         '200':
-          description: Centered leaderboard page
+          description: Historial paginado
+          content:
+            application/json:
+              example:
+                items:
+                  - gameId: 1
+                    mode: "1vsbot"
+                    score: 150
+                    result: "win"
+                  - gameId: 2
+                    mode: "1vs1"
+                    score: 90
+                    result: "loss"
+                page: 1
         '404':
-          description: User not found
-          
+          description: Usuario no encontrado

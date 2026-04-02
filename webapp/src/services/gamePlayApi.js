@@ -19,7 +19,7 @@ function difficultyToBotId(difficulty) {
   switch (difficulty) {
     case "Facil":   return "random_bot";
     case "Media":   return "medium_bot";
-    case "Dificil": return "hard_bot"; // sin implementar
+    case "Dificil": return "hard_bot";
     default:        return "random_bot";
   }
 }

@@ -29,7 +29,7 @@ export default function AuthPage() {
     setError("");
 
     if (!loginIdentifier.trim()) {
-      setError("Debes indicar un usuario o correo electrónico.");
+      setError("Debes indicar un usuario.");
       return;
     }
 
@@ -138,12 +138,12 @@ export default function AuthPage() {
 
         {activeTab === "login" ? (
           <form className="authForm" onSubmit={handleLoginSubmit}>
-            <label htmlFor="identifier">Usuario o correo electrónico</label>
+            <label htmlFor="identifier">Usuario</label>
             <input
               id="identifier"
               value={loginIdentifier}
               onChange={(event) => setLoginIdentifier(event.target.value)}
-              placeholder="usuario o correo"
+              placeholder="usuario"
               autoComplete="username"
             />
 

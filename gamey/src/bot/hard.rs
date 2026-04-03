@@ -92,6 +92,9 @@ fn dijkstra(
 
     // Inicializamos con todas las fuentes a coste 0
     for &src in sources {
+        if owner[src as usize] == Some(opponent(player)) {
+            continue; // Bloquear fuentes inválidas
+        }
         dist[src as usize] = 0;
         heap.push(Reverse((0u32, src)));
     }
@@ -439,4 +442,349 @@ impl YBot for Hard {
         parallel_root(board, depth, bot_player, ordered, &neighbors, &sides)
             .map(|(_, coords)| coords)
     }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::Coordinates;
+    use rand::Rng;
+
+    #[test]
+    fn test_index_roundtrip() {
+        let size = 5;
+        let total = (size * (size + 1)) / 2;
+
+        for i in 0..total {
+            let c = Coordinates::from_index(i, size);
+            let idx = c.to_index(size);
+            assert_eq!(i, idx, "Roundtrip failed at index {}", i);
+        }
+    }
+
+    #[test]
+    fn test_neighbors_validity() {
+        let size = 5;
+        let neighbors = build_neighbor_table(size);
+        let total = neighbors.len();
+
+        for (i, ns) in neighbors.iter().enumerate() {
+            for &n in ns {
+                assert!((n as usize) < total, "Neighbor out of bounds");
+            }
+        }
+    }
+
+    #[test]
+    fn test_neighbors_max_6() {
+        let size = 6;
+        let neighbors = build_neighbor_table(size);
+
+        for ns in neighbors {
+            assert!(ns.len() <= 6, "Too many neighbors");
+        }
+    }
+
+    #[test]
+    fn test_side_cells_cover_board() {
+        let size = 5;
+        let (a, b, c) = side_cells(size);
+
+        assert!(!a.is_empty());
+        assert!(!b.is_empty());
+        assert!(!c.is_empty());
+
+        // Cada celda debe pertenecer al menos a un lado
+        let total = (size * (size + 1)) / 2;
+
+        let mut union = std::collections::HashSet::new();
+
+        for &x in &a { union.insert(x); }
+        for &x in &b { union.insert(x); }
+        for &x in &c { union.insert(x); }
+
+        // comprobar que SOLO las de borde están
+        for i in 0..total {
+            let coords = Coordinates::from_index(i, size);
+            let is_side = coords.x() == 0 || coords.y() == 0 || coords.z() == 0;
+
+            assert_eq!(
+                union.contains(&i),
+                is_side,
+                "Mismatch at cell {}",
+                i
+            );
+        }
+    }
+
+    #[test]
+    fn test_dijkstra_empty_board() {
+        let size = 4;
+        let neighbors = build_neighbor_table(size);
+        let owner = vec![None; neighbors.len()];
+        let (a, _, _) = side_cells(size);
+
+        let dist = dijkstra(&a, PlayerId::new(0), &owner, &neighbors, owner.len());
+
+        // Distancias deben ser finitas
+        assert!(dist.iter().any(|&d| d > 0));
+    }
+
+    #[test]
+    fn test_dijkstra_blocked() {
+        let size = 3;
+        let neighbors = build_neighbor_table(size);
+
+        // Todo ocupado por rival
+        let owner = vec![Some(PlayerId::new(1)); neighbors.len()];
+        let (a, _, _) = side_cells(size);
+
+        let dist = dijkstra(&a, PlayerId::new(0), &owner, &neighbors, owner.len());
+
+        assert!(dist.iter().all(|&d| d == u32::MAX));
+    }
+
+    #[test]
+    fn test_dijkstra_own_cells_zero_cost() {
+        let size = 3;
+        let neighbors = build_neighbor_table(size);
+
+        let mut owner = vec![None; neighbors.len()];
+        owner[0] = Some(PlayerId::new(0));
+
+        let dist = dijkstra(&[0], PlayerId::new(0), &owner, &neighbors, owner.len());
+
+        assert_eq!(dist[0], 0);
+    }
+
+    #[test]
+    fn test_connection_cost_win() {
+        let size = 3;
+        let neighbors = build_neighbor_table(size);
+        let sides = side_cells(size);
+
+        let mut owner = vec![None; neighbors.len()];
+
+        // Simular conexión trivial (dependerá de tu sistema exacto)
+        for i in 0..owner.len() {
+            owner[i] = Some(PlayerId::new(0));
+        }
+
+        let cost = connection_cost(PlayerId::new(0), &owner, &neighbors, &sides, owner.len());
+
+        assert_eq!(cost, 0);
+    }
+
+    #[test]
+    fn test_connection_cost_impossible() {
+        let size = 3;
+        let neighbors = build_neighbor_table(size);
+        let sides = side_cells(size);
+
+        let owner = vec![Some(PlayerId::new(1)); neighbors.len()];
+
+        let cost = connection_cost(PlayerId::new(0), &owner, &neighbors, &sides, owner.len());
+
+        assert_eq!(cost, 1000);
+    }
+
+    #[test]
+    fn test_evaluate_win() {
+        let mut game = GameY::new(2);
+        let player = PlayerId::new(0);
+
+        let moves = [
+            Coordinates::new(1, 1, 0),
+            Coordinates::new(0, 1, 1),
+            Coordinates::new(1, 0, 1),
+        ];
+
+        for coords in moves {
+            game.add_move(Movement::Placement { player, coords }).unwrap();
+        }
+
+        // Ahora sí debería ser victoria
+        assert!(game.check_game_over(), "El estado debería ser ganador");
+
+        let owner = build_owner_table(&game);
+        let neighbors = build_neighbor_table(2);
+        let sides = side_cells(2);
+
+        let score = evaluate_position(&game, player, &owner, &neighbors, &sides);
+
+        assert!(
+            score >= 10000,
+            "Score no indica victoria: {}",
+            score
+        );
+    }
+
+    #[test]
+    fn test_evaluation_prefers_blocking() {
+        let size = 4;
+        let neighbors = build_neighbor_table(size);
+        let sides = side_cells(size);
+
+        let mut owner = vec![None; neighbors.len()];
+
+        // Rival casi gana
+        owner[0] = Some(PlayerId::new(1));
+
+        let score = evaluate_position(
+            &GameY::new(size),
+            PlayerId::new(0),
+            &owner,
+            &neighbors,
+            &sides,
+        );
+
+        // No comprobamos valor exacto, solo que no sea neutro
+        assert!(score != 0);
+    }
+
+    #[test]
+    fn test_move_ordering_stability() {
+        let size = 4;
+        let neighbors = build_neighbor_table(size);
+        let sides = side_cells(size);
+
+        let owner = vec![None; neighbors.len()];
+        let cells: Vec<u32> = (0..neighbors.len() as u32).collect();
+
+        let ordered = order_moves_with_tables(
+            &cells,
+            PlayerId::new(0),
+            &owner,
+            &neighbors,
+            &sides,
+            neighbors.len(),
+        );
+
+        assert_eq!(ordered.len(), cells.len());
+    }
+
+    #[test]
+    fn test_minimax_depth_zero() {
+        let game = GameY::new(3);
+        let neighbors = build_neighbor_table(3);
+        let sides = side_cells(3);
+
+        let score = minimax(
+            &game,
+            0,
+            i32::MIN,
+            i32::MAX,
+            true,
+            PlayerId::new(0),
+            &neighbors,
+            &sides,
+        );
+
+        let owner = build_owner_table(&game);
+        let eval = evaluate_position(&game, PlayerId::new(0), &owner, &neighbors, &sides);
+
+        assert_eq!(score, eval);
+    }
+
+    #[test]
+    fn test_parallel_root_returns_move() {
+        let game = GameY::new(3);
+        let neighbors = build_neighbor_table(3);
+        let sides = side_cells(3);
+
+        let owner = build_owner_table(&game);
+        let ordered = game.available_cells().to_vec();
+
+        let result = parallel_root(
+            &game,
+            2,
+            PlayerId::new(0),
+            ordered,
+            &neighbors,
+            &sides,
+        );
+
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn test_bot_plays_valid_move() {
+        let game = GameY::new(4);
+        let bot = Hard;
+
+        let mv = bot.choose_move(&game);
+
+        assert!(mv.is_some());
+
+        let coords = mv.unwrap();
+
+        assert!(game.available_cells().contains(&coords.to_index(4)));
+    }
+
+    #[test]
+    fn test_random_states_do_not_panic() {
+        let size: u32 = 5;
+
+        for _ in 0..100 {
+            let mut game: GameY = GameY::new(size);
+
+            let mut rng = rand::rng();
+
+            for _ in 0..10 {
+                if let Some(p) = game.next_player() {
+                    let cells: &Vec<u32> = game.available_cells();
+                    if cells.is_empty() { break; }
+
+                    let idx: u32 = cells[rng.random_range(0..cells.len())];
+                    let coords: Coordinates = Coordinates::from_index(idx, size);
+
+                    let _ = game.add_move(Movement::Placement { player: p, coords });
+                }
+            }
+
+            let bot: Hard = Hard;
+            let _ = bot.choose_move(&game); // NO debe panic
+        }
+    }
+
+    #[test]
+    fn test_connection_cost_monotonicity_multiple() {
+        let size = 4;
+        let neighbors = build_neighbor_table(size);
+        let sides = side_cells(size);
+
+        let player = PlayerId::new(0);
+
+        for idx in 0..neighbors.len() {
+            let mut owner = vec![None; neighbors.len()];
+
+            let cost_before = connection_cost(
+                player,
+                &owner,
+                &neighbors,
+                &sides,
+                owner.len(),
+            );
+
+            owner[idx] = Some(player);
+
+            let cost_after = connection_cost(
+                player,
+                &owner,
+                &neighbors,
+                &sides,
+                owner.len(),
+            );
+
+            assert!(
+                cost_after <= cost_before,
+                "Coste aumentó en idx {}: before={}, after={}",
+                idx,
+                cost_before,
+                cost_after
+            );
+        }
+    }
+
 }

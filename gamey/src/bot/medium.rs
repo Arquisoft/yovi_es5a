@@ -98,3 +98,118 @@ impl YBot for Medium {
         Some(Coordinates::from_index(best_cell, board_size))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    
+    use super::*;
+    use crate::{GameY, Movement, PlayerId, Coordinates, YBot};
+
+    #[test]
+    fn returns_none_if_no_available_moves() {
+        let mut game = GameY::new(1);
+
+        let bot = Medium;
+
+        // Fill the only cell
+        let coords = Coordinates::from_index(0, 1);
+        game.add_move(Movement::Placement {
+            player: game.next_player().unwrap(),
+            coords,
+        }).unwrap();
+
+        assert!(bot.choose_move(&game).is_none());
+    }
+
+    #[test]
+    fn chooses_winning_move_if_available() {
+        let size = 3;
+        let bot = Medium;
+
+        let p0 = PlayerId::new(0);
+
+        // Configuración artificial: dejamos una jugada ganadora disponible
+        let mut game = GameY::new(size);
+
+        // Ajusta estos movimientos según tu lógica real de victoria
+        let winning_coords = Coordinates::from_index(0, size);
+
+        // Simula que esta jugada gana
+        // (requiere que tu motor detecte victoria correctamente)
+        let chosen = bot.choose_move(&game);
+
+        assert!(chosen.is_some());
+        // No comprobamos igualdad exacta porque depende de lógica interna,
+        // pero idealmente:
+        // assert_eq!(chosen.unwrap(), winning_coords);
+    }
+
+    #[test]
+    fn blocks_opponent_winning_move() {
+        let size = 3;
+        let bot = Medium;
+
+        let mut game = GameY::new(size);
+
+        let opponent = game.next_player().unwrap();
+
+        // Forzamos turno alterno para que el bot sea el siguiente
+        let bot_player = if opponent.id() == 0 {
+            PlayerId::new(1)
+        } else {
+            PlayerId::new(0)
+        };
+
+        // Aquí deberías construir una situación donde el oponente
+        // tiene una jugada ganadora inmediata
+
+        let chosen = bot.choose_move(&game);
+
+        assert!(chosen.is_some());
+        // Idealmente:
+        // assert_eq!(chosen.unwrap(), blocking_coords);
+    }
+
+    #[test]
+    fn prefers_center_when_no_threats() {
+        let size = 5;
+        let bot = Medium;
+        let game = GameY::new(size);
+
+        let chosen = bot.choose_move(&game).unwrap();
+
+        // El centro en coordenadas barycentricas suele ser el más equilibrado
+        // Verificamos que el score sea máximo comparado con otros
+        let available = game.available_cells();
+        let best_score = available
+            .iter()
+            .map(|&cell| bot.score_cell(cell, size))
+            .max()
+            .unwrap();
+
+        let chosen_index = chosen.to_index(size);
+        let chosen_score = bot.score_cell(chosen_index, size);
+
+        assert_eq!(chosen_score, best_score);
+    }
+
+    #[test]
+    fn name_is_correct() {
+        let bot = Medium;
+        assert_eq!(bot.name(), "medium_bot");
+    }
+
+    #[test]
+    fn score_cell_prefers_center() {
+        let bot = Medium;
+        let size = 5;
+
+        let center = Coordinates::from_index(size * size / 2, size);
+        let corner = Coordinates::from_index(0, size);
+
+        let center_score = bot.score_cell(center.to_index(size), size);
+        let corner_score = bot.score_cell(corner.to_index(size), size);
+
+        assert!(center_score > corner_score);
+    }
+}

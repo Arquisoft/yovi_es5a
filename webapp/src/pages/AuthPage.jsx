@@ -131,6 +131,7 @@ export default function AuthPage() {
             Iniciar sesión
           </button>
           <button
+            data-testid="tab-register"
             type="button"
             role="tab"
             aria-selected={activeTab === "register"}
@@ -205,7 +206,7 @@ export default function AuthPage() {
               autoComplete="new-password"
             />
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" className="registerSubmit" disabled={loading}>
               {loading ? "Enviando..." : "Crear cuenta"}
             </button>
           </form>

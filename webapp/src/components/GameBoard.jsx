@@ -332,5 +332,6 @@ export default function GameBoard() {
 
       {gameOver ? <VictoryMenu {...gameOver} /> : null}
     </div>
-  );
+  ); 
+  
 }

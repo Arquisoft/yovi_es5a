@@ -18,16 +18,23 @@ import { useSessionStore } from "../store/sessionStore";
 describe("StartGameForm", () => {
   const setGameConfig = vi.fn();
   const startGameFromConfig = vi.fn();
+  const clearSession = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    global.fetch = vi.fn().mockResolvedValue({ ok: true });
 
     useBoardStore.mockImplementation((selector) =>
       selector({ setGameConfig, startGameFromConfig })
     );
 
     useSessionStore.mockImplementation((selector) =>
-      selector({ user: { username: "Alice" } })
+      selector({
+        user: { username: "Alice" },
+        accessToken: "fake-token",
+        clearSession,
+      })
     );
   });
 
@@ -101,7 +108,14 @@ describe("StartGameForm", () => {
   });
 
   it("muestra error si no hay sesión activa", async () => {
-    useSessionStore.mockImplementation((selector) => selector({ user: null }));
+    useSessionStore.mockImplementation((selector) =>
+      selector({
+        user: null,
+        accessToken: null,
+        clearSession,
+      })
+    );
+
     const user = userEvent.setup();
     render(<StartGameForm />);
 

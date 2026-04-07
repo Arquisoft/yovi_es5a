@@ -17,6 +17,7 @@ describe('createUserVsUserGame', () => {
       rollback: vi.fn()
     }
 
+  
     gameRepo.getConnection = vi.fn().mockResolvedValue(mockConn)
     gameRepo.insertGame = vi.fn().mockResolvedValue(10)
     gameRepo.insertUserGame = vi.fn().mockResolvedValue()

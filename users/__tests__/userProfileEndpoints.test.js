@@ -20,6 +20,7 @@ describe('endpoints de perfil de usuario', () => {
     expect(res.body.globalPosition).toBe(3)
   })
 
+  
   it('GET /users/:username/history devuelve historial paginado', async () => {
     vi.spyOn(leaderboardService, 'getUserHistory').mockResolvedValue({
       user: { id: 1, username: 'Ana' },

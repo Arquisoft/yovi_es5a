@@ -105,7 +105,7 @@ app.post('/createuser', async (req, res) => {
     }
 
 
-    if (await emailExists(email)) {
+    if (await userService.resolveUserByExactEmail(email)) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
     //Necesitamos instalar bcrypt, npm install bcrypt.
@@ -114,8 +114,8 @@ app.post('/createuser', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     //Poner el numero 10 ahi implica que se aplicaran 10 rondas de hashing, lo que hace que el proceso sea mas lento y por lo tanto mas seguro contra ataques de fuerza bruta.
 
-    await createUser(username, email, hashedPassword);
-    res.status(200).json({ message });
+    await userService.createUser(username, email, hashedPassword);
+    res.status(200).json({ message: 'Usuario creado correctamente' });
   } catch (err) {
     console.error('Error:', err.message);
     res.status(400).json({ error: err.message });
@@ -180,7 +180,7 @@ app.post('/auth/register', async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({ error: 'Las contraseñas no coinciden' });
     }
-   
+    
     if (await userService.resolveUserByExactEmail(email)) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }

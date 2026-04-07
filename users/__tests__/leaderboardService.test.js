@@ -83,6 +83,7 @@ describe('leaderboardService', () => {
       total: 3,
     })
 
+    
     const result = await leaderboardService.getUserHistory('Ana', {
       botPage: 2,
       botPageSize: 50,

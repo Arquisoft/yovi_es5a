@@ -25,7 +25,7 @@ Before(async function () {
       browserType = chromium
   }
 
-  const headless = false
+  const headless = true
   const slowMo = 0
   const devtools = false
 

@@ -4,7 +4,7 @@ import assert from 'assert'
 Given('The register page is open', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.goto(`http://localhost/`)
+  await page.goto(`http://localhost:5173`)
   await page.getByTestId("tab-register").click();
 })
 

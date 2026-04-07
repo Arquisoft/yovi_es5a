@@ -5,7 +5,7 @@ import assert from 'assert'
 Given('The authentication page is open', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.goto('http://localhost/')
+  await page.goto('http://localhost:5173')
   const browserName = process.env.BROWSER || 'chromium'
   const email = `test2+${browserName}@example.com`
   const username = `test2+${browserName}`

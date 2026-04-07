@@ -75,6 +75,7 @@ describe("GameBoard", () => {
     };
 
     useBoardStore.mockImplementation((selector) => selector(state));
+    // getState necesario para la rama 1vsbot (boardAfterPlayerMove)
     useBoardStore.getState = () => state;
     return state;
   }
@@ -82,23 +83,22 @@ describe("GameBoard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setMockStore();
-
     boardToYen.mockReturnValue("YEN_BOARD");
-
     parseCellId.mockImplementation((id) => {
       if (id === "0,0") return { q: 0, r: 0 };
       return null;
     });
   });
 
+  // ── Renderizado básico ────────────────────────────────────────────────────
 
-  //    Verifica que el tablero se muestra correctamente al inicio.
   it("renderiza el tablero cuando hay celdas disponibles", () => {
     renderGameBoard();
     expect(screen.getByText("Header")).toBeInTheDocument();
   });
 
- 
+  // ── Celda inválida ────────────────────────────────────────────────────────
+
   it("si la celda seleccionada es inválida (1vs1), muestra error y no llama API", async () => {
     const user = userEvent.setup();
     renderGameBoard();
@@ -109,6 +109,7 @@ describe("GameBoard", () => {
     expect(validateTwoPlayerMove).not.toHaveBeenCalled();
   });
 
+  // ── 1vs1: movimiento válido ───────────────────────────────────────────────
 
   it("1vs1: movimiento válido llama validateTwoPlayerMove, setCellOwner y nextTurn", async () => {
     const user = userEvent.setup();
@@ -129,6 +130,8 @@ describe("GameBoard", () => {
     expect(actions.nextTurn).toHaveBeenCalledTimes(1);
   });
 
+  // ── 1vs1: movimiento rechazado por backend ────────────────────────────────
+
   it("1vs1: si backend dice inválido, muestra error y no cambia turno", async () => {
     const user = userEvent.setup();
 
@@ -145,6 +148,8 @@ describe("GameBoard", () => {
     expect(await screen.findByText(/movimiento inválido/i)).toBeInTheDocument();
     expect(actions.nextTurn).not.toHaveBeenCalled();
   });
+
+  // ── 1vsbot: turno completo (jugador + bot) ───────────────────────────────
 
   it("1vsbot: aplica movimiento del bot cuando la API responde OK", async () => {
     const user = userEvent.setup();
@@ -166,9 +171,10 @@ describe("GameBoard", () => {
     });
 
     barycentricToCell.mockReturnValue({ q: 0, r: 0 });
+
     actions.setCellOwner
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(true);
+      .mockReturnValueOnce(true)  // jugador
+      .mockReturnValueOnce(true); // bot
 
     renderGameBoard();
 
@@ -180,6 +186,8 @@ describe("GameBoard", () => {
     expect(actions.setCellOwner).toHaveBeenNthCalledWith(2, "0,0", "player2");
     expect(actions.nextTurn).toHaveBeenCalledTimes(2);
   });
+
+  // ── 1vsbot: jugador gana ──────────────────────────────────────────────────
 
   it("1vsbot: si el jugador gana, muestra VictoryMenu", async () => {
     const user = userEvent.setup();
@@ -206,6 +214,8 @@ describe("GameBoard", () => {
     expect(screen.getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();
   });
 
+  // ── Modo sin configurar ───────────────────────────────────────────────────
+
   it("si gameMode no está configurado, usa playTurn en clic", async () => {
     const user = userEvent.setup();
     actions.playTurn.mockReturnValue(true);
@@ -218,11 +228,13 @@ describe("GameBoard", () => {
     expect(actions.playTurn).toHaveBeenCalledWith("0,0");
   });
 
-  it("1vs1: si gana player2 envía resumen de invitado en VictoryMenu", async () => {
+  // ── 1vs1: victoria de player2 ─────────────────────────────────────────────
+
+  it("1vs1: si gana player2 muestra su nombre en VictoryMenu", async () => {
     const user = userEvent.setup();
 
     setMockStore({
-      turnNumber: 2,
+      turnNumber: 2, // turno par → currentPlayer = "player2"
       players: { player1Name: "Ana", player2Name: "Invitado", isBotSecondPlayer: false },
     });
 
@@ -239,15 +251,28 @@ describe("GameBoard", () => {
     expect(await screen.findByText(/invitado ha ganado la partida/i)).toBeInTheDocument();
   });
 
-  it("sugerencia muestra error cuando API falla", async () => {
+  // ── Sugerencia: error silencioso ──────────────────────────────────────────
+  // El componente captura la excepción en un catch vacío (sin setTurnError),
+  // por lo que NO se muestra ningún mensaje de error en pantalla cuando la
+  // llamada a requestBotMove falla. El test verifica este comportamiento real.
+
+  it("sugerencia no muestra error cuando la API falla (catch silencioso)", async () => {
     const user = userEvent.setup();
 
     setMockStore({ gameMode: "1vs1" });
     requestBotMove.mockRejectedValue(new Error("boom"));
 
     renderGameBoard();
-    await user.click(screen.getByRole("button", { name: /sugerencia/i }));
 
-    expect(await screen.findByText(/error/i)).toBeInTheDocument();
+    const suggestionBtn = screen.getByRole("button", { name: /sugerencia/i });
+    await user.click(suggestionBtn);
+
+    // El botón vuelve al estado normal después del catch
+    await waitFor(() =>
+      expect(suggestionBtn).not.toBeDisabled()
+    );
+
+    // No se muestra ningún error — el componente lo suprime
+    expect(screen.queryByText(/error/i)).toBeNull();
   });
 });

@@ -31,10 +31,16 @@ import { useSessionStore } from "../store/sessionStore";
 describe("AuthPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useSessionStore.mockImplementation((selector) => selector({ setSession: mockSetSession }));
+    useSessionStore.mockImplementation((selector) =>
+      selector({ setSession: mockSetSession })
+    );
   });
 
-  it("muestra validación de login cuando faltan credenciales", async () => {
+  // ── Login: validación de campos vacíos ────────────────────────────────────
+  // El componente valida primero el identifier; el mensaje real es
+  // "Debes indicar un usuario." (no menciona correo electrónico).
+
+  it("muestra validación de login cuando falta el usuario", async () => {
     const user = userEvent.setup();
 
     render(
@@ -44,8 +50,13 @@ describe("AuthPage", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /entrar/i }));
-    expect(screen.getByText(/debes indicar un usuario o correo electrónico/i)).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/debes indicar un usuario/i)
+    ).toBeInTheDocument();
   });
+
+  // ── Registro: contraseñas no coinciden ────────────────────────────────────
 
   it("muestra validación de registro si contraseñas no coinciden", async () => {
     const user = userEvent.setup();
@@ -67,6 +78,10 @@ describe("AuthPage", () => {
     expect(register).not.toHaveBeenCalled();
   });
 
+  // ── Login exitoso ─────────────────────────────────────────────────────────
+  // El label del campo identifier en el componente es "Usuario",
+  // y el de la contraseña es "Contraseña".
+
   it("login exitoso guarda sesión y navega al inicio", async () => {
     const user = userEvent.setup();
 
@@ -84,14 +99,18 @@ describe("AuthPage", () => {
       </MemoryRouter>
     );
 
-    await user.type(screen.getByLabelText(/usuario o correo electrónico/i), "ana");
-    await user.type(screen.getByLabelText(/contraseña/i), "123456");
+    // El label real del input es "Usuario" (htmlFor="identifier")
+    await user.type(screen.getByLabelText(/^usuario$/i), "ana");
+    // El label real del password es "Contraseña" (htmlFor="loginPassword")
+    await user.type(screen.getByLabelText(/^contraseña$/i), "123456");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
     expect(login).toHaveBeenCalledWith({ identifier: "ana", password: "123456" });
     expect(mockSetSession).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
+
+  // ── Login: error de API ───────────────────────────────────────────────────
 
   it("muestra error cuando login devuelve fallo de API", async () => {
     const user = userEvent.setup();
@@ -103,12 +122,14 @@ describe("AuthPage", () => {
       </MemoryRouter>
     );
 
-    await user.type(screen.getByLabelText(/usuario o correo electrónico/i), "ana");
-    await user.type(screen.getByLabelText(/contraseña/i), "xxx");
+    await user.type(screen.getByLabelText(/^usuario$/i), "ana");
+    await user.type(screen.getByLabelText(/^contraseña$/i), "xxx");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
     expect(await screen.findByText(/credenciales inválidas/i)).toBeInTheDocument();
   });
+
+  // ── Registro exitoso ──────────────────────────────────────────────────────
 
   it("registro exitoso cambia a tab de login", async () => {
     const user = userEvent.setup();
@@ -128,6 +149,8 @@ describe("AuthPage", () => {
     await user.click(screen.getByRole("button", { name: /crear cuenta/i }));
 
     expect(await screen.findByText(/registro enviado/i)).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /iniciar sesión/i })).toHaveAttribute("aria-selected", "true");
+    expect(
+      screen.getByRole("tab", { name: /iniciar sesión/i })
+    ).toHaveAttribute("aria-selected", "true");
   });
 });

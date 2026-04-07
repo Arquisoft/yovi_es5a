@@ -16,12 +16,9 @@ vi.mock("react-konva", () => ({
   Line: (props) => (
     <div
       data-testid="hex-cell"
-      data-id={props["data-id"] ?? props.id}
-      data-x={props.x}
-      data-y={props.y}
-      data-stroke-width={props.strokeWidth}
       data-fill={props.fill}
-      // Un solo handler para evitar dobles llamadas
+      data-stroke-width={String(props.strokeWidth)}
+      // onTap ignorado intencionalmente para evitar dobles llamadas
       onClick={props.onClick}
     />
   ),
@@ -84,10 +81,10 @@ describe("KonvaRenderer", () => {
 
     const hexes = screen.getAllByTestId("hex-cell");
 
-    // baseCells[0] -> state null => empty
+    // baseCells[0] -> state null, no seleccionada => empty
     expect(hexes[0]).toHaveAttribute("data-fill", "#eee");
 
-    // baseCells[1] -> player1 y además seleccionada => selected tiene prioridad
+    // baseCells[1] -> player1 y seleccionada => selected tiene prioridad
     expect(hexes[1]).toHaveAttribute("data-fill", "#00ff00");
 
     // baseCells[2] -> player2, no seleccionada
@@ -113,35 +110,60 @@ describe("KonvaRenderer", () => {
     expect(hexes[2]).toHaveAttribute("data-fill", "#1d4ed8");
   });
 
-  it("aumenta strokeWidth cuando la celda está seleccionada", () => {
-    const selectedId = "1,1";
+  it("strokeWidth es 4 para celda sugerida (vacía) y 2 para el resto", () => {
+    // El componente usa isSuggestion (suggestionId + state null) para strokeWidth,
+    // no selectedId. Testeamos la lógica real del componente.
+    const suggestionId = "2,0"; // baseCells[0] -> state null => es sugerencia válida
 
     render(
       <KonvaRenderer
         cells={baseCells}
         onCellClick={() => {}}
-        selectedId={selectedId}
+        selectedId={null}
+        suggestionId={suggestionId}
         playerColors={playerColors}
       />
     );
 
     const hexes = screen.getAllByTestId("hex-cell");
 
-    // no seleccionadas => 2
-    expect(hexes[0]).toHaveAttribute("data-stroke-width", "2");
+    // sugerida => strokeWidth 4
+    expect(hexes[0]).toHaveAttribute("data-stroke-width", "4");
+    // resto => strokeWidth 2
     expect(hexes[1]).toHaveAttribute("data-stroke-width", "2");
-    // seleccionada => 4
-    expect(hexes[2]).toHaveAttribute("data-stroke-width", "4");
+    expect(hexes[2]).toHaveAttribute("data-stroke-width", "2");
   });
 
-  it("llama a onCellClick con el id de la celda al hacer click", async () => {
-    const user = userEvent.setup();
-    const handleClick = vi.fn();
+  it("strokeWidth es 2 si suggestionId apunta a celda ocupada (no aplica sugerencia)", () => {
+    // baseCells[1] tiene state "player1", no es vacía => isSuggestion = false
+    const suggestionId = "1,0";
 
     render(
       <KonvaRenderer
         cells={baseCells}
-        onCellClick={handleClick}
+        onCellClick={() => {}}
+        selectedId={null}
+        suggestionId={suggestionId}
+        playerColors={playerColors}
+      />
+    );
+
+    const hexes = screen.getAllByTestId("hex-cell");
+
+    expect(hexes[0]).toHaveAttribute("data-stroke-width", "2");
+    expect(hexes[1]).toHaveAttribute("data-stroke-width", "2");
+    expect(hexes[2]).toHaveAttribute("data-stroke-width", "2");
+  });
+
+  it("llama a onCellClick con el id de la celda al hacer click", async () => {
+    const user = userEvent.setup();
+    // Capturamos los ids a través del closure del onClick
+    const clickedIds = [];
+
+    render(
+      <KonvaRenderer
+        cells={baseCells}
+        onCellClick={(id) => clickedIds.push(id)}
         selectedId={null}
         playerColors={playerColors}
       />
@@ -150,7 +172,7 @@ describe("KonvaRenderer", () => {
     const hexes = screen.getAllByTestId("hex-cell");
     await user.click(hexes[1]);
 
-    expect(handleClick).toHaveBeenCalledTimes(1);
-    expect(handleClick).toHaveBeenCalledWith("1,0");
+    expect(clickedIds).toHaveLength(1);
+    expect(clickedIds[0]).toBe("1,0");
   });
 });

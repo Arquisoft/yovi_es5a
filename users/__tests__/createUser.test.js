@@ -5,7 +5,6 @@ const { createUser, userRepo } = require('../services/userService')
 
 
 
-
 describe('createUser', () => {
 
   beforeEach(() => {
@@ -17,12 +16,19 @@ describe('createUser', () => {
   })
 
   it('crea usuario correctamente', async () => {
-    userRepo.insertUser.mockResolvedValue(7)
+  userRepo.insertUser.mockResolvedValue(7)
 
-    const msg = await createUser('Pablo')
-    expect(msg).toBe('Hello Pablo! Welcome to the course! User created with ID: 7')
-    expect(userRepo.insertUser).toHaveBeenCalledWith('Pablo')
-  })
+  const msg = await createUser('Pablo')
+
+  expect(msg).toBe('Hello Pablo! Welcome to the course! User created with ID: 7')
+
+  
+  expect(userRepo.insertUser).toHaveBeenCalledWith(
+    'Pablo',
+    undefined,
+    undefined
+  )
+})
 
   it('error en DB → error controlado', async () => {
     userRepo.insertUser.mockRejectedValue(new Error('DB fail'))

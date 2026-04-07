@@ -13,6 +13,7 @@ describe('ScoreService.calculate', () => {
     expect(result).toBe(100)
   })
 
+  
   it('valores mínimos', () => {
     const result = ScoreService.calculate({ turnNumber: 0, boardSize: 1 })
     expect(result).toBe(60)

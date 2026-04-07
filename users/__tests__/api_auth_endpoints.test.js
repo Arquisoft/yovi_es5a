@@ -10,6 +10,7 @@ describe('auth endpoints validation', () => {
     sessionStore.clearSessions()
   })
 
+  
   it('refresh devuelve 400 sin refreshToken', async () => {
     const res = await request(app)
       .post('/auth/refresh')

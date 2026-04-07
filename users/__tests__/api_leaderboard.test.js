@@ -1,7 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import request from 'supertest'
 import app from '../users-service.js'
+
+const userService = require('../services/userService')
+vi.spyOn(userService, 'resolveUserByExactUsername').mockResolvedValue(null)
+
 const leaderboardService = require('../services/leaderboardService')
+
+
+
 
 describe('GET /leaderboard y endpoints de usuario', () => {
   it('devuelve leaderboard paginado', async () => {
@@ -31,7 +38,7 @@ describe('GET /leaderboard y endpoints de usuario', () => {
   })
 
   it('resuelve usuario exacto y devuelve 404 si no existe', async () => {
-    vi.spyOn(leaderboardService, 'resolveUserByExactUsername')
+    vi.spyOn(userService, 'resolveUserByExactUsername')
       .mockResolvedValueOnce({ username: 'Ana' })
       .mockResolvedValueOnce(null)
 

@@ -1,39 +1,24 @@
 import React from "react";
 import { useBoardStore } from "../store/boardStore";
+import { useSessionStore } from "../store/sessionStore";
 import "./StartGameForm.css";
 
 export default function StartGameForm() {
   const setGameConfig = useBoardStore((state) => state.setGameConfig);
   const startGameFromConfig = useBoardStore((state) => state.startGameFromConfig);
+  const user = useSessionStore((state) => state.user);
+
+  const accessToken = useSessionStore((state) => state.accessToken);
+  const clearSession = useSessionStore((state) => state.clearSession);
+
 
   const [gameMode, setGameMode] = React.useState("1vs1");
-  const [player1Name, setPlayer1Name] = React.useState("");
-  const [player2Name, setPlayer2Name] = React.useState("");
+  const [guestName, setGuestName] = React.useState("");
   const [difficulty, setDifficulty] = React.useState("Facil");
   const [boardSize, setBoardSize] = React.useState(8);
 
   const [error, setError] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
-
-  const API_URL = import.meta.env.VITE_API_URL ?? "http://40.66.45.17:3000";
-
-  async function createUser(username) {
-    const res = await fetch(`${API_URL}/createuser`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Error creating user");
-    }
-
-    return data;
-  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -41,16 +26,40 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
-      await createUser(player1Name);
-      
-      if (gameMode === "1vs1") {
-        await createUser(player2Name);
-      } 
+      const normalizedPlayerName = String(user?.username || "").trim();
+      if (!normalizedPlayerName) {
+        throw new Error("No hay sesión activa. Inicia sesión de nuevo.");
+      }
+
+      if (gameMode === "1vs1" && !String(guestName || "").trim()) {
+        throw new Error("Debes indicar el nombre del invitado.");
+      }
+
+      // 1. Validar que hay token
+      if (!accessToken) {
+        clearSession();
+        throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
+      }
+
+      const resp = await fetch("http://localhost:3000/auth/check", {
+        method: "GET",
+        headers: {
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    });
+
+
+    if (!resp.ok) {
+      clearSession();
+      throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
+    }
+
+
 
       setGameConfig({
         gameMode,
-        player1Name,
-        player2Name,
+        player1Name: normalizedPlayerName,
+        player2Name: gameMode === "1vs1" ? guestName : "Bot",
         difficulty,
         boardSize,
       });
@@ -81,28 +90,26 @@ export default function StartGameForm() {
       </div>
 
       <div className="fieldGroup">
-        <label htmlFor="player1Name">Nombre jugador 1</label>
+        <label htmlFor="player1Name">Jugador autenticado</label>
         <input
           id="player1Name"
           className="startInput"
           type="text"
-          value={player1Name}
-          onChange={(event) => setPlayer1Name(event.target.value)}
-          placeholder={gameMode === "1vsbot" ? "Tu nombre" : "Jugador 1"}
-          required
+          value={user?.username || ""}
+          readOnly
         />
       </div>
 
       {gameMode === "1vs1" ? (
         <div className="fieldGroup">
-          <label htmlFor="player2Name">Nombre jugador 2</label>
+          <label htmlFor="guestName">Nombre invitado</label>
           <input
-            id="player2Name"
+            id="guestName"
             className="startInput"
             type="text"
-            value={player2Name}
-            onChange={(event) => setPlayer2Name(event.target.value)}
-            placeholder="Jugador 2"
+            value={guestName}
+            onChange={(event) => setGuestName(event.target.value)}
+            placeholder="Invitado"
             required
           />
         </div>
@@ -136,7 +143,7 @@ export default function StartGameForm() {
       </div>
 
       <button className="startButton" type="submit" disabled={loading}>
-        {loading ? "Creando jugadores..." : "Empezar partida"}
+        {loading ? "Preparando partida..." : "Empezar partida"}
       </button>
       {error && <p className="error">{error}</p>}
     </form>

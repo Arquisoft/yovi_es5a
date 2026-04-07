@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./VictoryMenu.css";
 import { requestMatchScore } from "../services/usersScoreApi";
+import { useBoardStore } from "../store/boardStore";
 
 export default function VictoryMenu({
   playerName,
@@ -9,6 +11,8 @@ export default function VictoryMenu({
   subtitle = "Enhorabuena por esta partida.",
   matchSummary,
 }) {
+  const navigate = useNavigate();
+  const resetGameConfig = useBoardStore((state) => state.resetGameConfig);
   const [score, setScore] = React.useState(null);
   const [scoreError, setScoreError] = React.useState("");
 
@@ -41,7 +45,8 @@ export default function VictoryMenu({
   }, [matchSummary]);
 
   function handleFinish() {
-    window.location.reload();
+    resetGameConfig();
+    navigate('/');
   }
 
   const resolvedMessage = message || `${playerName} ha ganado la partida.`;

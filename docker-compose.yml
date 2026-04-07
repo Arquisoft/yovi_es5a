@@ -40,8 +40,8 @@ services:
     build:
       context: ./webapp
       args:
-        - VITE_API_URL=http://40.66.45.17:3000    # ✅ corregido
-        - VITE_GAMEY_URL=http://40.66.45.17:4000  # ✅ corregido
+        - VITE_API_URL=http://localhost:3000    # ✅ cambiar para release
+        - VITE_GAMEY_URL=http://localhost:4000  # ✅ cambiar para release
     container_name: webapp
     image: ghcr.io/arquisoft/yovi_es5a-webapp:latest
     ports:
@@ -57,6 +57,19 @@ services:
     image: ghcr.io/arquisoft/yovi_es5a-gamey:latest
     ports:
       - "4000:4000"
+      - "4001:4001"
+    networks:
+      - monitor-net
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - "8080:8080"
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    volumes:
+      - ./users/openapi.yaml:/openapi.yaml:ro
     networks:
       - monitor-net
 

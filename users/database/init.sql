@@ -5,8 +5,15 @@ USE yovi_db;
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  best_score INT NOT NULL DEFAULT 0,
+  total_games_1vsbot INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+alter table users
+  add column email varchar(255) not null unique,
+  add column password varchar(255) not null;
 
 CREATE TABLE IF NOT EXISTS bots (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,11 +29,22 @@ CREATE TABLE IF NOT EXISTS game (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Tiempo de la partida
 );
 
+ALTER TABLE game
+  MODIFY COLUMN winner ENUM('player1', 'player2', 'player', 'bot', 'draw') DEFAULT NULL;
+
+ALTER TABLE game
+  ADD COLUMN mode ENUM('1vs1', '1vsbot', 'botvsbot') DEFAULT NULL,
+  ADD COLUMN total_turns INT NOT NULL DEFAULT 0,
+  ADD COLUMN elapsed_seconds INT NOT NULL DEFAULT 0,
+  ADD COLUMN score INT NOT NULL DEFAULT 0,
+  ADD COLUMN finished_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
 -- Tabla hija para partidas usuario vs usuario
 CREATE TABLE IF NOT EXISTS userGames (
   id INT PRIMARY KEY,  -- FK a game(id)
   player1_id INT NOT NULL,  -- ID del primer usuario
-  player2_id INT NOT NULL,  -- ID del segundo usuario
+  player2_id INT NULL,  -- ID del segundo usuario (legacy)
+  guest_name VARCHAR(255) NULL,  -- Nombre del invitado en modo 1vs1
   FOREIGN KEY (id) REFERENCES game(id) ON DELETE CASCADE,
   FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE
@@ -53,3 +71,11 @@ CREATE TABLE IF NOT EXISTS botGames (
   FOREIGN KEY (bot1_id) REFERENCES bots(id) ON DELETE CASCADE,
   FOREIGN KEY (bot2_id) REFERENCES bots(id) ON DELETE CASCADE
 );
+
+INSERT IGNORE INTO bots (name, difficulty) 
+VALUES
+  ('Bot Facil', 'facil'),
+  ('Bot Medio', 'medio'),
+  ('Bot Dificil', 'dificil');
+
+CREATE INDEX idx_users_ranking_1vsbot ON users(best_score, total_games_1vsbot, id);

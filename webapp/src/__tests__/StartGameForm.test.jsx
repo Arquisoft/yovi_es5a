@@ -8,28 +8,37 @@ vi.mock("../store/boardStore", () => ({
   useBoardStore: vi.fn(),
 }));
 
+vi.mock("../store/sessionStore", () => ({
+  useSessionStore: vi.fn(),
+}));
+
 import { useBoardStore } from "../store/boardStore";
+import { useSessionStore } from "../store/sessionStore";
 
 describe("StartGameForm", () => {
   const setGameConfig = vi.fn();
   const startGameFromConfig = vi.fn();
+  const clearSession = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    global.fetch = vi.fn().mockResolvedValue({ ok: true });
 
     useBoardStore.mockImplementation((selector) =>
       selector({ setGameConfig, startGameFromConfig })
     );
 
-    
-    // Mock global fetch → simula que el backend acepta cualquier usuario
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ id: 1 }),
-    });
+    useSessionStore.mockImplementation((selector) =>
+      selector({
+        user: { username: "Alice" },
+        accessToken: "fake-token",
+        clearSession,
+      })
+    );
   });
 
-  it("renderiza 1vs1 por defecto (pide 2 nombres, no muestra dificultad)", () => {
+  it("renderiza 1vs1 por defecto (muestra usuario autenticado e invitado)", () => {
     render(<StartGameForm />);
 
     expect(screen.getByRole("heading", { name: /configurar partida/i }))
@@ -37,8 +46,8 @@ describe("StartGameForm", () => {
 
     expect(screen.getByLabelText(/modo/i)).toHaveValue("1vs1");
 
-    expect(screen.getByLabelText(/nombre jugador 1/i)).toBeRequired();
-    expect(screen.getByLabelText(/nombre jugador 2/i)).toBeRequired();
+    expect(screen.getByLabelText(/jugador autenticado/i)).toHaveValue("Alice");
+    expect(screen.getByLabelText(/nombre invitado/i)).toBeRequired();
 
     expect(screen.queryByLabelText(/dificultad/i)).toBeNull();
   });
@@ -49,33 +58,20 @@ describe("StartGameForm", () => {
 
     await user.selectOptions(screen.getByLabelText(/modo/i), "1vsbot");
 
-    expect(screen.queryByLabelText(/nombre jugador 2/i)).toBeNull();
+    expect(screen.queryByLabelText(/nombre invitado/i)).toBeNull();
     expect(screen.getByLabelText(/dificultad/i)).toHaveValue("Facil");
-
-    expect(screen.getByLabelText(/nombre jugador 1/i)).toHaveAttribute(
-      "placeholder",
-      "Tu nombre"
-    );
   });
 
   it("hace submit y llama a setGameConfig + startGameFromConfig (modo 1vs1)", async () => {
     const user = userEvent.setup();
     render(<StartGameForm />);
 
-    await user.type(screen.getByLabelText(/nombre jugador 1/i), "Alice");
-    await user.type(screen.getByLabelText(/nombre jugador 2/i), "Bob");
+    await user.type(screen.getByLabelText(/nombre invitado/i), "Bob");
 
     await user.clear(screen.getByLabelText(/tamaño tablero/i));
     await user.type(screen.getByLabelText(/tamaño tablero/i), "10");
 
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
-
-    // Verifica que se llamó a fetch 2 veces (una por jugador)
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/createuser"),
-      expect.objectContaining({ method: "POST" })
-    );
 
     expect(setGameConfig).toHaveBeenCalledTimes(1);
     expect(setGameConfig).toHaveBeenCalledWith({
@@ -95,19 +91,15 @@ describe("StartGameForm", () => {
 
     await user.selectOptions(screen.getByLabelText(/modo/i), "1vsbot");
 
-    await user.type(screen.getByLabelText(/nombre jugador 1/i), "Juan");
     await user.selectOptions(screen.getByLabelText(/dificultad/i), "Media");
 
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
 
-    // En modo bot solo se crea 1 usuario
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-
     expect(setGameConfig).toHaveBeenCalledTimes(1);
     expect(setGameConfig).toHaveBeenCalledWith({
       gameMode: "1vsbot",
-      player1Name: "Juan",
-      player2Name: "",
+      player1Name: "Alice",
+      player2Name: "Bot",
       difficulty: "Media",
       boardSize: 8,
     });
@@ -115,21 +107,22 @@ describe("StartGameForm", () => {
     expect(startGameFromConfig).toHaveBeenCalledTimes(1);
   });
 
-  it("muestra error si el backend falla al crear usuario", async () => {
-    // Sobrescribe el mock para simular error del servidor
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      json: async () => ({ error: "Username already exists" }),
-    });
+  it("muestra error si no hay sesión activa", async () => {
+    useSessionStore.mockImplementation((selector) =>
+      selector({
+        user: null,
+        accessToken: null,
+        clearSession,
+      })
+    );
 
     const user = userEvent.setup();
     render(<StartGameForm />);
 
-    await user.type(screen.getByLabelText(/nombre jugador 1/i), "Alice");
-    await user.type(screen.getByLabelText(/nombre jugador 2/i), "Bob");
+    await user.type(screen.getByLabelText(/nombre invitado/i), "Bob");
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
 
-    expect(await screen.findByText(/username already exists/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no hay sesión activa/i)).toBeInTheDocument();
     expect(setGameConfig).not.toHaveBeenCalled();
     expect(startGameFromConfig).not.toHaveBeenCalled();
   });

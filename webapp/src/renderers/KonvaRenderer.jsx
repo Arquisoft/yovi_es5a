@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Stage, Layer, Line, Group } from "react-konva";
 
 const HEX_SIZE = 30;
@@ -26,9 +26,8 @@ function hexPoints(size) {
   return points;
 }
 
-export default function KonvaRenderer({ cells, onCellClick, selectedId, playerColors }) {
-  const hex = hexPoints(HEX_DRAW_SIZE); // usa el tamaño reducido
-
+export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, suggestionId, playerColors }) {
+  const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
 
   const STAGE_WIDTH = 800;
@@ -54,12 +53,15 @@ export default function KonvaRenderer({ cells, onCellClick, selectedId, playerCo
           {cells.map((cell) => {
             const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
 
-            let fill = (playerColors && playerColors.empty) || "#ccc";
-            if (cell.state === "player1") fill = (playerColors && playerColors.player1) || "#e63946";
-            if (cell.state === "player2") fill = (playerColors && playerColors.player2) || "#1d4ed8";
-            if (selectedId === cell.id) fill = (playerColors && playerColors.selected) || "#2ecc71";
+            let fill = playerColors?.empty ?? "#ccc";
+            if (cell.state === "player1") fill = playerColors?.player1 ?? "#e63946";
+            if (cell.state === "player2") fill = playerColors?.player2 ?? "#1d4ed8";
+            // Sugerencia solo si la celda está vacía
+            if (cell.id === suggestionId && cell.state == null) fill = playerColors?.suggestion ?? "#f5c518";
+            // selectedId tiene siempre prioridad visual
+            if (cell.id === selectedId) fill = playerColors?.selected ?? "#2ecc71";
 
-            const isSelected = selectedId === cell.id;
+            const isSuggestion = cell.id === suggestionId && cell.state == null;
 
             return (
               <Line
@@ -69,7 +71,7 @@ export default function KonvaRenderer({ cells, onCellClick, selectedId, playerCo
                 y={y}
                 closed
                 stroke="black"
-                strokeWidth={isSelected ? 4 : 2}
+                strokeWidth={isSuggestion ? 4 : 2}
                 fill={fill}
                 onClick={() => onCellClick && onCellClick(cell.id)}
                 onTap={() => onCellClick && onCellClick(cell.id)}
@@ -80,4 +82,4 @@ export default function KonvaRenderer({ cells, onCellClick, selectedId, playerCo
       </Layer>
     </Stage>
   );
-}
+});

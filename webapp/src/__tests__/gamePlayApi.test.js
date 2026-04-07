@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { validateTwoPlayerMove, validateBotMove } from "../services/gamePlayApi";
+import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
 
 describe("gamePlayApi", () => {
   const originalFetch = global.fetch;
@@ -76,56 +76,43 @@ describe("gamePlayApi", () => {
     ).rejects.toThrow("No se pudo validar el movimiento en el servidor.");
   });
 
-  // ─── validateBotMove ────────────────────────────────────────────────────────
+  // ─── requestBotMove ─────────────────────────────────────────────────────────
 
-  it("validateBotMove hace POST a /game/play/ con board, selectedCell y difficulty (1vsbot)", async () => {
-    const backendBoard = {
-      size: 8,
-      turn: "B",
-      players: ["B", "R"],
-      layout: "./../...",
-    };
-
+  it("requestBotMove hace POST al servidor de bots y devuelve coords", async () => {
     const mockResponse = {
       ok: true,
       json: vi.fn().mockResolvedValue({
-        isValidMove: true,
-        board: backendBoard,
-        hasPlayerWon: false,
-        hasBotWon: true,
-        message: "Bot ganó",
+        bot_id: "random_bot",
+        api_version: "1.0.0",
+        coords: { x: 1, y: 0, z: -1 },
       }),
     };
 
     global.fetch.mockResolvedValue(mockResponse);
 
-    const board = { size: 8, turn: "R" };
-    const selectedCell = { q: 1, r: 1 };
-    const difficulty = "Media";
+    const board = { size: 8, turn: "R", players: ["R", "B"], layout: "mock" };
 
-    const result = await validateBotMove({ board, selectedCell, difficulty });
+    const result = await requestBotMove({ board, botId: "random_bot" });
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     const [url, options] = global.fetch.mock.calls[0];
 
-    expect(url.endsWith("/game/play/")).toBe(true);
+    expect(url).toContain(":4001/v1/ybot/choose/random_bot");
     expect(options.method).toBe("POST");
     expect(options.headers["Content-Type"]).toBe("application/json");
 
     const body = JSON.parse(options.body);
-    expect(body).toEqual({ board, selectedCell, difficulty, mode: "1vsbot" });
+    expect(body).toEqual(board);
 
     expect(result).toEqual({
-      isValidMove: true,
-      board: backendBoard,
-      hasPlayerWon: false,
-      hasBotWon: true,
-      message: "Bot ganó",
+      botId: "random_bot",
+      coords: { x: 1, y: 0, z: -1 },
+      apiVersion: "1.0.0",
+      hasWon: false,
     });
   });
 
-  it("validateBotMove si response.ok es false también devuelve el tablero Simulado", async () => {
-    // El throw dentro del try es capturado por el catch → devuelve Simulado
+  it("requestBotMove lanza Error si response.ok es false", async () => {
     const mockResponse = {
       ok: false,
       json: vi.fn().mockResolvedValue({ message: "Error backend" }),
@@ -133,36 +120,16 @@ describe("gamePlayApi", () => {
 
     global.fetch.mockResolvedValue(mockResponse);
 
-    const result = await validateBotMove({
-      board: { size: 8 },
-      selectedCell: { q: 0, r: 0 },
-      difficulty: "Facil",
-    });
-
-    expect(result.isValidMove).toBe(true);
-    expect(result.hasBotWon).toBe(true);
-    expect(result.hasPlayerWon).toBe(false);
-    expect(result.message).toBe("Simulado");
+    await expect(requestBotMove({ board: { size: 8 }, botId: "random_bot" })).rejects.toThrow(
+      "Error backend"
+    );
   });
 
-  it("validateBotMove si fetch falla devuelve el tablero Simulado y hasBotWon=true", async () => {
+  it("requestBotMove lanza Error si fetch falla", async () => {
     global.fetch.mockRejectedValue(new Error("Network error"));
 
-    const result = await validateBotMove({
-      board: { size: 8 },
-      selectedCell: { q: 0, r: 0 },
-      difficulty: "Facil",
-    });
-
-    expect(result.isValidMove).toBe(true);
-    expect(result.hasBotWon).toBe(true);
-    expect(result.hasPlayerWon).toBe(false);
-    expect(result.message).toBe("Simulado");
-    expect(result.board).toEqual({
-      size: 8,
-      turn: "R",
-      players: ["B", "R"],
-      layout: "R/B./.../..../...../....../......./........",
-    });
+    await expect(requestBotMove({ board: { size: 8 }, botId: "random_bot" })).rejects.toThrow(
+      "Network error"
+    );
   });
 });

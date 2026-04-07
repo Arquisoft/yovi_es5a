@@ -17,6 +17,7 @@ describe('createUserVsUserGame', () => {
       rollback: vi.fn()
     }
 
+  
     gameRepo.getConnection = vi.fn().mockResolvedValue(mockConn)
     gameRepo.insertGame = vi.fn().mockResolvedValue(10)
     gameRepo.insertUserGame = vi.fn().mockResolvedValue()
@@ -37,8 +38,8 @@ describe('createUserVsUserGame', () => {
     const msg = await createUserVsUserGame(1, 2, 8)
 
     expect(mockConn.beginTransaction).toHaveBeenCalled()
-    expect(gameRepo.insertGame).toHaveBeenCalledWith(8)
-    expect(gameRepo.insertUserGame).toHaveBeenCalledWith(10, 1, 2)
+    expect(gameRepo.insertGame).toHaveBeenCalledWith(8, '1vs1', mockConn)
+    expect(gameRepo.insertUserGame).toHaveBeenCalledWith(10, 1, 2, null, mockConn)
     expect(mockConn.commit).toHaveBeenCalled()
     expect(msg).toBe('Game created with ID: 10')
   })

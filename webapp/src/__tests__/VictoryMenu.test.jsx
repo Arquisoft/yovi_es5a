@@ -4,6 +4,21 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import VictoryMenu from "../components/VictoryMenu";
 
+const mockedNavigate = vi.fn();
+const resetGameConfig = vi.fn();
+
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockedNavigate,
+  };
+});
+
+vi.mock("../store/boardStore", () => ({
+  useBoardStore: (selector) => selector({ resetGameConfig }),
+}));
+
 vi.mock("../services/usersScoreApi", () => ({
   requestMatchScore: vi.fn(),
 }));
@@ -20,23 +35,12 @@ describe("VictoryMenu", () => {
     loserName: "Bob",
   };
 
-  const originalLocation = window.location;
-
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // JSDOM a veces no deja redefinir reload directamente
-    Object.defineProperty(window, "location", {
-      value: { reload: vi.fn() },
-      writable: true,
-    });
   });
 
   afterEach(() => {
-    Object.defineProperty(window, "location", {
-      value: originalLocation,
-      writable: true,
-    });
+    vi.clearAllMocks();
   });
 
   it("renderiza el diálogo con título por defecto y mensaje por defecto usando playerName", async () => {
@@ -91,13 +95,14 @@ describe("VictoryMenu", () => {
     expect(requestMatchScore).toHaveBeenCalledWith(matchSummary);
   });
 
-  it("al pulsar Finalizar llama window.location.reload()", async () => {
+  it("al pulsar Finalizar reinicia configuración y navega al inicio", async () => {
     requestMatchScore.mockResolvedValue({ score: 1 });
     const user = userEvent.setup();
 
     render(<VictoryMenu playerName="Pepe" matchSummary={matchSummary} />);
 
     await user.click(screen.getByRole("button", { name: /finalizar/i }));
-    expect(window.location.reload).toHaveBeenCalledTimes(1);
+    expect(resetGameConfig).toHaveBeenCalledTimes(1);
+    expect(mockedNavigate).toHaveBeenCalledWith("/");
   });
 });

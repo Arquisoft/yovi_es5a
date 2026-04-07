@@ -1,8 +1,27 @@
-const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
+//const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
+const GAMEY_BASE_URL = "http://localhost:4000";
 
 function createPlayUrl() {
-  const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/") ? GAMEY_BASE_URL.slice(0, -1) : GAMEY_BASE_URL;
+  const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/")
+    ? GAMEY_BASE_URL.slice(0, -1)
+    : GAMEY_BASE_URL;
   return `${normalizedBaseUrl}/game/play/`;
+}
+
+function createBotUrl(botId) {
+  const url = new URL(GAMEY_BASE_URL);
+  url.port = "4001";
+  url.pathname = `/v1/ybot/choose/${botId}`;
+  return url.toString();
+}
+
+function difficultyToBotId(difficulty) {
+  switch (difficulty) {
+    case "Facil":   return "random_bot";
+    case "Media":   return "medium_bot";
+    case "Dificil": return "hard_bot";
+    default:        return "random_bot";
+  }
 }
 
 export async function validateTwoPlayerMove({ board, selectedCell }) {
@@ -14,7 +33,7 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
     body: JSON.stringify({
       board,
       selectedCell,
-      mode:"1vs1",
+      mode: "1vs1",
     }),
   });
 
@@ -27,7 +46,6 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
 
   if (!response.ok) {
     throw new Error(data?.message || "No se pudo validar el movimiento en el servidor.");
-
   }
 
   return {
@@ -37,51 +55,35 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
   };
 }
 
-export async function validateBotMove({ board, selectedCell, difficulty }) {
+export async function requestBotMove({ board, difficulty = "Facil" }) {
+  const botId = difficultyToBotId(difficulty);
+  const response = await fetch(createBotUrl(botId), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(board),
+  });
+
+  let data = null;
   try {
-    const response = await fetch(createPlayUrl(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        board,
-        selectedCell,
-        difficulty,
-        mode: "1vsbot",
-      }),
-    });
-
-    let data = null;
-    try {
-      data = await response.json();
-    } catch {
-      data = null;
-    }
-
-    if (!response.ok) {
-      throw new Error(data?.message || "No se pudo validar el movimiento en el servidor.");
-    }
-
-    return {
-      isValidMove: Boolean(data?.isValidMove),
-      board: data?.board,
-      hasPlayerWon: Boolean(data?.hasPlayerWon),
-      hasBotWon: Boolean(data?.hasBotWon),
-      message: data?.message,
-    };
-  } catch (error) {
-    return {
-      isValidMove: true,
-      board: {
-        size: 8,
-        turn: "R",
-        players: ["B", "R"],
-        layout: "R/B./.../..../...../....../......./........",
-      },
-      hasPlayerWon: false,
-      hasBotWon: true,
-      message: "Simulado",
-    };
+    data = await response.json();
+  } catch {
+    data = null;
   }
+
+  if (!response.ok) {
+    throw new Error(data?.message || "No se pudo obtener el movimiento del bot.");
+  }
+
+  if (!data?.coords) {
+    throw new Error("La respuesta del bot no incluye coordenadas.");
+  }
+
+  return {
+    botId: data.bot_id ?? botId,
+    coords: data.coords,
+    apiVersion: data.api_version ?? null,
+    hasWon: Boolean(data?.hasWon),
+  };
 }

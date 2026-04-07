@@ -5,13 +5,12 @@ Given('The register page is open', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
   await page.goto(`http://localhost/`)
-
+  await page.getByTestId("tab-register").click();
 })
 
 When('I enter a specific email and username, {string} as the password and submit', async function (password) {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.getByTestId("tab-register").click();
   const browserName = process.env.BROWSER || 'chromium'
   const email = `test+${browserName}@example.com`
   const username = `test+${browserName}`
@@ -25,7 +24,7 @@ When('I enter a specific email and username, {string} as the password and submit
 Then('I should see a message containing {string}', async function (expected) {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('.authSuccess', { timeout: 5000 })
-  const text = await page.textContent('.authSuccess')
+  await page.waitForSelector('.successMessage', { timeout: 5000 })
+  const text = await page.textContent('.successMessage')
   assert.ok(text && text.includes(expected), `Expected success message to include "${expected}", got: "${text}"`)
 }) 

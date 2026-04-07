@@ -25,7 +25,12 @@ Before(async function () {
       browserType = chromium
   }
 
-  this.browser = await browserType.launch({ headless: true })
+  const headless = false
+  const slowMo = 0
+  const devtools = false
+
+
+  this.browser = await browserType.launch({ headless, slowMo, devtools })
   this.page = await this.browser.newPage()
 })
 

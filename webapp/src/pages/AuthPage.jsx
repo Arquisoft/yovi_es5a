@@ -165,7 +165,7 @@ export default function AuthPage() {
               autoComplete="current-password"
             />
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" className="authSubmit" disabled={loading}>
               {loading ? "Comprobando..." : "Entrar"}
             </button>
           </form>
@@ -212,8 +212,8 @@ export default function AuthPage() {
           </form>
         )}
 
-        {error ? <p className="authError">{error}</p> : null}
-        {successMessage ? <p className="authSuccess">{successMessage}</p> : null}
+        {error ? <p className="errorMessage">{error}</p> : null}
+        {successMessage ? <p className="successMessage">{successMessage}</p> : null}
       </article>
     </section>
   );

@@ -46,20 +46,37 @@ describe('POST /finished-match', () => {
     expect(recordSpy).toHaveBeenCalledOnce()
   })
 
-  it('retorna 400 si faltan datos obligatorios', async () => {
-    const res = await request(app)
-      .post('/finished-match')
-      .set('Authorization', authHeader('ana'))
-      .send({
-        turnNumber: 2,
-        boardSize: 8,
-        mode: '1vsbot',
-        difficulty: 'facil',
-        winner: 'player'
-      })
+  it('retorna 400 si falta difficulty en 1vsbot', async () => {
+  const res = await request(app)
+    .post('/finished-match')
+    .set('Authorization', authHeader('ana'))
+    .send({
+      turnNumber: 2,
+      boardSize: 8,
+      mode: '1vsbot',
+      // falta difficulty
+      winner: 'player'
+    })
 
-    expect(res.status).toBe(400)
-    expect(res.body.message).toMatch(/playerName/)
+  expect(res.status).toBe(400)
+  expect(res.body.message).toMatch(/difficulty es obligatorio/)
   })
+
+  it('retorna 400 si falta winner en 1vsbot sin empate', async () => {
+  const res = await request(app)
+    .post('/finished-match')
+    .set('Authorization', authHeader('ana'))
+    .send({
+      turnNumber: 2,
+      boardSize: 8,
+      mode: '1vsbot',
+      difficulty: 'facil',
+      isDraw: false
+      // falta winner
+    })
+
+  expect(res.status).toBe(400)
+  expect(res.body.message).toMatch(/winner es obligatorio/)
+})
 
 })

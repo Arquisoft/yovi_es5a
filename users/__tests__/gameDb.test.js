@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 const gameDb = require('../gameDb')
+const userDb = require('../userDb')
 
 describe('gameDb queries', () => {
   let conn
@@ -54,20 +55,21 @@ describe('gameDb queries', () => {
     expect(conn.execute.mock.calls[3][0]).toContain('UPDATE game SET winner')
   })
 
-  it('findUserIdByUsername y findBotIdByDifficulty devuelven id o null', async () => {
-    conn.execute
-      .mockResolvedValueOnce([[{ id: 21 }]])
-      .mockResolvedValueOnce([[]])
-      .mockResolvedValueOnce([[{ id: 7 }]])
+  it('findUserIdByUsername y findBotIdByDifficulty devuelven objeto o null', async () => {
+  conn.execute
+    .mockResolvedValueOnce([[{ id: 21 }]]) // user encontrado
+    .mockResolvedValueOnce([[]])           // user no encontrado
+    .mockResolvedValueOnce([[{ id: 7 }]])  // bot encontrado
 
-    const userId = await gameDb.findUserIdByUsername('Ana', conn)
-    const userMissing = await gameDb.findUserIdByUsername('Nadie', conn)
-    const botId = await gameDb.findBotIdByDifficulty('medio', conn)
+  const userObj = await userDb.findUserByUsernameExact('Ana', conn)
+  const userMissing = await userDb.findUserByUsernameExact('Nadie', conn)
+  const botObj = await gameDb.findBotIdByDifficulty('medio', conn)
 
-    expect(userId).toBe(21)
-    expect(userMissing).toBeNull()
-    expect(botId).toBe(7)
-  })
+  expect(userObj).toEqual({ id: 21 })
+  expect(userMissing).toBeNull()
+  expect(botObj).toBe(7)
+})
+
 
   it('updateUserBotStats ejecuta update agregado', async () => {
     conn.execute.mockResolvedValueOnce([])
@@ -84,8 +86,8 @@ describe('gameDb queries', () => {
       .mockResolvedValueOnce([[{ id: 1, username: 'Ana', best_score: 20, total_games_1vsbot: 2 }]])
       .mockResolvedValueOnce([[]])
 
-    const found = await gameDb.findUserByUsernameExact('  aNa  ', conn)
-    const missing = await gameDb.findUserByUsernameExact('ghost', conn)
+    const found = await userDb.findUserByUsernameExact('  aNa  ', conn)
+    const missing = await userDb.findUserByUsernameExact('ghost', conn)
 
     expect(found.username).toBe('Ana')
     expect(missing).toBeNull()

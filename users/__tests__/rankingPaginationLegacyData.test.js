@@ -8,6 +8,7 @@ describe('ranking y paginación helpers', () => {
     expect(leaderboardService.__testing.parsePage(0)).toBe(1)
   })
 
+  
   it('parsePageSize restringe a 25/50/100', () => {
     expect(leaderboardService.__testing.parsePageSize(25)).toBe(25)
     expect(leaderboardService.__testing.parsePageSize(50)).toBe(50)

@@ -12,6 +12,7 @@ describe('db.getConnection', () => {
     delete require.cache[require.resolve('../db')]
   })
 
+  
   it('crea conexion una vez y la reutiliza', async () => {
     const createConnection = vi.spyOn(mysql, 'createConnection').mockResolvedValue({ id: 'conn-1' })
 

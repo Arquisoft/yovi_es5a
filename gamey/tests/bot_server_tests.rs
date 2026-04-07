@@ -57,7 +57,7 @@ async fn test_choose_endpoint_with_valid_request() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 .header("content-type", "application/json")
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -86,7 +86,7 @@ async fn test_choose_endpoint_with_partially_filled_board() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 .header("content-type", "application/json")
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -117,7 +117,7 @@ async fn test_choose_endpoint_with_invalid_api_version() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v2/ybot/choose/random_bot") // v2 is not supported
+                .uri("/v2/choose/random_bot") // v2 is not supported
                 .header("content-type", "application/json")
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -144,7 +144,7 @@ async fn test_choose_endpoint_with_unknown_bot() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/unknown_bot")
+                .uri("/v1/choose/unknown_bot")
                 .header("content-type", "application/json")
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -170,7 +170,7 @@ async fn test_choose_endpoint_with_invalid_json() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 .header("content-type", "application/json")
                 .body(Body::from("{ invalid json }"))
                 .unwrap(),
@@ -192,7 +192,7 @@ async fn test_choose_endpoint_with_missing_content_type() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 // No content-type header
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -221,7 +221,7 @@ async fn test_choose_with_custom_bot_registry() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 .header("content-type", "application/json")
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -245,7 +245,7 @@ async fn test_choose_with_empty_bot_registry() {
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 .header("content-type", "application/json")
                 .body(Body::from(serde_json::to_string(&yen).unwrap()))
                 .unwrap(),
@@ -309,7 +309,7 @@ async fn test_get_on_choose_endpoint_returns_method_not_allowed() {
         .oneshot(
             Request::builder()
                 .method("GET")
-                .uri("/v1/ybot/choose/random_bot")
+                .uri("/v1/choose/random_bot")
                 .body(Body::empty())
                 .unwrap(),
         )

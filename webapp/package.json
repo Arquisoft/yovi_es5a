@@ -11,10 +11,16 @@
     "test": "vitest run src",
     "test:coverage": "vitest run --coverage src",
     "test:watch": "vitest --watch src",
-    "test:e2e:run": "cucumber-js --import test/e2e/support/setup.mjs --import test/e2e/steps/*/.mjs test/e2e/features --format progress",
-    "test:e2e": "start-server-and-test start:all http://localhost:5173/ test:e2e:run",
-    "test:e2e:install-browsers": "npx playwright install",
+    "test:e2e:run": "cucumber-js --import test/e2e/support/setup.mjs --import test/e2e/steps/*.mjs test/e2e/features --format progress",
+    "test:e2e:install-browsers": "playwright install --with-deps",
+    "test:e2e:chromium": "cross-env BROWSER=chromium npm run test:e2e:run",
+    "test:e2e:firefox": "cross-env BROWSER=firefox npm run test:e2e:run",
+    "test:e2e:webkit": "cross-env BROWSER=webkit npm run test:e2e:run",
+    "test:e2e:all": "concurrently \"npm run test:e2e:chromium\" \"npm run test:e2e:firefox\" \"npm run test:e2e:webkit\"",
+    "test:e2e": "start-server-and-test start:all http://localhost:5173 test:e2e:all",
     "start:all": "concurrently \"npm run dev\" \"npm --prefix ../users start\""
+
+
   },
   "dependencies": {
     "eslint": "^9.39.3",

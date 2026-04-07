@@ -131,6 +131,7 @@ export default function AuthPage() {
             Iniciar sesión
           </button>
           <button
+            data-testid="tab-register"
             type="button"
             role="tab"
             aria-selected={activeTab === "register"}
@@ -164,7 +165,7 @@ export default function AuthPage() {
               autoComplete="current-password"
             />
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" className="authSubmit" disabled={loading}>
               {loading ? "Comprobando..." : "Entrar"}
             </button>
           </form>
@@ -205,14 +206,14 @@ export default function AuthPage() {
               autoComplete="new-password"
             />
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" className="registerSubmit" disabled={loading}>
               {loading ? "Enviando..." : "Crear cuenta"}
             </button>
           </form>
         )}
 
-        {error ? <p className="authError">{error}</p> : null}
-        {successMessage ? <p className="authSuccess">{successMessage}</p> : null}
+        {error ? <p className="errorMessage">{error}</p> : null}
+        {successMessage ? <p className="successMessage">{successMessage}</p> : null}
       </article>
     </section>
   );

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 const leaderboardService = require('../services/leaderboardService')
+const userService = require('../services/userService')
 
 describe('leaderboardService', () => {
   beforeEach(() => {
@@ -31,7 +33,8 @@ describe('leaderboardService', () => {
   })
 
   it('lanza 404 cuando perfil no existe', async () => {
-    leaderboardService.gameRepo.findUserByUsernameExact = vi.fn().mockResolvedValue(null)
+    // getUserProfile usa userService.resolveUserByExactUsername, no gameRepo
+    userService.resolveUserByExactUsername = vi.fn().mockResolvedValue(null)
     await expect(leaderboardService.getUserProfile('desconocido')).rejects.toThrow('Usuario no encontrado')
   })
 
@@ -48,7 +51,8 @@ describe('leaderboardService', () => {
   })
 
   it('getUserHistory devuelve bot y pvp con paginación independiente', async () => {
-    leaderboardService.gameRepo.findUserByUsernameExact = vi.fn().mockResolvedValue({
+    // getUserHistory usa userService.resolveUserByExactUsername, no gameRepo
+    userService.resolveUserByExactUsername = vi.fn().mockResolvedValue({
       id: 5,
       username: 'Ana',
       created_at: new Date(),
@@ -83,7 +87,6 @@ describe('leaderboardService', () => {
       total: 3,
     })
 
-    
     const result = await leaderboardService.getUserHistory('Ana', {
       botPage: 2,
       botPageSize: 50,
@@ -100,7 +103,8 @@ describe('leaderboardService', () => {
   })
 
   it('getCenteredLeaderboard usa página solicitada si existe', async () => {
-    leaderboardService.gameRepo.findUserByUsernameExact = vi.fn().mockResolvedValue({ id: 3, username: 'Ana' })
+    // getCenteredLeaderboard usa userService.resolveUserByExactUsername, no gameRepo
+    userService.resolveUserByExactUsername = vi.fn().mockResolvedValue({ id: 3, username: 'Ana' })
     leaderboardService.gameRepo.getLeaderboardPageCenteredByUserId = vi.fn().mockResolvedValue({
       rows: [{ global_position: 26, username: 'Ana', best_score: 100, total_games: 2 }],
       userRank: 26,

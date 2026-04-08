@@ -49,4 +49,51 @@ describe('GET /leaderboard y endpoints de usuario', () => {
     expect(found.body.username).toBe('Ana')
     expect(missing.status).toBe(404)
   })
+
+  it('retorna 500 si leaderboardService.getLeaderboard falla', async () => {
+    vi.spyOn(leaderboardService, 'getLeaderboard').mockRejectedValue(new Error('Fallo de conexión'));
+
+    const res = await request(app).get('/leaderboard');
+
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe('Fallo de conexión');
+  });
+
+  it('retorna 500 si leaderboardService.getUserSuggestions falla', async () => {
+    vi.spyOn(leaderboardService, 'getUserSuggestions').mockRejectedValue(new Error('Error interno en sugerencias'));
+
+    const res = await request(app).get('/leaderboard/suggest?q=ana');
+
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe('Error interno en sugerencias');
+  });
+
+  it('retorna 400 si el username está vacío en /users/resolve', async () => {
+    
+    const res = await request(app).get('/users/resolve?username=   ')
+
+    expect(res.status).toBe(400)
+    expect(res.body.message).toBe('username es obligatorio')
+  })
+
+  it('retorna 500 si userService.resolveUserByExactUsername falla', async () => {
+    
+    vi.spyOn(userService, 'resolveUserByExactUsername').mockRejectedValue(new Error('Error de base de datos'))
+
+    const res = await request(app).get('/users/resolve?username=ana')
+
+    expect(res.status).toBe(500)
+    expect(res.body.message).toBe('Error de base de datos')
+  })
+
+  it('retorna 500 si leaderboardService.getUserProfile falla', async () => {
+    vi.spyOn(leaderboardService, 'getUserProfile').mockRejectedValue(new Error('Error al conectar con el servidor de perfiles'));
+
+    const res = await request(app).get('/users/ana');
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe('Error al conectar con el servidor de perfiles');
+  });
+
+  
+
 })

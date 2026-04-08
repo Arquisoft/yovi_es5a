@@ -1,5 +1,5 @@
 //const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
-const GAMEY_BASE_URL = "http://localhost:4000";
+const GAMEY_BASE_URL = "http://158.158.8.82:4000";
 
 function createPlayUrl() {
   const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/")

@@ -3,7 +3,7 @@ import { useSessionStore } from "../store/sessionStore";
 
 
 //const USERS_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-const USERS_BASE_URL = "http://localhost:3000";
+const USERS_BASE_URL = "http://158.158.8.82:3000";
 
 const inFlightRequests = new Map();
 

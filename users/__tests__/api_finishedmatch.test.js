@@ -203,4 +203,24 @@ describe('POST /finished-match', () => {
     expect(res.body.message).toMatch(/winner es obligatorio/)
   })
 
+  it('retorna 500 si ocurre un error inesperado en el servidor', async () => {
+    vi.spyOn(gameService, 'recordFinishedMatch').mockRejectedValue(new Error('Error de base de datos'));
+
+    const res = await request(app)
+      .post('/finished-match')
+      .set('Authorization', authHeader())
+      .send({
+        turnNumber: 10,
+        elapsedSeconds: 100,
+        boardSize: 8,
+        mode: '1vs1',
+        playerName: 'a',
+        guestName: 'b',
+        winner: 'player'
+      });
+
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe('Error de base de datos');
+  });
+
 })

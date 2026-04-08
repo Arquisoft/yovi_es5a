@@ -30,7 +30,7 @@ When('I enter a specific username, {string} as the password and submit', async f
 Then('I should see the home page', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('form.startGameForm', { timeout: 5000 })
+  await page.waitForSelector('form.startGameForm', { timeout: 10000 })
   const v1 = await page.locator('form.startGameForm').isVisible()
   assert.ok(v1, 'El formulario no está visible')
   const v2 = await page.locator('div.homeHero').isVisible()

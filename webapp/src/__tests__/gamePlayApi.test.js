@@ -36,7 +36,7 @@ describe("gamePlayApi", () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
       const [url, options] = global.fetch.mock.calls[0];
 
-      expect(url).toContain("http://localhost:4000/game/play/");
+      expect(url).toContain("http://158.158.8.82:4000/game/play/");
       expect(options.method).toBe("POST");
       expect(options.headers["Content-Type"]).toBe("application/json");
 

@@ -1,27 +1,41 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import GameBoard from "../components/GameBoard";
+
+// ── Mocks ─────────────────────────────────────────────────────────────────────
 
 vi.mock("../store/boardStore", () => ({ useBoardStore: vi.fn() }));
 
 vi.mock("../renderers/KonvaRenderer", () => ({
   default: ({ onCellClick }) => (
-    <div>
+    <div data-testid="konva-renderer">
       <button onClick={() => onCellClick("0,0")}>Select valid cell</button>
       <button onClick={() => onCellClick("bad-id")}>Select invalid cell</button>
     </div>
   ),
 }));
 
-vi.mock("../header/Header", () => ({ default: () => <div>Header</div> }));
+vi.mock("../header/Header", () => ({
+  default: ({ currentPlayer, turnNumber, playerOneName, playerTwoName }) => (
+    <div data-testid="header">
+      <span data-testid="current-player">{currentPlayer}</span>
+      <span data-testid="turn-number">{turnNumber}</span>
+      <span data-testid="player1-name">{playerOneName}</span>
+      <span data-testid="player2-name">{playerTwoName}</span>
+    </div>
+  ),
+}));
+
+// VictoryMenu mock con role="dialog" para coincidir con el componente real
 vi.mock("../components/VictoryMenu", () => ({
-  default: ({ title, message }) => (
-    <div>
-      <h1>{title}</h1>
+  default: ({ title, message, subtitle }) => (
+    <div role="dialog" aria-modal="true">
+      <h2>{title}</h2>
       <p>{message}</p>
+      <p>{subtitle}</p>
     </div>
   ),
 }));
@@ -38,9 +52,13 @@ vi.mock("../services/gamePlayApi", () => ({
   requestBotMove: vi.fn(),
 }));
 
+// ── Imports post-mock ──────────────────────────────────────────────────────────
+
 import { useBoardStore } from "../store/boardStore";
 import { parseCellId, boardToYen, barycentricToCell } from "../parsers/yenParser";
 import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 function renderGameBoard() {
   return render(
@@ -50,30 +68,30 @@ function renderGameBoard() {
   );
 }
 
+// ── Suite ──────────────────────────────────────────────────────────────────────
+
 describe("GameBoard", () => {
   const actions = {
     playTurn: vi.fn(),
     setCellOwner: vi.fn(),
     nextTurn: vi.fn(),
     applyBoardSnapshot: vi.fn(),
+    resetGameConfig: vi.fn(),
+  };
+
+  const BASE_STATE = {
+    cells: [{ id: "0,0", q: 0, r: 0, state: null }],
+    size: 8,
+    turnNumber: 1,
+    gameMode: "1vs1",
+    difficulty: "Facil",
+    players: { player1Name: "A", player2Name: "B", isBotSecondPlayer: false },
+    elapsedSeconds: 0,
+    ...actions,
   };
 
   function setMockStore(overrides = {}) {
-    const state = {
-      cells: [{ id: "0,0", q: 0, r: 0, state: null }],
-      size: 8,
-      turnNumber: 1,
-      playTurn: actions.playTurn,
-      setCellOwner: actions.setCellOwner,
-      nextTurn: actions.nextTurn,
-      applyBoardSnapshot: actions.applyBoardSnapshot,
-      gameMode: "1vs1",
-      difficulty: "Facil",
-      players: { player1Name: "A", player2Name: "B", isBotSecondPlayer: false },
-      elapsedSeconds: 0,
-      ...overrides,
-    };
-
+    const state = { ...BASE_STATE, ...overrides };
     useBoardStore.mockImplementation((selector) => selector(state));
     // getState necesario para la rama 1vsbot (boardAfterPlayerMove)
     useBoardStore.getState = () => state;
@@ -84,195 +102,629 @@ describe("GameBoard", () => {
     vi.clearAllMocks();
     setMockStore();
     boardToYen.mockReturnValue("YEN_BOARD");
-    parseCellId.mockImplementation((id) => {
-      if (id === "0,0") return { q: 0, r: 0 };
-      return null;
-    });
+    parseCellId.mockImplementation((id) =>
+      id === "0,0" ? { q: 0, r: 0 } : null
+    );
   });
 
-  // ── Renderizado básico ────────────────────────────────────────────────────
+  // ── Renderizado básico ──────────────────────────────────────────────────────
 
-  it("renderiza el tablero cuando hay celdas disponibles", () => {
-    renderGameBoard();
-    expect(screen.getByText("Header")).toBeInTheDocument();
+  describe("renderizado", () => {
+    it("renderiza el Header cuando hay celdas disponibles", () => {
+      renderGameBoard();
+      expect(screen.getByTestId("header")).toBeInTheDocument();
+    });
+
+    it("pasa los nombres de los jugadores al Header", () => {
+      setMockStore({
+        players: { player1Name: "Jugador1", player2Name: "Jugador2" },
+      });
+      renderGameBoard();
+      expect(screen.getByTestId("player1-name")).toHaveTextContent("Jugador1");
+      expect(screen.getByTestId("player2-name")).toHaveTextContent("Jugador2");
+    });
+
+    it("pasa el turnNumber correcto al Header", () => {
+      setMockStore({ turnNumber: 5 });
+      renderGameBoard();
+      expect(screen.getByTestId("turn-number")).toHaveTextContent("5");
+    });
+
+    it("pasa currentPlayer='player1' cuando turnNumber es impar", () => {
+      setMockStore({ turnNumber: 1 });
+      renderGameBoard();
+      expect(screen.getByTestId("current-player")).toHaveTextContent("player1");
+    });
+
+    it("pasa currentPlayer='player2' cuando turnNumber es par", () => {
+      setMockStore({ turnNumber: 2 });
+      renderGameBoard();
+      expect(screen.getByTestId("current-player")).toHaveTextContent("player2");
+    });
+
+    it("muestra el mensaje de carga si cells está vacío", () => {
+      setMockStore({ cells: [] });
+      renderGameBoard();
+      expect(screen.getByText(/cargando tablero/i)).toBeInTheDocument();
+    });
+
+    it("muestra el mensaje de carga si cells es null/undefined", () => {
+      setMockStore({ cells: null });
+      renderGameBoard();
+      expect(screen.getByText(/cargando tablero/i)).toBeInTheDocument();
+    });
+
+    it("muestra la dificultad solo en modo 1vsbot", () => {
+      setMockStore({ gameMode: "1vsbot", difficulty: "Difícil" });
+      renderGameBoard();
+      expect(screen.getByText(/dificultad: difícil/i)).toBeInTheDocument();
+    });
+
+    it("no muestra la dificultad en modo 1vs1", () => {
+      setMockStore({ gameMode: "1vs1", difficulty: "Media" });
+      renderGameBoard();
+      expect(screen.queryByText(/dificultad/i)).toBeNull();
+    });
+
+    it("no muestra la dificultad si difficulty es null en modo 1vsbot", () => {
+      setMockStore({ gameMode: "1vsbot", difficulty: null });
+      renderGameBoard();
+      expect(screen.queryByText(/dificultad/i)).toBeNull();
+    });
+
+    it("muestra el botón de sugerencia en modo 1vsbot", () => {
+      setMockStore({ gameMode: "1vsbot" });
+      renderGameBoard();
+      expect(screen.getByRole("button", { name: /sugerencia/i })).toBeInTheDocument();
+    });
+
+    it("muestra el botón de sugerencia en modo 1vs1", () => {
+      setMockStore({ gameMode: "1vs1" });
+      renderGameBoard();
+      expect(screen.getByRole("button", { name: /sugerencia/i })).toBeInTheDocument();
+    });
+
+    it("no muestra el botón de sugerencia si gameMode es null", () => {
+      setMockStore({ gameMode: null });
+      renderGameBoard();
+      expect(screen.queryByRole("button", { name: /sugerencia/i })).toBeNull();
+    });
+
+    it("no muestra VictoryMenu en el estado inicial", () => {
+      renderGameBoard();
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
   });
 
   // ── Celda inválida ────────────────────────────────────────────────────────
 
-  it("si la celda seleccionada es inválida (1vs1), muestra error y no llama API", async () => {
-    const user = userEvent.setup();
-    renderGameBoard();
+  describe("clic en celda inválida", () => {
+    it("1vs1: muestra error y no llama a la API", async () => {
+      const user = userEvent.setup();
+      renderGameBoard();
 
-    await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
+      await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
 
-    expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
-    expect(validateTwoPlayerMove).not.toHaveBeenCalled();
-  });
-
-  // ── 1vs1: movimiento válido ───────────────────────────────────────────────
-
-  it("1vs1: movimiento válido llama validateTwoPlayerMove, setCellOwner y nextTurn", async () => {
-    const user = userEvent.setup();
-    actions.setCellOwner.mockReturnValue(true);
-
-    validateTwoPlayerMove.mockResolvedValue({
-      isValidMove: true,
-      hasWon: false,
-      message: "",
+      expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
+      expect(validateTwoPlayerMove).not.toHaveBeenCalled();
     });
 
-    renderGameBoard();
+    it("1vsbot: muestra error y no llama a la API", async () => {
+      const user = userEvent.setup();
+      setMockStore({ gameMode: "1vsbot" });
+      renderGameBoard();
 
-    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+      await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
 
-    await waitFor(() => expect(validateTwoPlayerMove).toHaveBeenCalledTimes(1));
-    expect(actions.setCellOwner).toHaveBeenCalledWith("0,0", "player1");
-    expect(actions.nextTurn).toHaveBeenCalledTimes(1);
-  });
-
-  // ── 1vs1: movimiento rechazado por backend ────────────────────────────────
-
-  it("1vs1: si backend dice inválido, muestra error y no cambia turno", async () => {
-    const user = userEvent.setup();
-
-    validateTwoPlayerMove.mockResolvedValue({
-      isValidMove: false,
-      hasWon: false,
-      message: "Movimiento inválido",
+      expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
+      expect(validateTwoPlayerMove).not.toHaveBeenCalled();
     });
 
-    renderGameBoard();
+    it("el error de celda inválida desaparece tras un clic válido exitoso", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: false, message: "" });
+      renderGameBoard();
 
-    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+      await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
+      expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
 
-    expect(await screen.findByText(/movimiento inválido/i)).toBeInTheDocument();
-    expect(actions.nextTurn).not.toHaveBeenCalled();
-  });
-
-  // ── 1vsbot: turno completo (jugador + bot) ───────────────────────────────
-
-  it("1vsbot: aplica movimiento del bot cuando la API responde OK", async () => {
-    const user = userEvent.setup();
-
-    setMockStore({
-      gameMode: "1vsbot",
-      difficulty: "Media",
-      players: { player1Name: "Pepe", player2Name: "Bot", isBotSecondPlayer: true },
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+      await waitFor(() =>
+        expect(screen.queryByText(/celda seleccionada inválida/i)).toBeNull()
+      );
     });
-
-    validateTwoPlayerMove.mockResolvedValue({
-      isValidMove: true,
-      hasWon: false,
-      message: "",
-    });
-
-    requestBotMove.mockResolvedValue({
-      coords: { x: 1, y: 0, z: 0 },
-    });
-
-    barycentricToCell.mockReturnValue({ q: 0, r: 0 });
-
-    actions.setCellOwner
-      .mockReturnValueOnce(true)  // jugador
-      .mockReturnValueOnce(true); // bot
-
-    renderGameBoard();
-
-    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-
-    await waitFor(() => expect(requestBotMove).toHaveBeenCalledTimes(1));
-
-    expect(actions.setCellOwner).toHaveBeenNthCalledWith(1, "0,0", "player1");
-    expect(actions.setCellOwner).toHaveBeenNthCalledWith(2, "0,0", "player2");
-    expect(actions.nextTurn).toHaveBeenCalledTimes(2);
-  });
-
-  // ── 1vsbot: jugador gana ──────────────────────────────────────────────────
-
-  it("1vsbot: si el jugador gana, muestra VictoryMenu", async () => {
-    const user = userEvent.setup();
-
-    setMockStore({
-      gameMode: "1vsbot",
-      difficulty: "Media",
-      players: { player1Name: "Pepe", player2Name: "Bot", isBotSecondPlayer: true },
-    });
-
-    validateTwoPlayerMove.mockResolvedValue({
-      isValidMove: true,
-      hasWon: true,
-      message: "",
-    });
-
-    actions.setCellOwner.mockReturnValue(true);
-
-    renderGameBoard();
-
-    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-
-    expect(await screen.findByRole("heading", { name: /¡victoria!/i })).toBeInTheDocument();
-    expect(screen.getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();
   });
 
   // ── Modo sin configurar ───────────────────────────────────────────────────
 
-  it("si gameMode no está configurado, usa playTurn en clic", async () => {
-    const user = userEvent.setup();
-    actions.playTurn.mockReturnValue(true);
+  describe("gameMode no configurado", () => {
+    it("usa playTurn al hacer clic en una celda válida", async () => {
+      const user = userEvent.setup();
+      actions.playTurn.mockReturnValue(true);
+      setMockStore({ gameMode: null });
+      renderGameBoard();
 
-    setMockStore({ gameMode: null });
-    renderGameBoard();
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
-    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
-
-    expect(actions.playTurn).toHaveBeenCalledWith("0,0");
-  });
-
-  // ── 1vs1: victoria de player2 ─────────────────────────────────────────────
-
-  it("1vs1: si gana player2 muestra su nombre en VictoryMenu", async () => {
-    const user = userEvent.setup();
-
-    setMockStore({
-      turnNumber: 2, // turno par → currentPlayer = "player2"
-      players: { player1Name: "Ana", player2Name: "Invitado", isBotSecondPlayer: false },
+      expect(actions.playTurn).toHaveBeenCalledWith("0,0");
+      expect(validateTwoPlayerMove).not.toHaveBeenCalled();
     });
 
-    actions.setCellOwner.mockReturnValue(true);
-    validateTwoPlayerMove.mockResolvedValue({
-      isValidMove: true,
-      hasWon: true,
-      message: "",
+    it("no llama a nextTurn ni limpia selección si playTurn devuelve false", async () => {
+      const user = userEvent.setup();
+      actions.playTurn.mockReturnValue(false);
+      setMockStore({ gameMode: null });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(actions.nextTurn).not.toHaveBeenCalled();
     });
 
-    renderGameBoard();
-    await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+    it("tampoco llama a parseCellId en modo no configurado", async () => {
+      const user = userEvent.setup();
+      actions.playTurn.mockReturnValue(true);
+      setMockStore({ gameMode: null });
+      renderGameBoard();
 
-    expect(await screen.findByText(/invitado ha ganado la partida/i)).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(parseCellId).not.toHaveBeenCalled();
+    });
   });
 
-  // ── Sugerencia: error silencioso ──────────────────────────────────────────
-  // El componente captura la excepción en un catch vacío (sin setTurnError),
-  // por lo que NO se muestra ningún mensaje de error en pantalla cuando la
-  // llamada a requestBotMove falla. El test verifica este comportamiento real.
+  // ── Modo 1vs1 ─────────────────────────────────────────────────────────────
 
-  it("sugerencia no muestra error cuando la API falla (catch silencioso)", async () => {
-    const user = userEvent.setup();
+  describe("modo 1vs1", () => {
+    it("movimiento válido llama setCellOwner con la celda y player correcto", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: false, message: "" });
+      renderGameBoard();
 
-    setMockStore({ gameMode: "1vs1" });
-    requestBotMove.mockRejectedValue(new Error("boom"));
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
-    renderGameBoard();
+      await waitFor(() => expect(validateTwoPlayerMove).toHaveBeenCalledTimes(1));
+      expect(actions.setCellOwner).toHaveBeenCalledWith("0,0", "player1");
+    });
 
-    const suggestionBtn = screen.getByRole("button", { name: /sugerencia/i });
-    await user.click(suggestionBtn);
+    it("movimiento válido llama nextTurn exactamente una vez", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: false, message: "" });
+      renderGameBoard();
 
-    // El botón vuelve al estado normal después del catch
-    await waitFor(() =>
-      expect(suggestionBtn).not.toBeDisabled()
-    );
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
-    // No se muestra ningún error — el componente lo suprime
-    expect(screen.queryByText(/error/i)).toBeNull();
+      await waitFor(() => expect(actions.nextTurn).toHaveBeenCalledTimes(1));
+    });
+
+    it("pasa el board serializado y la celda correcta a validateTwoPlayerMove", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: false, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      await waitFor(() =>
+        expect(validateTwoPlayerMove).toHaveBeenCalledWith({
+          board: "YEN_BOARD",
+          selectedCell: { q: 0, r: 0 },
+        })
+      );
+    });
+
+    it("backend rechaza el movimiento: muestra mensaje del backend", async () => {
+      const user = userEvent.setup();
+      validateTwoPlayerMove.mockResolvedValue({
+        isValidMove: false,
+        hasWon: false,
+        message: "Movimiento inválido",
+      });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(await screen.findByText(/movimiento inválido/i)).toBeInTheDocument();
+      expect(actions.nextTurn).not.toHaveBeenCalled();
+    });
+
+    it("backend rechaza sin message: muestra texto de fallback", async () => {
+      const user = userEvent.setup();
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: false, hasWon: false, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/movimiento inválido\. el turno no cambia/i)
+      ).toBeInTheDocument();
+    });
+
+    it("setCellOwner devuelve false: muestra error y no llama a nextTurn", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(false);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: false, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/no se pudo confirmar el movimiento/i)
+      ).toBeInTheDocument();
+      expect(actions.nextTurn).not.toHaveBeenCalled();
+    });
+
+    it("error de red con instancia Error: muestra su message", async () => {
+      const user = userEvent.setup();
+      validateTwoPlayerMove.mockRejectedValue(new Error("Timeout de red"));
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(await screen.findByText(/timeout de red/i)).toBeInTheDocument();
+    });
+
+    it("error de red no-Error: muestra mensaje genérico", async () => {
+      const user = userEvent.setup();
+      validateTwoPlayerMove.mockRejectedValue("fallo inesperado");
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/error de comunicación con el servidor/i)
+      ).toBeInTheDocument();
+    });
+
+    it("player1 gana (turnNumber impar): muestra VictoryMenu con su nombre", async () => {
+      const user = userEvent.setup();
+      setMockStore({
+        turnNumber: 1,
+        players: { player1Name: "Ana", player2Name: "Bob" },
+      });
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: true, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText(/¡victoria!/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/ana ha ganado la partida/i)).toBeInTheDocument();
+    });
+
+    it("player2 gana (turnNumber par): muestra su nombre en VictoryMenu", async () => {
+      const user = userEvent.setup();
+      setMockStore({
+        turnNumber: 2,
+        players: { player1Name: "Ana", player2Name: "Invitado" },
+      });
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: true, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText(/invitado ha ganado la partida/i)).toBeInTheDocument();
+    });
+
+    it("no se puede hacer clic mientras hay una petición en vuelo", async () => {
+      const user = userEvent.setup();
+      // Promesa que nunca resuelve → isSubmittingTurn queda en true
+      validateTwoPlayerMove.mockReturnValue(new Promise(() => {}));
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(validateTwoPlayerMove).toHaveBeenCalledTimes(1);
+    });
+
+    it("victoria: no llama a nextTurn después de ganar", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: true, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      await screen.findByRole("dialog");
+      expect(actions.nextTurn).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── Modo 1vsbot ───────────────────────────────────────────────────────────
+
+  describe("modo 1vsbot", () => {
+    beforeEach(() => {
+      setMockStore({
+        gameMode: "1vsbot",
+        difficulty: "Media",
+        players: { player1Name: "Pepe", player2Name: "Bot", isBotSecondPlayer: true },
+      });
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: false, message: "" });
+      requestBotMove.mockResolvedValue({ coords: { x: 1, y: 0, z: 0 } });
+      barycentricToCell.mockReturnValue({ q: 0, r: 0 });
+      actions.setCellOwner
+        .mockReturnValueOnce(true)  // jugador
+        .mockReturnValueOnce(true); // bot
+    });
+
+    it("aplica movimiento del jugador (player1) y luego del bot (player2)", async () => {
+      const user = userEvent.setup();
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      await waitFor(() => expect(requestBotMove).toHaveBeenCalledTimes(1));
+      expect(actions.setCellOwner).toHaveBeenNthCalledWith(1, "0,0", "player1");
+      expect(actions.setCellOwner).toHaveBeenNthCalledWith(2, "0,0", "player2");
+    });
+
+    it("llama a nextTurn dos veces (tras jugador y tras bot)", async () => {
+      const user = userEvent.setup();
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      await waitFor(() => expect(actions.nextTurn).toHaveBeenCalledTimes(2));
+    });
+
+    it("pasa la dificultad correcta a requestBotMove", async () => {
+      const user = userEvent.setup();
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      await waitFor(() =>
+        expect(requestBotMove).toHaveBeenCalledWith(
+          expect.objectContaining({ difficulty: "Media" })
+        )
+      );
+    });
+
+    it("el jugador gana: muestra VictoryMenu y no llama a requestBotMove", async () => {
+      const user = userEvent.setup();
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: true, message: "" });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText(/¡victoria!/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();
+      expect(requestBotMove).not.toHaveBeenCalled();
+    });
+
+    it("el bot gana: muestra VictoryMenu con título Derrota", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({
+        coords: { x: 1, y: 0, z: 0 },
+        hasWon: true,
+      });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText(/derrota/i)).toBeInTheDocument();
+    });
+
+    it("bot devuelve coords null: muestra error descriptivo", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: null });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/el servidor no devolvió una jugada válida del bot/i)
+      ).toBeInTheDocument();
+    });
+
+    it("bot devuelve coords con campos no numéricos: muestra error", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: { x: "no", y: 0, z: 0 } });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/el servidor no devolvió una jugada válida del bot/i)
+      ).toBeInTheDocument();
+    });
+
+    it("bot devuelve coords con campos undefined: muestra error", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: { x: undefined, y: 0, z: 0 } });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/el servidor no devolvió una jugada válida del bot/i)
+      ).toBeInTheDocument();
+    });
+
+    it("setCellOwner del bot devuelve false: muestra error", async () => {
+      const user = userEvent.setup();
+      actions.setCellOwner
+        .mockReset()
+        .mockReturnValueOnce(true)   // jugador OK
+        .mockReturnValueOnce(false); // bot falla
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/no se pudo aplicar el movimiento del bot/i)
+      ).toBeInTheDocument();
+    });
+
+    it("validateTwoPlayerMove rechaza en 1vsbot: muestra error y no llama bot", async () => {
+      const user = userEvent.setup();
+      validateTwoPlayerMove.mockResolvedValue({
+        isValidMove: false,
+        hasWon: false,
+        message: "Celda ocupada",
+      });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(await screen.findByText(/celda ocupada/i)).toBeInTheDocument();
+      expect(requestBotMove).not.toHaveBeenCalled();
+    });
+
+    it("error en requestBotMove con Error: muestra su message", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockRejectedValue(new Error("Bot offline"));
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(await screen.findByText(/bot offline/i)).toBeInTheDocument();
+    });
+
+    it("error en requestBotMove no-Error: muestra mensaje genérico", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockRejectedValue("fallo");
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(
+        await screen.findByText(/error de comunicación con el servidor/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  // ── Botón de sugerencia ───────────────────────────────────────────────────
+
+  describe("botón de sugerencia", () => {
+    beforeEach(() => {
+      setMockStore({ gameMode: "1vs1" });
+      barycentricToCell.mockReturnValue({ q: 1, r: 1 });
+    });
+
+    it("llama a requestBotMove al hacer clic", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: { x: 1, y: 0, z: 0 } });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /sugerencia/i }));
+
+      await waitFor(() => expect(requestBotMove).toHaveBeenCalledTimes(1));
+    });
+
+    it("no muestra error cuando la API tiene éxito", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: { x: 1, y: 0, z: 0 } });
+      renderGameBoard();
+
+      await user.click(screen.getByRole("button", { name: /sugerencia/i }));
+
+      await waitFor(() => expect(requestBotMove).toHaveBeenCalled());
+      expect(screen.queryByText(/error/i)).toBeNull();
+    });
+
+    it("no muestra error cuando la API falla (catch silencioso)", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockRejectedValue(new Error("boom"));
+      renderGameBoard();
+
+      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      await user.click(btn);
+
+      await waitFor(() => expect(btn).not.toBeDisabled());
+      expect(screen.queryByText(/error/i)).toBeNull();
+    });
+
+    it("botón queda deshabilitado durante la petición de sugerencia", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockReturnValue(new Promise(() => {})); // nunca resuelve
+      renderGameBoard();
+
+      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      await user.click(btn);
+
+      expect(btn).toBeDisabled();
+    });
+
+    it("sugerencia con coords nulas no produce error visible", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: null });
+      renderGameBoard();
+
+      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      await user.click(btn);
+
+      await waitFor(() => expect(btn).not.toBeDisabled());
+      expect(screen.queryByText(/error/i)).toBeNull();
+    });
+
+    it("sugerencia con coords de campos no numéricos no produce error visible", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockResolvedValue({ coords: { x: "a", y: 0, z: 0 } });
+      renderGameBoard();
+
+      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      await user.click(btn);
+
+      await waitFor(() => expect(btn).not.toBeDisabled());
+      expect(screen.queryByText(/error/i)).toBeNull();
+    });
+
+    it("no lanza segunda petición si ya hay una en vuelo", async () => {
+      const user = userEvent.setup();
+      requestBotMove.mockReturnValue(new Promise(() => {}));
+      renderGameBoard();
+
+      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      await user.click(btn);
+      await user.click(btn); // segundo clic mientras está deshabilitado
+
+      expect(requestBotMove).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ── Estado de victoria persistente ───────────────────────────────────────
+
+  describe("bloqueo tras gameOver", () => {
+    async function triggerGameOver() {
+      const user = userEvent.setup();
+      actions.setCellOwner.mockReturnValue(true);
+      validateTwoPlayerMove.mockResolvedValue({ isValidMove: true, hasWon: true, message: "" });
+      renderGameBoard();
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+      await screen.findByRole("dialog");
+      vi.clearAllMocks(); // limpia contadores para tests posteriores
+      return user;
+    }
+
+    it("tras gameOver no se pueden hacer más movimientos", async () => {
+      const user = await triggerGameOver();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(validateTwoPlayerMove).not.toHaveBeenCalled();
+    });
+
+    it("tras gameOver el botón de sugerencia está deshabilitado", async () => {
+      await triggerGameOver();
+      expect(screen.getByRole("button", { name: /sugerencia/i })).toBeDisabled();
+    });
+
+    it("VictoryMenu permanece visible tras intentar otro movimiento", async () => {
+      const user = await triggerGameOver();
+
+      await user.click(screen.getByRole("button", { name: /select valid cell/i }));
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
   });
 });

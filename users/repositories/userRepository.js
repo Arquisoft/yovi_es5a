@@ -18,9 +18,6 @@ class UserRepository {
     return await this.db.findUserByEmailExact(email, connection);
   }
 
-  async getConnection() {
-    return await this.conn();
-  }
 
   async getUsersFromDB(connection) {
     return await this.db.getUsersFromDB(connection);

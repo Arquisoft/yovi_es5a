@@ -6,8 +6,8 @@ class UserRepository {
     this.db = db;
     this.conn = conn;
   }
-  async insertUser(username, email, password) {
-    return await this.db.insertUser(username, email, password);
+  async insertUser(username, email, password,connection) {
+    return await this.db.insertUser(username, email, password, connection);
   }
 
   async findUserByUsernameExact(username, connection) {
@@ -18,12 +18,13 @@ class UserRepository {
     return await this.db.findUserByEmailExact(email, connection);
   }
 
-  async getConnection() {
-    return await this.conn();
+
+  async getUsersFromDB(connection) {
+    return await this.db.getUsersFromDB(connection);
   }
 
-  async getUsersFromDB() {
-    return await this.db.getUsersFromDB();
+   async getConnection() {
+    return await this.conn();
   }
 }
 

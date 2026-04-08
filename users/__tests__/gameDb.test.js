@@ -177,4 +177,23 @@ describe('gameDb queries', () => {
     expect(result.rows[0].winner_name).toBe('Ana')
     expect(conn.execute).toHaveBeenCalledTimes(2)
   })
+
+  it('findUserIdByUsername devuelve solo el ID o null', async () => {
+    conn.execute
+      .mockResolvedValueOnce([[{ id: 42 }]]) 
+      .mockResolvedValueOnce([[]]);  
+
+    const idFound = await gameDb.findUserIdByUsername('pablo', conn);
+    const idMissing = await gameDb.findUserIdByUsername('desconocido', conn);
+
+    
+    expect(idFound).toEqual(42);
+    expect(conn.execute).toHaveBeenNthCalledWith(1, 
+      expect.stringContaining('SELECT id FROM users'), 
+      ['pablo']
+    );
+
+    
+    expect(idMissing).toBeNull();
+  });
 })

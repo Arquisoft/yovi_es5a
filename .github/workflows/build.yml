@@ -27,7 +27,7 @@ jobs:
 
       - run: npm --prefix users ci
       - run: npm --prefix webapp ci
-      - run: npm --prefix users run test:coverage
+      - run: npm --prefix users run test:coverage --coverage.thresholds.lines=70
       - run: npm --prefix webapp run test:coverage
 
       - name: Install cargo-llvm-cov

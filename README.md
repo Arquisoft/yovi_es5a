@@ -6,7 +6,7 @@
 
 This project is a template with some basic functionality for the ASW labs.
 
-[Yovi_es5a WebApp](http://40.66.45.17/)
+[Yovi_es5a WebApp](http://158.158.8.82/)
 
 [Yovi_es5a_Documentation](https://arquisoft.github.io/yovi_es5a/)
 

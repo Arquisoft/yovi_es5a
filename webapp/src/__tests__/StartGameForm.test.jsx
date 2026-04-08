@@ -4,6 +4,11 @@ import userEvent from "@testing-library/user-event";
 import StartGameForm from "../components/StartGameForm";
 import React from "react";
 
+// ← Mock de authApi para que createUrl no intente usar import.meta.env
+vi.mock("../services/authApi", () => ({
+  createUrl: (path) => `http://localhost:3000${path}`,
+}));
+
 vi.mock("../store/boardStore", () => ({
   useBoardStore: vi.fn(),
 }));
@@ -73,13 +78,24 @@ describe("StartGameForm", () => {
 
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
 
+    // Verificar que el fetch se hizo a la URL correcta con el token
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:3000/auth/check",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: "Bearer fake-token",
+        }),
+      })
+    );
+
     expect(setGameConfig).toHaveBeenCalledTimes(1);
     expect(setGameConfig).toHaveBeenCalledWith({
       gameMode: "1vs1",
       player1Name: "Alice",
       player2Name: "Bob",
       difficulty: "Facil",
-      boardSize: "10",
+      boardSize: "10", // string porque viene de input type="number"
     });
 
     expect(startGameFromConfig).toHaveBeenCalledTimes(1);
@@ -90,7 +106,6 @@ describe("StartGameForm", () => {
     render(<StartGameForm />);
 
     await user.selectOptions(screen.getByLabelText(/modo/i), "1vsbot");
-
     await user.selectOptions(screen.getByLabelText(/dificultad/i), "Media");
 
     await user.click(screen.getByRole("button", { name: /empezar partida/i }));
@@ -101,7 +116,7 @@ describe("StartGameForm", () => {
       player1Name: "Alice",
       player2Name: "Bot",
       difficulty: "Media",
-      boardSize: 8,
+      boardSize: 8, // number porque es el estado inicial, no viene de input del usuario
     });
 
     expect(startGameFromConfig).toHaveBeenCalledTimes(1);
@@ -125,5 +140,19 @@ describe("StartGameForm", () => {
     expect(await screen.findByText(/no hay sesión activa/i)).toBeInTheDocument();
     expect(setGameConfig).not.toHaveBeenCalled();
     expect(startGameFromConfig).not.toHaveBeenCalled();
+  });
+
+  it("muestra error si el token es inválido (fetch devuelve ok: false)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false });
+
+    const user = userEvent.setup();
+    render(<StartGameForm />);
+
+    await user.type(screen.getByLabelText(/nombre invitado/i), "Bob");
+    await user.click(screen.getByRole("button", { name: /empezar partida/i }));
+
+    expect(await screen.findByText(/tu sesión ha expirado/i)).toBeInTheDocument();
+    expect(clearSession).toHaveBeenCalledTimes(1);
+    expect(setGameConfig).not.toHaveBeenCalled();
   });
 });

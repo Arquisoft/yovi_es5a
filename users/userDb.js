@@ -4,29 +4,13 @@ async function resolveConnection(connection) {
   return connection || getConnection();
 }
 
-async function insertUser(username, email, password) {
-  const connection = await getConnection();
-  const [result] = await connection.execute(
-    'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-    [username, email, password]
-  );
-  return result.insertId;
-}
-async function insertUser(username, email, password, connection) {
+async function insertUser(username, email, password,connection) {
   const activeConnection = await resolveConnection(connection);
   const [result] = await activeConnection.execute(
     'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
     [username, email, password]
   );
   return result.insertId;
-}
-
-async function getUsersFromDB() {
-  const connection = await getConnection();
-  const [rows] = await connection.execute(
-    'SELECT id, username, email, password, created_at FROM users'
-  );
-  return rows;
 }
 
 async function getUsersFromDB(connection) {
@@ -36,6 +20,7 @@ async function getUsersFromDB(connection) {
   );
   return rows;
 }
+
 
 async function findUserByUsernameExact(username, connection) {
   const activeConnection = await resolveConnection(connection);

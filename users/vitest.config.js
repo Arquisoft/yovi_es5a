@@ -5,7 +5,7 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'lcov'],
       thresholds: {
-        lines: 75,
+        lines: 85,
       },
     },
   },

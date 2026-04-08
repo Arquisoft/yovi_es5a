@@ -1,0 +1,192 @@
+openapi: 3.0.0
+info:
+  title: GameY Bot Play API
+  version: 1.0.0
+  description: |
+    Endpoint API permite a un bot externo a nuestra aplicacion hacer peticiones para un movimiento.
+
+    Recibe el estado actual del tablero en notacion YEN, 
+    valida el estado del juego, elige un movimiento valido usando el bot solicitado, 
+    aplica ese movimiento y devuelve el tablero actualizado.
+    
+
+servers:
+  - url: http://158.158.8.82:4001
+
+tags:
+  - name: Bot Play
+    description: Endpoints for bot move generation
+
+paths:
+  /{api_version}/play:
+    post:
+      tags:
+        - Bot Play
+      summary: Get next move using default bot
+      description: |
+        Usa como bot por defecto `hard_bot` para escoger el siguiente movimiento valido a partir del estado actual del tablero.
+      operationId: playDefaultBot
+      parameters:
+        - name: api_version
+          in: path
+          required: true
+          description: version de la API
+          schema:
+            type: string
+            example: v1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YEN'
+            example:
+              size: 3
+              turn: 0
+              players: ["R", "B"]
+              board: "./.B/.RB"
+      responses:
+        '200':
+          description: Movimiento valido generado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayResponse'
+        '400':
+          description: Solicitud invalida o estado de juego invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /{api_version}/play/{bot_id}:
+    post:
+      tags:
+        - Bot Play
+      summary: Realizar movimiento con bot específico
+      description: |
+        Usa la estrategia del bot especificado para escoger el siguiente movimiento valido.
+        Si el bot no existe o no hay movimientos validos disponibles,
+        se devuelve un error.
+      operationId: playSpecificBot
+      parameters:
+        - name: api_version
+          in: path
+          required: true
+          description: version de la API
+          schema:
+            type: string
+            example: v1
+        - name: bot_id
+          in: path
+          required: true
+          description: Identificador del bot.
+          schema:
+            type: string
+            example: hard_bot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YEN'
+      responses:
+        '200':
+          description: Movimiento valido generado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayResponse'
+        '400':
+          description: Solicitud invalida o estado de juego invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Coordinates:
+      type: object
+      description: Coordenadas del movimiento realizado por el bot
+      properties:
+        x:
+          type: integer
+          example: 1
+        y:
+          type: integer
+          example: 1
+        z:
+          type: integer
+          example: 1
+      required:
+        - x
+        - y
+        - z
+
+    YEN:
+      type: object
+      description: Estado actual del tablero de juego en notacion YEN. Incluye tamaño del tablero, turno actual, jugadores y disposición del tablero.
+
+      properties:
+        size:
+          type: integer
+          description: Tamaño del tablero
+          example: 3
+        turn:
+          type: integer
+          description: Número del turno actual
+          example: 0
+        players:
+          type: array
+          description: Jugadores en el juego
+          items:
+            type: string
+          example: ["R", "B"]
+        board:
+          type: string
+          description: |
+            Layout del tablero codificado como filas separadas por '/'.
+            '.' significa celda vacía.
+          example: "./.B/.RB"
+      required:
+        - size
+        - turn
+        - players
+        - board
+
+    PlayResponse:
+      type: object
+      description: Respuesta exitosa con el movimiento generado por el bot y el nuevo estado del tablero
+      properties:
+        api_version:
+          type: string
+          example: v1
+        bot_id:
+          type: string
+          example: hard_bot
+        coords:
+          $ref: '#/components/schemas/Coordinates'
+        position:
+          $ref: '#/components/schemas/YEN'
+      required:
+        - api_version
+        - bot_id
+        - coords
+        - position
+
+    ErrorResponse:
+      type: object
+      description: Respuesta de error estándar
+      properties:
+        error:
+          type: string
+          example: Invalid YEN format
+        api_version:
+          type: string
+          example: v1
+        bot_id:
+          type: string
+          example: hard_bot
+      required:
+        - error

@@ -1,6 +1,7 @@
 import React from "react";
 import { useBoardStore } from "../store/boardStore";
 import { useSessionStore } from "../store/sessionStore";
+import { createUrl } from "../services/authApi";
 import "./StartGameForm.css";
 
 export default function StartGameForm() {
@@ -41,7 +42,7 @@ export default function StartGameForm() {
         throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
       }
 
-      const resp = await fetch("http://localhost:3000/auth/check", {
+      const resp = await fetch(createUrl("/auth/check"), {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${accessToken}`,

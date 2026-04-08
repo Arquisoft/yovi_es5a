@@ -10,7 +10,7 @@ export default defineConfig({
       reporter: ["text", "lcov"],
       exclude: ["**/*.css", "src/env.d.ts"],
       thresholds: {
-        lines: 70,
+        lines: 85,
       },
     },
   },

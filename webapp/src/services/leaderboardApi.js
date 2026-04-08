@@ -1,4 +1,6 @@
-const USERS_BASE_URL = "http://localhost:3000";
+const USERS_BASE_URL =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
+  "http://localhost:3000";
 
 function createUrl(path, query = {}) {
   const normalizedBaseUrl = USERS_BASE_URL.endsWith("/") ? USERS_BASE_URL.slice(0, -1) : USERS_BASE_URL;

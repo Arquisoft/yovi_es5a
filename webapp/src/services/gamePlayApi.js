@@ -1,5 +1,6 @@
-//const GAMEY_BASE_URL = import.meta.env.VITE_GAMEY_URL || "http://localhost:4000";
-const GAMEY_BASE_URL = "http://localhost:4000";
+const GAMEY_BASE_URL =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_GAMEY_URL) ||
+  "http://localhost:4000";
 
 function createPlayUrl() {
   const normalizedBaseUrl = GAMEY_BASE_URL.endsWith("/")
@@ -11,7 +12,7 @@ function createPlayUrl() {
 function createBotUrl(botId) {
   const url = new URL(GAMEY_BASE_URL);
   url.port = "4001";
-  url.pathname = `/v1/ybot/choose/${botId}`;
+  url.pathname = `/v1/choose/${botId}`;
   return url.toString();
 }
 

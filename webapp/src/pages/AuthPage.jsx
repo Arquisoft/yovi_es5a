@@ -6,7 +6,13 @@ import "./AuthPage.css";
 
 
 function isEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+  const str = String(value || "").trim();
+
+  // Pre-check: corta el input antes de que el regex lo procese
+  if (str.length > 320) return false;
+
+  // Límites explícitos en los cuantificadores eliminan la vulnerabilidad de DOS
+  return /^[^\s@]{1,64}@[^\s@]{1,253}\.[^\s@]{2,63}$/.test(str);
 }
 
 

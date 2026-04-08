@@ -316,6 +316,7 @@ module.exports = {
   insertBotGame,
   updateGameWinner,
   findBotIdByDifficulty,
+  findUserIdByUsername,
   insertFinishedGame,
   updateUserBotStats,
   getLeaderboardPage,

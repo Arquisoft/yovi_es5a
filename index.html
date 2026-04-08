@@ -495,17 +495,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_resumen_2">8.1. Resumen</a></li>
 <li><a href="#_conceptos_de_dominio">8.2. Conceptos de dominio</a></li>
 <li><a href="#_conceptos_de_puntuación_y_ranking">8.3. Conceptos de puntuación y ranking</a></li>
+<li><a href="#_enfoque_y_alcance">8.4. Enfoque y alcance</a></li>
+<li><a href="#_resumen_de_decisiones_aceptadas">8.5. Resumen de decisiones aceptadas</a></li>
+<li><a href="#_adr_00_base_inicial_docente_y_evolución_del_equipo">8.6. ADR-00. Base inicial docente y evolución del equipo</a></li>
 </ul>
 </li>
-<li><a href="#section-design-decisions">9. Architecture Decisions</a></li>
-<li><a href="#section-quality-scenarios">10. Quality Requirements</a>
+<li><a href="#section-quality-scenarios">9. Quality Requirements</a>
 <ul class="sectlevel2">
-<li><a href="#_quality_tree">10.1. Quality Tree</a></li>
-<li><a href="#_quality_scenarios">10.2. Quality Scenarios</a></li>
+<li><a href="#_quality_tree">9.1. Quality Tree</a></li>
+<li><a href="#_quality_scenarios">9.2. Quality Scenarios</a></li>
 </ul>
 </li>
-<li><a href="#section-technical-risks">11. Risks and Technical Debts</a></li>
-<li><a href="#section-glossary">12. Glossary</a></li>
+<li><a href="#section-technical-risks">10. Riesgos y Deuda Técnica</a>
+<ul class="sectlevel2">
+<li><a href="#_enfoque">10.1. Enfoque</a></li>
+<li><a href="#_riesgos_técnicos_priorizados">10.2. Riesgos Técnicos (priorizados)</a></li>
+<li><a href="#_deuda_técnica_priorizada">10.3. Deuda Técnica (priorizada)</a></li>
+</ul>
+</li>
+<li><a href="#section-glossary">11. Glosario</a></li>
 </ul>
 </div>
 </div>
@@ -2204,60 +2212,265 @@ Separación de componentes para facilitar pruebas, despliegue y mantenimiento.
 <div style="page-break-after: always;"></div>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="section-design-decisions">9. Architecture Decisions</h2>
-<div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
+<div class="sect2">
+<h3 id="_enfoque_y_alcance">8.4. Enfoque y alcance</h3>
 <div class="paragraph">
-<div class="title">Contents</div>
-<p>Important, expensive, large scale or risky architecture decisions including rationales.
-With "decisions" we mean selecting one alternative based on given criteria.</p>
+<p>Este apartado registra decisiones arquitectónicas relevantes, con impacto transversal, coste de cambio elevado o riesgo técnico significativo.
+Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio actual.</p>
 </div>
 <div class="paragraph">
-<p>Please use your judgement to decide whether an architectural decision should be documented
-here in this central section or whether you better document it locally
-(e.g. within the white box template of one building block).</p>
+<p>Además, se reconoce explícitamente el contexto de partida del proyecto: la base inicial del laboratorio fue aportada por profesorado (principalmente en commits iniciales), y posteriormente el equipo evolucionó esa base con nuevas funcionalidades, seguridad, pruebas, observabilidad y mejoras de dominio.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resumen_de_decisiones_aceptadas">8.5. Resumen de decisiones aceptadas</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 14.2857%;">
+<col style="width: 28.5714%;">
+<col style="width: 14.2857%;">
+<col style="width: 42.8572%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Decisión</th>
+<th class="tableblock halign-left valign-top">Estado</th>
+<th class="tableblock halign-left valign-top">Impacto principal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-00</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adoptar y evolucionar una base inicial de laboratorio en lugar de rehacer desde cero.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceleró el arranque, pero exigió refactorización y endurecimiento progresivo.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usar notación YEN como formato canónico de intercambio entre componentes.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interoperabilidad estable entre frontend, backend y motor.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Separar responsabilidades en tres componentes: Webapp, Users y Gamey.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mayor mantenibilidad, despliegue independiente y desacoplamiento tecnológico.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementar reglas, validación y bots del juego Y en Rust (Gamey), dejando la UI sin reglas de victoria.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Coherencia funcional y menor duplicidad de lógica crítica.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Exponer API de juego versionada para bots y jugadas (rutas con versión v1).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Evolución controlada de contrato para integraciones externas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adoptar autenticación JWT con acceso corto + refresh y revocación/rotación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejora de seguridad de sesiones en API.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-06</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mantener dos topologías operativas de base de datos: local de desarrollo y despliegue en infraestructura Azure.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reproducibilidad local y flexibilidad en producción sin acoplarse a una única topología.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-07</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Definir puntuación determinista y ranking persistido (histórico, perfil y leaderboard).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trazabilidad de resultados y gamificación medible.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-08</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Instrumentar observabilidad con métricas y paneles (Prometheus y Grafana).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejor diagnóstico operativo y apoyo a calidad de servicio.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-09</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mantener varias estrategias de bot y mapear dificultad funcional a bots concretos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cumplimiento de requisito de múltiples estrategias seleccionables.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_adr_00_base_inicial_docente_y_evolución_del_equipo">8.6. ADR-00. Base inicial docente y evolución del equipo</h3>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>El proyecto parte de una base inicial del laboratorio (plantilla y estructura funcional mínima), con contribuciones tempranas del profesorado, y se amplía después con trabajo del equipo.</p>
 </div>
 <div class="paragraph">
-<p>Avoid redundancy.
-Refer to section 4, where you already captured the most important decisions of your architecture.</p>
+<div class="title">Decisión</div>
+<p>Conservar la base inicial y evolucionarla incrementalmente, priorizando continuidad técnica y trazabilidad de cambios.</p>
 </div>
 <div class="paragraph">
-<div class="title">Motivation</div>
-<p>Stakeholders of your system should be able to comprehend and retrace your decisions.</p>
+<div class="title">Consecuencias</div>
+<p>Positivas: menor tiempo de arranque y estructura común de trabajo.
+Costes: necesidad de revisar supuestos iniciales y endurecer diseño en seguridad, pruebas y contratos.
+=== ADR-01. YEN como contrato de dominio común</p>
 </div>
 <div class="paragraph">
-<div class="title">Form</div>
-<p>Various options:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>ADR (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Documenting Architecture Decisions</a>) for every important decision</p>
-</li>
-<li>
-<p>List or table, ordered by importance and consequences or:</p>
-</li>
-<li>
-<p>more detailed in form of separate sections per decision</p>
-</li>
-</ul>
+<div class="title">Contexto</div>
+<p>Los requisitos exigen interoperabilidad por JSON y notación YEN entre módulos.</p>
 </div>
 <div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-9/">Architecture Decisions</a> in the arc42 documentation.
-There you will find links and examples about ADR.</p>
+<div class="title">Decisión</div>
+<p>YEN se establece como representación canónica del estado de partida para intercambio entre frontend y motor.</p>
 </div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Evita conversiones ambiguas entre capas.
+Permite validación centralizada y pruebas de serialización/deserialización.
+Facilita integración de clientes externos.
+=== ADR-02. Arquitectura por componentes desacoplados</p>
 </div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Se requiere al menos una aplicación web en TypeScript y un módulo en Rust para lógica de juego.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Separar el sistema en tres componentes principales:</p>
+</div>
+<div class="paragraph">
+<p>Webapp: experiencia de usuario y flujo de interacción.
+Users: autenticación, perfil, historial, ranking y persistencia.
+Gamey: validación de jugadas, estado de partida y bots.
+.Consecuencias</p>
+</div>
+<div class="paragraph">
+<p>Escalado y despliegue por componente.
+Mejor encapsulamiento de responsabilidades.
+Incremento de complejidad de integración (compensado con contratos y tests).
+=== ADR-03. Lógica de juego y bots centralizada en Rust</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Las reglas del juego Y y la validación de jugadas son el núcleo crítico de consistencia.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Delegar en Gamey la validación de jugada, control de fin de partida y cálculo de movimiento de bots; la web no implementa reglas de victoria como fuente de verdad.</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Integridad funcional más robusta.
+Menor riesgo de divergencia entre cliente y servidor.
+Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntricas.
+=== ADR-04. API de juego versionada para integraciones</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Debe existir API utilizable por bots y consumidores externos.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Versionar los endpoints del motor de juego (prefijo v1) y soportar petición de movimiento con bot explícito o por defecto, manteniendo compatibilidad evolutiva.</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Contrato más estable para terceros.
+Cambios futuros pueden introducirse sin romper consumidores existentes.
+Requiere disciplina de versionado en iteraciones posteriores.
+=== ADR-05. Seguridad con JWT y ciclo de refresh</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Las operaciones sobre datos de usuario y registro de partidas requieren control de acceso.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Aplicar autenticación basada en token de acceso y token de refresco, con rotación/revocación de refresh en el servicio de autenticación.</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Mejora del control de sesión y del riesgo de reutilización de credenciales.
+La persistencia de sesión de refresh actual está orientada a entorno de desarrollo; para escalado horizontal completo se requiere backend compartido de sesiones.
+=== ADR-06. Persistencia dual según entorno (local vs despliegue)</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>El equipo necesita rapidez de desarrollo local y despliegue real en Azure.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Mantener dos modos de operación de base de datos, con mismo modelo lógico:</p>
+</div>
+<div class="paragraph">
+<p>Desarrollo local: servicio MySQL en contenedor para pruebas y trabajo diario.
+Despliegue: conexión a base de datos de Azure mediante variables de entorno.
+.Consecuencias</p>
+</div>
+<div class="paragraph">
+<p>Reproducibilidad local con Docker Compose.
+Menor fricción para despliegue real sin depender del contenedor de base de datos local.
+La configuración por entorno se vuelve decisión crítica de operación.
+=== ADR-07. Modelo de puntuación y ranking</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Los requisitos funcionales incluyen histórico y estadísticas de participación.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Usar una puntuación determinista por partida, calculada a partir de tamaño de tablero y número de turnos, y persistir resultados para leaderboard y perfil.</p>
+</div>
+<div class="paragraph">
+<div class="title">Formulación aplicada</div>
+<p>score = boardSize * 10 + max(0, 50 - turnNumber)</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Métrica simple, trazable y explicable para el usuario.
+Permite ranking global, perfil y vistas centradas en usuario.
+Facilita pruebas de regresión sobre reglas de puntuación.
+=== ADR-08. Observabilidad incorporada desde la arquitectura</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Los criterios de valoración incluyen disponibilidad y monitorización.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Instrumentar el backend y desplegar stack de monitorización con Prometheus y Grafana en entorno contenedorizado.</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Visibilidad de salud y rendimiento de servicios.
+Detección temprana de problemas de latencia y errores.
+Coste operativo adicional asumido por el valor en diagnóstico.
+=== ADR-09. Estrategias múltiples de bot y dificultad seleccionable</p>
+</div>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Se exige más de una estrategia de juego contra máquina y selección de dificultad.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Mantener varias estrategias en Gamey (aleatoria, media y difícil) y mapear dificultad de UX a identificadores de bot concretos.</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Cumplimiento directo del requisito funcional de estrategias.
+Extensible a nuevos bots sin rediseñar la UI.
+Necesidad de mantener coherencia entre nomenclatura de dificultad y bot real disponible.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="section-quality-scenarios">10. Quality Requirements</h2>
+<h2 id="section-quality-scenarios">9. Quality Requirements</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -2282,7 +2495,7 @@ concrete and measurable.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quality_tree">10.1. Quality Tree</h3>
+<h3 id="_quality_tree">9.1. Quality Tree</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2437,7 +2650,7 @@ UC26 -&#8594; UC30</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quality_scenarios">10.2. Quality Scenarios</h3>
+<h3 id="_quality_scenarios">9.2. Quality Scenarios</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2481,7 +2694,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-technical-risks">11. Risks and Technical Debts</h2>
+<h2 id="section-technical-risks">10. Riesgos y Deuda Técnica</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -2506,11 +2719,184 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_enfoque">10.1. Enfoque</h3>
+<div class="paragraph">
+<p>Este apartado identifica los principales riesgos técnicos y deudas técnicas del estado actual del sistema, ordenados por prioridad. Se incluyen medidas de mitigación para facilitar su seguimiento.</p>
+</div>
+<div class="paragraph">
+<p>Criterio de priorización:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Alta</strong>: impacto elevado en seguridad, disponibilidad o corrección funcional.</p>
+</li>
+<li>
+<p><strong>Media</strong>: impacto relevante, pero con alternativas temporales.</p>
+</li>
+<li>
+<p><strong>Baja</strong>: impacto acotado o de mejora progresiva.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_riesgos_técnicos_priorizados">10.2. Riesgos Técnicos (priorizados)</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 11.1111%;">
+<col style="width: 11.1111%;">
+<col style="width: 33.3333%;">
+<col style="width: 22.2222%;">
+<col style="width: 22.2223%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Prioridad</th>
+<th class="tableblock halign-left valign-top">Riesgo</th>
+<th class="tableblock halign-left valign-top">Evidencia en el repositorio</th>
+<th class="tableblock halign-left valign-top">Mitigación propuesta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Sesiones de refresh en memoria del proceso</strong>: al reiniciar el servicio se pierde el estado de sesiones y en despliegue con varias instancias no hay sincronización de revocaciones.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>users/auth/sessionStore.js</code> usa <code>Map</code> en memoria. En <code>users/users-service.js</code> se indica explícitamente que para producción debe persistirse en DB.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistir sesiones de refresh en almacenamiento compartido (MySQL o Redis), con hash de token, revocación y trazabilidad de cadena de rotación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Respuesta potencialmente inconsistente al finalizar partida</strong>: el endpoint devuelve <code>gameId</code>, pero en el servicio no se asigna valor final antes del retorno.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En <code>users/services/gameService.js</code>, <code>recordFinishedMatch</code> declara <code>let gameId;</code> y retorna <code>gameId</code> sin asignarlo tras <code>insertFinishedGame</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Corregir retorno para devolver el id real de partida insertada y añadir prueba de integración que valide <code>gameId</code> no nulo.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Superficie de ataque ampliada por CORS abierto</strong>: aceptación global de orígenes y cabeceras.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>users/users-service.js</code> permite <code>Access-Control-Allow-Origin: *</code>; en <code>gamey/src/bot_server/mod.rs</code> y <code>gamey/src/game_server/mod.rs</code> se usa <code>allow_origin(Any)</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Restringir CORS por entorno (lista blanca de dominios), limitar métodos y cabeceras, y documentar política de acceso por servicio.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Riesgo de configuración errónea en frontend para despliegue</strong>: URL de Gamey hardcodeada a localhost.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>webapp/src/services/gamePlayApi.js</code> tiene <code>const GAMEY_BASE_URL = "http://localhost:4000"</code> y la opción por variable de entorno está comentada.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reactivar configuración por <code>VITE_GAMEY_URL</code>, definir valores por entorno y añadir validación en build/release.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Fragmentación de contrato API</strong>: la especificación OpenAPI documenta <code>users</code>, pero no centraliza completamente los endpoints de juego/bots de <code>gamey</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>users/openapi.yaml</code> describe autenticación, historial y ranking; endpoints de <code>gamey</code> (<code>/game/play/</code>, <code>/{api_version}/play/{bot_id}</code>, <code>/{api_version}/choose/{bot_id}</code>) se implementan en Rust fuera de ese contrato.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Publicar contrato unificado o federado (Users + Gamey), versionado y validado en CI para evitar deriva entre implementación y documentación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-06</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Ausencia de validación de carga extremo a extremo</strong>: puede ocultar cuellos de botella en picos de uso.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hay unit/integration/e2e y benchmarks en Rust (<code>gamey/benches</code>), pero no se identifican suites de carga HTTP integrales para el sistema desplegado.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Incorporar pruebas de carga (p. ej., k6) para <code>/auth/*</code>, <code>/finished-match</code>, <code>/leaderboard</code> y endpoints de bot, con umbrales de latencia y error.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-07</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Conexión DB única y reconexión limitada</strong>: una única conexión puede degradar robustez en escenarios concurrentes o fallos intermedios.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>users/db.js</code> usa <code>mysql.createConnection</code> con cache global y reintentos solo al inicio.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Migrar a pool (<code>createPool</code>) con políticas de reconexión y timeouts; añadir métricas de saturación y errores de DB.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R-08</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Dualidad de topología de BD local vs despliegue</strong>: riesgo de desviación de configuración y operaciones entre entornos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Local con <code>docker-compose</code> y servicio <code>mysql</code>; despliegue con DB externa en Azure por variables (<code>README.md</code>, <code>users/.env.example</code>, <code>users/scripts/init-db.sh</code>).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Definir checklist de paridad entre entornos (variables, esquema, backup/restore, red), automatizar migraciones y verificación post-despliegue.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_deuda_técnica_priorizada">10.3. Deuda Técnica (priorizada)</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 11.1111%;">
+<col style="width: 11.1111%;">
+<col style="width: 33.3333%;">
+<col style="width: 22.2222%;">
+<col style="width: 22.2223%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Prioridad</th>
+<th class="tableblock halign-left valign-top">Deuda técnica</th>
+<th class="tableblock halign-left valign-top">Impacto</th>
+<th class="tableblock halign-left valign-top">Plan de reducción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Persistencia de refresh token no preparada para multi-instancia</strong>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Puede invalidar estrategia de seguridad en escalado horizontal.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementar almacenamiento persistente compartido y limpiar sesiones expiradas por tarea programada.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Bug funcional pendiente en retorno de <code>gameId</code></strong> (<code>recordFinishedMatch</code>).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inconsistencias en API y en trazabilidad de partidas guardadas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Arreglar retorno, añadir pruebas en <code>users/<em>tests</em></code> y control en contrato OpenAPI.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Configuración de endpoint de Gamey acoplada a localhost en frontend</strong>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Riesgo de errores en entornos de staging/producción y mayor coste de despliegue.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parametrización por variables de entorno y validación en pipeline de release.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Contrato API no consolidado entre Users y Gamey</strong>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mayor probabilidad de divergencia entre documentación y endpoints reales.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mantener especificaciones sincronizadas y validación automática de contrato en CI.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Ausencia de pruebas de carga de sistema completo</strong>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Riesgo no cuantificado de latencia y degradación bajo concurrencia.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Definir escenarios de carga mínimos por requisito y ejecutarlos en cada release candidata.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-06</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Política CORS permisiva en varios servicios</strong>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Exposición innecesaria de endpoints en entornos públicos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endurecer CORS por entorno, auditar cabeceras y probar comportamiento con tests de seguridad básicos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D-07</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Baja</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Uso de valores por defecto de secretos para desarrollo</strong> (<code>dev-access-secret-change-me</code>, <code>dev-refresh-secret-change-me</code>).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Riesgo bajo en local, pero crítico si se reutiliza en despliegue real por error.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Forzar secretos obligatorios en producción (fallo de arranque si faltan) y documentar política de rotación.</p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="section-glossary">12. Glossary</h2>
+<h2 id="section-glossary">11. Glosario</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -2555,18 +2941,158 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Term</th>
-<th class="tableblock halign-left valign-top">Definition</th>
+<th class="tableblock halign-left valign-top">Término</th>
+<th class="tableblock halign-left valign-top">Definición</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Term-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;definition-1&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YOVI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nombre del sistema desarrollado para jugar al juego Y mediante una aplicación web y servicios backend.</em></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Term-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;definition-2&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego Y</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego abstracto de conexión sobre tablero triangular. Gana quien conecta los tres lados del tablero con fichas de su color.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YEN (Y-game Exchange Notation)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación JSON usada para representar una partida en un instante concreto. Es el formato canónico de intercambio entre servicios.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YGN</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación relacionada con el dominio del juego Y, incluida en el motor como parte del soporte de formatos.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Layout</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Campo de YEN que codifica la disposición de fichas por filas del tablero, usando símbolos de jugador y celdas vacías.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Turn</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Campo de YEN que indica a qué jugador le corresponde realizar el siguiente movimiento.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas baricéntricas</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sistema de coordenadas de tres valores <code>(x,y,z)</code> que expresa la distancia de una celda a cada lado del tablero triangular.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas axiales de UI (<code>q,r</code>)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas usadas en el frontend para identificar celdas del tablero. Se transforman a coordenadas baricéntricas en el backend/motor.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Webapp</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Aplicación cliente desarrollada con React/Vite que gestiona interacción con el usuario, visualización del tablero y llamadas a APIs.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Users Service</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Servicio Node/Express responsable de usuarios, autenticación, persistencia de partidas finalizadas, historial y leaderboard.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Gamey</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Módulo Rust que implementa reglas del juego, validación de jugadas, detección de victoria y APIs de bots.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>API versionada (<code>v1</code>)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Versión de API usada en endpoints del motor de juego/bots para permitir evolución controlada del contrato.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Agente automático que calcula jugadas válidas a partir del estado de una partida.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Estrategia de bot</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Algoritmo concreto usado por un bot para elegir la siguiente jugada.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>random_bot</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de dificultad baja que selecciona movimientos válidos de forma aleatoria.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>medium_bot</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de dificultad media con heurísticas intermedias.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>hard_bot</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de mayor dificultad usado por defecto en la API <code>play</code> cuando no se especifica otro bot.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Dificultad (<code>Facil</code>, <code>Media</code>, <code>Dificil</code>)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nivel seleccionado por el usuario en frontend, mapeado internamente a bots concretos (<code>random_bot</code>, <code>medium_bot</code>, <code>hard_bot</code>).</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>JWT (JSON Web Token)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Mecanismo de autenticación utilizado para proteger endpoints sensibles mediante tokens firmados.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Access Token</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Token JWT de vida corta usado para autorizar peticiones autenticadas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Refresh Token</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Token JWT usado para renovar el access token sin relogin; su uso está sujeto a revocación/rotación de sesión.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Session Store</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Componente que mantiene el estado de sesiones de refresh token. En el estado actual se implementa en memoria del proceso.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>/finished-match</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Endpoint del servicio Users para registrar partidas terminadas y calcular/persistir puntuación.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Score (Puntuación)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Valor numérico de rendimiento de partida. En el estado actual se calcula como <code>boardSize * 10 + max(0, 50 - turnNumber)</code>.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Leaderboard</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Clasificación global de usuarios ordenada por métricas de puntuación y actividad.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Historial de partidas</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Conjunto de partidas previas de un usuario, incluyendo modos de juego, resultado y métricas asociadas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>OpenAPI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Especificación del contrato HTTP del servicio Users, publicada para facilitar integración y validación.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Swagger UI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Interfaz web para explorar y probar endpoints descritos en OpenAPI.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Docker Compose</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Orquestación local de servicios (webapp, users, gamey, mysql y monitorización) para desarrollo y pruebas reproducibles.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>MySQL local</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos levantada en contenedor para desarrollo e integración en entorno local.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos en Azure</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos usada en despliegue, configurada por variables de entorno y separada del contenedor MySQL local.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Volumen <code>mysql_data</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Volumen Docker que conserva datos de MySQL entre reinicios de contenedores en entorno local.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Prometheus</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sistema de recolección de métricas usado para observabilidad técnica de los servicios.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Grafana</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Herramienta de visualización de métricas y paneles para monitorización operativa.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas unitarias</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de componentes/funciones aisladas en frontend, backend Node y motor Rust.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de integración</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de interacción entre módulos o capas (por ejemplo, endpoint + servicio + repositorio).</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas e2e</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas extremo a extremo que validan flujos completos desde perspectiva de usuario.</em></p></td>
 </tr>
 </tbody>
 </table>

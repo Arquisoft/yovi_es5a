@@ -490,11 +490,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_nivel_de_infraestructura_1">7.1. Nivel de infraestructura 1</a></li>
 </ul>
 </li>
-<li><a href="#section-concepts">8. Cross-cutting Concepts</a>
+<li><a href="#section-concepts">8. Conceptos Transversales (Cross-cutting Concepts)</a>
 <ul class="sectlevel2">
-<li><a href="#_concept_1">8.1. <em>&lt;Concept 1&gt;</em></a></li>
-<li><a href="#_concept_2">8.2. <em>&lt;Concept 2&gt;</em></a></li>
-<li><a href="#_concept_n">8.3. <em>&lt;Concept n&gt;</em></a></li>
+<li><a href="#_resumen_2">8.1. Resumen</a></li>
+<li><a href="#_conceptos_de_dominio">8.2. Conceptos de dominio</a></li>
+<li><a href="#_conceptos_de_puntuación_y_ranking">8.3. Conceptos de puntuación y ranking</a></li>
 </ul>
 </li>
 <li><a href="#section-design-decisions">9. Architecture Decisions</a></li>
@@ -720,23 +720,14 @@ These include</p>
 <p>RF05.3: El módulo detectará condiciones de empate o tablas.</p>
 </li>
 <li>
-<p>RF05.4: La respuesta incluirá el estado del juego en formato JSON.</p>
-</li>
-<li>
 <p>RF06 - Servicio Web</p>
 <div class="ulist">
 <ul>
 <li>
-<p>RF06.1: El módulo ofrecerá un mecanismo de comunicación remota para ser invocado por otros subsistemas.</p>
+<p>RF06.1: El módulo permitirá verificar si una partida ha sido ganada.</p>
 </li>
 <li>
-<p>RF06.2: El módulo permitirá verificar si una partida ha sido ganada.</p>
-</li>
-<li>
-<p>RF06.3: El módulo proporcionará un mecanismo para verificar su disponibilidad operativa.</p>
-</li>
-<li>
-<p>RF06.4: Todas las respuestas del servicio serán en formato JSON.</p>
+<p>RF06.2: Todas las respuestas del servicio serán en formato JSON.</p>
 </li>
 </ul>
 </div>
@@ -805,7 +796,7 @@ If requirements documents exist this overview should refer to these documents.</
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Rendimiento (RNF01)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">El sistema deberá responder a las peticiones de juego en menos de 500ms y soportar al menos 500 usuarios concurrentes.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El sistema deberá soportar al menos 100 usuarios concurrentes.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Seguridad (RNF02)</p></td>
@@ -985,7 +976,7 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Lenguajes de Programación</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El proyecto se desarrollará principalmente en JavaScript, utilizando Node.js para el backend y React para el frontend. Además el motor del juego estará en Rust</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>El proyecto se desarrollará principalmente en JavaScript. Además el motor del juego estará en Rust</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Testing</em></p></td>
@@ -1260,6 +1251,10 @@ Refer to details in the following sections.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>PlantUML</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos PlantUML para la creación de diagramas de arquitectura debido a su facilidad de uso y su capacidad para integrarse con otras herramientas.</em></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>React y Node.js</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos React para el desarrollo del frontend debido a su capacidad para crear interfaces de usuario interactivas y dinámicas, y Node.js para el backend por su eficiencia en la gestión de solicitudes y su compatibilidad con JavaScript.</em></p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1408,9 +1403,24 @@ In the best case you will get away with examples or simple signatures.</p>
 </div>
 </div>
 </div>
-<div class="imageblock">
+<div class="listingblock">
 <div class="content">
-<img src="./images/Vision%20general.png" alt="Vision general" width="443" height="94">
+<pre>Failed to generate image: Could not load PlantUML. Either require 'asciidoctor-diagram-plantuml' or specify the location of the PlantUML JAR(s) using the 'DIAGRAM_PLANTUML_CLASSPATH' environment variable. Alternatively a PlantUML binary can be provided (plantuml-native in $PATH).
+@startuml
+skinparam monochrome true
+left to right direction
+
+actor User
+
+node "App" {
+}
+
+node "Gamey" {
+}
+
+"User" &lt;--&gt; "App" : Interactúa
+"App" &lt;--&gt; "Gamey" : Gestiona lógica\nmovimientos y bot
+@enduml</pre>
 </div>
 </div>
 <div class="dlist">
@@ -1529,9 +1539,44 @@ Its headline is the name of the black box.</p>
 <div class="paragraph">
 <p>Visión específica del módulo Yovi del sistema y las responsabilidades de los distintos subsistemas existentes en este.</p>
 </div>
-<div class="imageblock">
+<div class="listingblock">
 <div class="content">
-<img src="./images/Nivel%202.png" alt="Nivel 2" width="992" height="375">
+<pre>Failed to generate image: Could not load PlantUML. Either require 'asciidoctor-diagram-plantuml' or specify the location of the PlantUML JAR(s) using the 'DIAGRAM_PLANTUML_CLASSPATH' environment variable. Alternatively a PlantUML binary can be provided (plantuml-native in $PATH).
+@startuml
+skinparam monochrome true
+left to right direction
+
+actor Usuario
+
+frame "App" {
+  node "WebApp"
+  node "OpenApi"
+  node "Users"
+}
+
+node "Database"
+
+frame "Game Engine" {
+  node "Bot"
+  node "BotServer"
+  node "Core"
+  node "Notation"
+  node "GameServer"
+}
+
+"Usuario" &lt;--&gt; "WebApp" : Interactúa
+"WebApp" &lt;--&gt; "OpenApi" : Comunicarse con el back Node
+"OpenApi" &lt;--&gt; "Users" : Comunicarse con el front
+
+"Usuario" &lt;--&gt; "Database" : Almacena\extrae
+"WebApp" &lt;--&gt; "BotServer" : Comunicarse con los bots
+"WebApp" &lt;--&gt; "GameServer" : Comunicarse con el validador de movimientos
+"Core" &lt;--&gt; "Notation" : Usa YEN
+"BotServer" &lt;--&gt; "Bot" : Usar la lógica de los bots
+"Core" &lt;--&gt; "BotServer" : Arrancar el servidor del bot
+"Core" &lt;--&gt; "GameServer" : Arrancar el servidor del juego
+
+@enduml</pre>
 </div>
 </div>
 <div class="dlist">
@@ -1839,9 +1884,37 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 </div>
-<div class="imageblock">
+<div class="listingblock">
 <div class="content">
-<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="940" height="251">
+<pre>Failed to generate image: Could not load PlantUML. Either require 'asciidoctor-diagram-plantuml' or specify the location of the PlantUML JAR(s) using the 'DIAGRAM_PLANTUML_CLASSPATH' environment variable. Alternatively a PlantUML binary can be provided (plantuml-native in $PATH).
+@startuml
+skinparam monochrome true
+left to right direction
+
+actor Navegador
+
+node "Azure VM (Linux Ubuntu 24.04)" {
+
+    node "Docker" {
+
+        node "WebApp\n(React Front-end)" as WebApp
+
+        node "Users\n(Node Back-end)" as Users
+
+        node "Gamey\n(Rust Game Engine)" as Gamey
+
+        node "Database" as Database
+    }
+}
+
+Navegador &lt;--&gt; WebApp : Interacción UI
+
+WebApp &lt;--&gt; Users : HTTP/JSON
+
+WebApp &lt;--&gt; Gamey : Lógica juego / Bot
+
+Users &lt;--&gt; Database : Persistencia datos
+@enduml</pre>
 </div>
 </div>
 <div class="dlist">
@@ -1913,128 +1986,223 @@ continuo de nuestra aplicación.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-concepts">8. Cross-cutting Concepts</h2>
+<h2 id="section-concepts">8. Conceptos Transversales (Cross-cutting Concepts)</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
+<div class="sect2">
+<h3 id="_resumen_2">8.1. Resumen</h3>
 <div class="paragraph">
-<div class="title">Content</div>
-<p>This section describes overall, principal regulations and solution ideas that are relevant in multiple parts (= cross-cutting) of your system.
-Such concepts are often related to multiple building blocks.
-They can include many different topics, such as</p>
+<p>Esta sección recoge decisiones y reglas que aplican a varios bloques de YOVI al mismo tiempo. Su objetivo es mantener coherencia funcional y técnica entre interfaz web, servicios backend, motor de juego y operación en contenedores.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>models, especially domain models</p>
-</li>
-<li>
-<p>architecture or design patterns</p>
-</li>
-<li>
-<p>rules for using specific technology</p>
-</li>
-<li>
-<p>principal, often technical decisions of an overarching (= cross-cutting) nature</p>
-</li>
-<li>
-<p>implementation rules</p>
-</li>
-</ul>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Concepto transversal</th>
+<th class="tableblock halign-left valign-top">Idea clave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Modelo canónico del juego</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La notación YEN es la representación común del estado de partida entre frontend y motor.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Validación centralizada de reglas</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La UI no decide legalidad ni victoria: delega en Gamey para evitar duplicidad de lógica.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Arquitectura poliglota orientada a responsabilidades</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">React/Node priorizan UX e I/O; Rust prioriza cálculo determinista y robustez de reglas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Puntuación y ranking trazables</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La puntuación se calcula de forma explícita y el ranking usa criterios estables y paginación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bots como servicio desacoplado</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Las estrategias de bot se exponen por API y pueden evolucionar sin romper la UI.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Seguridad por tokens</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Se usa JWT para autenticación de operaciones sensibles y flujo de refresco de sesión.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Portabilidad de datos entre entornos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En local se usa MySQL en Docker; en despliegue se configura host externo por variables de entorno.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
+<div class="sect2">
+<h3 id="_conceptos_de_dominio">8.2. Conceptos de dominio</h3>
+<div class="sect3">
+<h4 id="_yen_como_lenguaje_ubicuo">8.2.1. YEN como lenguaje ubicuo</h4>
 <div class="paragraph">
-<div class="title">Motivation</div>
-<p>Concepts form the basis for <em>conceptual integrity</em> (consistency, homogeneity) of the architecture.
-Thus, they are an important contribution to achieve inner qualities of your system.</p>
-</div>
-<div class="paragraph">
-<p>Some of these concepts cannot be assigned to individual building blocks, e.g. security or safety.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>The form can be varied:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>concept papers with any kind of structure</p>
-</li>
-<li>
-<p>cross-cutting model excerpts or scenarios using notations of the architecture views</p>
-</li>
-<li>
-<p>sample implementations, especially for technical concepts</p>
-</li>
-<li>
-<p>reference to typical usage of standard frameworks (e.g. using Hibernate for object/relational mapping)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Structure</div>
-<p>A potential (but not mandatory) structure for this section could be:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Domain concepts</p>
-</li>
-<li>
-<p>User Experience concepts (UX)</p>
-</li>
-<li>
-<p>Safety and security concepts</p>
-</li>
-<li>
-<p>Architecture and design patterns</p>
-</li>
-<li>
-<p>"Under-the-hood"</p>
-</li>
-<li>
-<p>development concepts</p>
-</li>
-<li>
-<p>operational concepts</p>
-</li>
-</ul>
+<p>YOVI usa YEN como contrato de dominio compartido para representar partida, turno, jugadores y layout. Esta decisión evita traducciones ambiguas entre capas y permite que el mismo estado se valide igual en todos los componentes.</p>
 </div>
 <div class="paragraph">
-<p>Note: it might be difficult to assign individual concepts to one specific topic
-on this list.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="./images/08-concepts-EN.drawio.png" alt="Possible topics for crosscutting concepts">
-</div>
+<p>Reglas derivadas:</p>
 </div>
 <div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-8/">Concepts</a> in the arc42 documentation.</p>
+<p>Toda integración entre frontend y motor intercambia estado en JSON YEN.
+Las transformaciones de coordenadas se realizan en los bordes (UI/servicio), no en el núcleo de reglas.
+El motor es la referencia final de validez de jugada.
+=== Conceptos de UX y consistencia funcional</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_spa_con_estado_local_y_confirmación_de_servidor">8.2.2. SPA con estado local y confirmación de servidor</h4>
+<div class="paragraph">
+<p>La Webapp ofrece respuesta inmediata en interfaz, pero la consistencia fuerte de reglas se obtiene al confirmar la jugada con Gamey. Este patrón equilibra fluidez y corrección.</p>
+</div>
+<div class="paragraph">
+<p>Reglas derivadas:</p>
+</div>
+<div class="paragraph">
+<p>La interacción visual es optimista, pero el estado confirmado es el devuelto por backend/motor.
+En jugadas inválidas, se informa al usuario y no se consolida el turno.
+El frontend mantiene separadas lógica visual y reglas del juego.
+=== Conceptos de seguridad</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_autenticación_con_jwt_y_control_de_sesión">8.2.3. Autenticación con JWT y control de sesión</h4>
+<div class="paragraph">
+<p>El servicio de usuarios emite access token y refresh token para autenticar llamadas. Operaciones de escritura relevantes (como registrar partida finalizada) exigen token válido.</p>
+</div>
+<div class="paragraph">
+<p>Reglas derivadas:</p>
+</div>
+<div class="paragraph">
+<p>El cliente debe enviar token de acceso en cabecera Authorization.
+El flujo de refresh rota tokens de refresco para reducir reutilización.
+Las credenciales de base de datos y secretos se inyectan por entorno, no en código fuente.
+Nota de implementación actual:</p>
+</div>
+<div class="paragraph">
+<p>El mecanismo de sesión de refresh está implementado en memoria del proceso, útil para entorno de desarrollo y pruebas, pero no ideal para escalado horizontal sin almacenamiento compartido.
+=== Conceptos de arquitectura y patrones</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_control_por_modulos_y_responsabilidades">8.2.4. Control por modulos y responsabilidades</h4>
+<div class="paragraph">
+<p>La solución separa claramente I/O y experiencia de usuario de la lógica de juego:</p>
+</div>
+<div class="paragraph">
+<p>Webapp y servicio Users gestionan interacción, autenticación, persistencia y contratos HTTP.
+Gamey concentra validación de reglas y cálculo de jugadas/bots.
+Beneficio arquitectónico:</p>
+</div>
+<div class="paragraph">
+<p>Evolucionar reglas o estrategias de bot no obliga a rediseñar frontend.
+Cambios de UX o API no requieren reescribir núcleo algorítmico.
+==== APIs explícitas y contratos estables</p>
+</div>
+<div class="paragraph">
+<p>Cada capacidad se expone por endpoints definidos y estructuras de entrada/salida conocidas. Esto permite pruebas de integración más robustas y facilita uso por clientes externos.</p>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_concept_1">8.1. <em>&lt;Concept 1&gt;</em></h3>
+<h3 id="_conceptos_de_puntuación_y_ranking">8.3. Conceptos de puntuación y ranking</h3>
+<div class="sect3">
+<h4 id="_modelo_de_puntuación_score_del_sistema">8.3.1. Modelo de puntuación (score) del sistema</h4>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_concept_2">8.2. <em>&lt;Concept 2&gt;</em></h3>
-<div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>La puntuación de partida se calcula de forma determinista con dos factores:</p>
 </div>
 <div class="paragraph">
-<p>&#8230;&#8203;</p>
+<p>Tamaño de tablero.
+Número de turnos usados.
+Fórmula implementada:</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_concept_n">8.3. <em>&lt;Concept n&gt;</em></h3>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>score = (boardSize * 10) + max(0, 50 - turnNumber)
+Implicaciones:</p>
+</div>
+<div class="paragraph">
+<p>Tableros mayores elevan puntuación base.
+Resolver en menos turnos mejora puntuación.
+La fórmula evita valores negativos en el término de eficiencia.
+==== Modelo de ranking</p>
+</div>
+<div class="paragraph">
+<p>El ranking global ordena usuarios por mejor puntuación y aplica criterios de desempate estables. El sistema soporta paginación controlada para evitar respuestas excesivas.</p>
+</div>
+<div class="paragraph">
+<p>Reglas derivadas:</p>
+</div>
+<div class="paragraph">
+<p>Page size permitido: 25, 50 o 100.
+Se ofrecen endpoints de leaderboard global, perfil, historial y vista centrada en usuario.
+El histórico separa partidas 1vsbot y 1vs1 para análisis funcional más claro.
+=== Conceptos de bots y dificultad</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bots_como_capacidad_transversal_del_sistema">8.3.2. Bots como capacidad transversal del sistema</h4>
+<div class="paragraph">
+<p>El motor Gamey expone bots como servicio HTTP, desacoplando estrategia de juego y presentación. Esto habilita:</p>
+</div>
+<div class="paragraph">
+<p>Juego humano vs bot en la Webapp.
+Consumo potencial por clientes externos o bots de terceros.
+Estrategias y niveles:</p>
+</div>
+<div class="paragraph">
+<p>random_bot
+medium_bot
+hard_bot
+Mapeo de dificultad desde frontend:</p>
+</div>
+<div class="paragraph">
+<p>Facil &#8594; random_bot
+Media &#8594; medium_bot
+Dificil &#8594; hard_bot
+Reglas derivadas:</p>
+</div>
+<div class="paragraph">
+<p>La dificultad seleccionada por usuario se traduce a identificador de bot.
+Si un bot no existe o no puede mover, la API devuelve error explícito.
+El motor valida también que la partida no esté finalizada antes de sugerir jugada.
+=== Conceptos de datos y despliegue</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_persistencia_local_vs_despliegue">8.3.3. Persistencia local vs despliegue</h4>
+<div class="paragraph">
+<p>Se distinguen dos escenarios operativos:</p>
+</div>
+<div class="paragraph">
+<p>Desarrollo local: MySQL en Docker Compose, inicializado por script SQL y volumen persistente.
+Despliegue: base de datos configurable por variables de entorno (host/usuario/clave/nombre), permitiendo usar base de datos externa en Azure en lugar del contenedor local.
+Consecuencia arquitectónica:</p>
+</div>
+<div class="paragraph">
+<p>El servicio Users no depende rígidamente de un único proveedor local; depende de parámetros de conexión.
+El contenedor MySQL es una comodidad de desarrollo e integración, no una obligación de producción.
+=== Conceptos de desarrollo y operación</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_reproducibilidad_y_observabilidad">8.3.4. Reproducibilidad y observabilidad</h4>
+<div class="paragraph">
+<p>El sistema prioriza entorno reproducible con contenedores y añade piezas de monitorización para operación:</p>
+</div>
+<div class="paragraph">
+<p>Arranque de servicios coordinado por Docker Compose.
+Configuración de Prometheus y Grafana para métricas.
+Separación de componentes para facilitar pruebas, despliegue y mantenimiento.
+==== Calidad y pruebas como concepto transversal</p>
+</div>
+<div class="paragraph">
+<p>La estructura de pruebas cubre frontend, backend Node y backend Rust, incluyendo pruebas de integración y e2e. Esto refuerza la trazabilidad entre decisiones de arquitectura y comportamiento real del sistema.</p>
 </div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 </div>
@@ -2143,6 +2311,129 @@ concrete and measurable.</p>
 <p>In any case the tree should include links to the scenarios of the following section.</p>
 </div>
 </div>
+</div>
+<div class="paragraph">
+<p>@startuml
+left to right direction
+skinparam packageStyle rectangle</p>
+</div>
+<div class="paragraph">
+<p>actor Usuario
+actor Bot
+actor "Sistema Externo" as ExtSystem</p>
+</div>
+<div class="paragraph">
+<p>rectangle "MÓDULO 1 - Aplicación Web" {</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>package "RF01 - Gestión de Usuarios" {
+  usecase "RF01.1\nRegistrarse" as UC1
+  usecase "RF01.2\nIniciar sesión" as UC2
+  usecase "RF01.3\nMantener sesión activa" as UC3
+  usecase "RF01.4\nCerrar sesión" as UC4
+}</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>package "RF02 - Interfaz de Juego" {
+  usecase "RF02.1\nInterfaz web interactiva" as UC5
+  usecase "RF02.2\nMostrar tablero en tiempo real" as UC6
+  usecase "RF02.3\nRealizar movimientos" as UC7
+  usecase "RF02.4\nMostrar turno actual" as UC8
+  usecase "RF02.5\nMostrar resultado partida" as UC9
+}</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>package "RF03 - Historial de Partidas" {
+  usecase "RF03.1\nGuardar historial" as UC10
+  usecase "RF03.2\nConsultar partidas anteriores" as UC11
+  usecase "RF03.3\nMostrar estadísticas" as UC12
+  usecase "RF03.3.1\nPartidas ganadas" as UC13
+  usecase "RF03.3.2\nPartidas perdidas" as UC14
+  usecase "RF03.3.3\nPartidas empatadas" as UC15
+  usecase "RF03.3.4\nTiempo total jugado" as UC16
+}</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>  package "RF04 - API Externa para Bots" {
+    usecase "RF04.1\nExponer API" as UC17
+    usecase "RF04.2\nAutenticación API" as UC18
+    usecase "RF04.3\nCrear partida como bot" as UC19
+    usecase "RF04.4\nRealizar movimientos (bot)" as UC20
+    usecase "RF04.5\nObtener estado en formato YEN" as UC21
+  }
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>rectangle "MÓDULO 2 - Lógica (Rust)" {</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>package "RF05 - Verificación de Victoria" {
+  usecase "RF05.1\nDeterminar ganador" as UC22
+  usecase "RF05.2\nIdentificar jugador ganador" as UC23
+  usecase "RF05.3\nDetectar empate" as UC24
+  usecase "RF05.4\nResponder en JSON" as UC25
+}</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>package "RF06 - Servicio Web" {
+  usecase "RF06.1\nComunicación remota" as UC26
+  usecase "RF06.2\nVerificar partida ganada" as UC27
+  usecase "RF06.3\nVerificar disponibilidad" as UC28
+  usecase "RF06.4\nRespuestas en JSON" as UC29
+}</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>  package "RF07 - Procesamiento YEN" {
+    usecase "RF07.1\nInterpretar formato YEN" as UC30
+    usecase "RF07.2\nValidar sintaxis YEN" as UC31
+    usecase "RF07.3\nRechazar YEN inválido" as UC32
+  }
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>' Relaciones Usuario
+Usuario -&#8594; UC1
+Usuario -&#8594; UC2
+Usuario -&#8594; UC4
+Usuario -&#8594; UC5
+Usuario -&#8594; UC7
+Usuario -&#8594; UC11</p>
+</div>
+<div class="paragraph">
+<p>UC12 .&gt; UC13 : <a href="#include">[include]</a>
+UC12 .&gt; UC14 : <a href="#include">[include]</a>
+UC12 .&gt; UC15 : <a href="#include">[include]</a>
+UC12 .&gt; UC16 : <a href="#include">[include]</a></p>
+</div>
+<div class="paragraph">
+<p>' Relaciones Bot
+Bot -&#8594; UC19
+Bot -&#8594; UC20
+Bot -&#8594; UC21
+Bot -&#8594; UC18</p>
+</div>
+<div class="paragraph">
+<p>' Comunicación entre módulos
+ExtSystem -&#8594; UC26
+UC26 -&#8594; UC22
+UC26 -&#8594; UC30</p>
+</div>
+<div class="paragraph">
+<p>@enduml</p>
 </div>
 </div>
 <div class="sect2">
@@ -2285,7 +2576,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-05 09:53:32 +0100
+Last updated 2026-03-20 00:22:31 +0100
 </div>
 </div>
 </body>

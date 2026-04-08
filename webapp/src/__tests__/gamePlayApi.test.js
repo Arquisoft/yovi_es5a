@@ -13,123 +13,382 @@ describe("gamePlayApi", () => {
     vi.clearAllMocks();
   });
 
-  // ─── validateTwoPlayerMove ──────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────────────────
+  // validateTwoPlayerMove
+  // ────────────────────────────────────────────────────────────────────────────
 
-  it("validateTwoPlayerMove hace POST a /game/play/ con board y selectedCell (1vs1)", async () => {
-    const mockResponse = {
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        isValidMove: true,
-        hasWon: false,
-        message: "OK",
-      }),
-    };
-
-    global.fetch.mockResolvedValue(mockResponse);
-
+  describe("validateTwoPlayerMove", () => {
     const board = { size: 8, turn: "R" };
     const selectedCell = { q: 0, r: 0 };
 
-    const result = await validateTwoPlayerMove({ board, selectedCell });
+    it("hace POST a /game/play/ con board y selectedCell", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          isValidMove: true,
+          hasWon: false,
+          message: "OK",
+        }),
+      });
 
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    const [url, options] = global.fetch.mock.calls[0];
+      const result = await validateTwoPlayerMove({ board, selectedCell });
 
-    expect(url.endsWith("/game/play/")).toBe(true);
-    expect(options.method).toBe("POST");
-    expect(options.headers["Content-Type"]).toBe("application/json");
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      const [url, options] = global.fetch.mock.calls[0];
 
-    const body = JSON.parse(options.body);
-    expect(body).toEqual({ board, selectedCell, mode: "1vs1" });
+      expect(url).toContain("http://localhost:4000/game/play/");
+      expect(options.method).toBe("POST");
+      expect(options.headers["Content-Type"]).toBe("application/json");
 
-    expect(result).toEqual({
-      isValidMove: true,
-      hasWon: false,
-      message: "OK",
+      const body = JSON.parse(options.body);
+      expect(body).toEqual({ board, selectedCell, mode: "1vs1" });
+
+      expect(result).toEqual({
+        isValidMove: true,
+        hasWon: false,
+        message: "OK",
+      });
+    });
+
+    it("convierte isValidMove y hasWon a boolean", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          isValidMove: 1,
+          hasWon: 0,
+          message: "OK",
+        }),
+      });
+
+      const result = await validateTwoPlayerMove({ board, selectedCell });
+
+      expect(result).toEqual({
+        isValidMove: true,
+        hasWon: false,
+        message: "OK",
+      });
+    });
+
+    it("devuelve message undefined si el backend no lo manda", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          isValidMove: true,
+          hasWon: false,
+        }),
+      });
+
+      const result = await validateTwoPlayerMove({ board, selectedCell });
+
+      expect(result).toEqual({
+        isValidMove: true,
+        hasWon: false,
+        message: undefined,
+      });
+    });
+
+    it("lanza Error si response.ok es false con mensaje del backend", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockResolvedValue({ message: "Error backend" }),
+      });
+
+      await expect(
+        validateTwoPlayerMove({ board, selectedCell })
+      ).rejects.toThrow("Error backend");
+    });
+
+    it("lanza mensaje genérico si response.ok es false y no hay message", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockResolvedValue({}),
+      });
+
+      await expect(
+        validateTwoPlayerMove({ board, selectedCell })
+      ).rejects.toThrow("No se pudo validar el movimiento en el servidor.");
+    });
+
+    it("lanza mensaje genérico si response.json() falla y response.ok es false", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockRejectedValue(new Error("invalid json")),
+      });
+
+      await expect(
+        validateTwoPlayerMove({ board, selectedCell })
+      ).rejects.toThrow("No se pudo validar el movimiento en el servidor.");
+    });
+
+    it("si response.json() falla pero ok=true, devuelve false/false/undefined", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockRejectedValue(new Error("invalid json")),
+      });
+
+      const result = await validateTwoPlayerMove({ board, selectedCell });
+
+      expect(result).toEqual({
+        isValidMove: false,
+        hasWon: false,
+        message: undefined,
+      });
+    });
+
+    it("propaga el error si fetch falla", async () => {
+      global.fetch.mockRejectedValue(new Error("Network error"));
+
+      await expect(
+        validateTwoPlayerMove({ board, selectedCell })
+      ).rejects.toThrow("Network error");
     });
   });
 
-  it("validateTwoPlayerMove lanza un Error si response.ok es false con mensaje del backend", async () => {
-    // validateTwoPlayerMove NO tiene try/catch → el error se propaga
-    const mockResponse = {
-      ok: false,
-      json: vi.fn().mockResolvedValue({ message: "Error backend" }),
-    };
+  // ────────────────────────────────────────────────────────────────────────────
+  // requestBotMove
+  // ────────────────────────────────────────────────────────────────────────────
 
-    global.fetch.mockResolvedValue(mockResponse);
-
-    await expect(
-      validateTwoPlayerMove({ board: { size: 8 }, selectedCell: { q: 0, r: 0 } })
-    ).rejects.toThrow("Error backend");
-  });
-
-  it("validateTwoPlayerMove lanza mensaje genérico si el backend no devuelve message", async () => {
-    const mockResponse = {
-      ok: false,
-      json: vi.fn().mockResolvedValue({}),
-    };
-
-    global.fetch.mockResolvedValue(mockResponse);
-
-    await expect(
-      validateTwoPlayerMove({ board: { size: 8 }, selectedCell: { q: 0, r: 0 } })
-    ).rejects.toThrow("No se pudo validar el movimiento en el servidor.");
-  });
-
-  // ─── requestBotMove ─────────────────────────────────────────────────────────
-
-  it("requestBotMove hace POST al servidor de bots y devuelve coords", async () => {
-    const mockResponse = {
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        bot_id: "random_bot",
-        api_version: "1.0.0",
-        coords: { x: 1, y: 0, z: -1 },
-      }),
-    };
-
-    global.fetch.mockResolvedValue(mockResponse);
-
+  describe("requestBotMove", () => {
     const board = { size: 8, turn: "R", players: ["R", "B"], layout: "mock" };
 
-    const result = await requestBotMove({ board, botId: "random_bot" });
+    it("hace POST al servidor de bots y devuelve coords", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
 
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    const [url, options] = global.fetch.mock.calls[0];
+      const result = await requestBotMove({ board, difficulty: "Facil" });
 
-    expect(url).toContain(":4001/v1/ybot/choose/random_bot");
-    expect(options.method).toBe("POST");
-    expect(options.headers["Content-Type"]).toBe("application/json");
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      const [url, options] = global.fetch.mock.calls[0];
 
-    const body = JSON.parse(options.body);
-    expect(body).toEqual(board);
+      expect(url).toContain(":4001/v1/ybot/choose/random_bot");
+      expect(options.method).toBe("POST");
+      expect(options.headers["Content-Type"]).toBe("application/json");
 
-    expect(result).toEqual({
-      botId: "random_bot",
-      coords: { x: 1, y: 0, z: -1 },
-      apiVersion: "1.0.0",
-      hasWon: false,
+      const body = JSON.parse(options.body);
+      expect(body).toEqual(board);
+
+      expect(result).toEqual({
+        botId: "random_bot",
+        coords: { x: 1, y: 0, z: -1 },
+        apiVersion: "1.0.0",
+        hasWon: false,
+      });
     });
-  });
 
-  it("requestBotMove lanza Error si response.ok es false", async () => {
-    const mockResponse = {
-      ok: false,
-      json: vi.fn().mockResolvedValue({ message: "Error backend" }),
-    };
+    it("usa random_bot para dificultad Facil", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
 
-    global.fetch.mockResolvedValue(mockResponse);
+      await requestBotMove({ board, difficulty: "Facil" });
 
-    await expect(requestBotMove({ board: { size: 8 }, botId: "random_bot" })).rejects.toThrow(
-      "Error backend"
-    );
-  });
+      expect(global.fetch.mock.calls[0][0]).toContain("/choose/random_bot");
+    });
 
-  it("requestBotMove lanza Error si fetch falla", async () => {
-    global.fetch.mockRejectedValue(new Error("Network error"));
+    it("usa medium_bot para dificultad Media", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "medium_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
 
-    await expect(requestBotMove({ board: { size: 8 }, botId: "random_bot" })).rejects.toThrow(
-      "Network error"
-    );
+      await requestBotMove({ board, difficulty: "Media" });
+
+      expect(global.fetch.mock.calls[0][0]).toContain("/choose/medium_bot");
+    });
+
+    it("usa hard_bot para dificultad Dificil", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "hard_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
+
+      await requestBotMove({ board, difficulty: "Dificil" });
+
+      expect(global.fetch.mock.calls[0][0]).toContain("/choose/hard_bot");
+    });
+
+    it("usa random_bot si la dificultad no es reconocida", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
+
+      await requestBotMove({ board, difficulty: "Legendaria" });
+
+      expect(global.fetch.mock.calls[0][0]).toContain("/choose/random_bot");
+    });
+
+    it("usa random_bot por defecto si no se pasa dificultad", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
+
+      await requestBotMove({ board });
+
+      expect(global.fetch.mock.calls[0][0]).toContain("/choose/random_bot");
+    });
+
+    it("usa botId calculado si bot_id no viene en la respuesta", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
+
+      const result = await requestBotMove({ board, difficulty: "Media" });
+
+      expect(result).toEqual({
+        botId: "medium_bot",
+        coords: { x: 1, y: 0, z: -1 },
+        apiVersion: "1.0.0",
+        hasWon: false,
+      });
+    });
+
+    it("usa apiVersion null si api_version no viene en la respuesta", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          coords: { x: 1, y: 0, z: -1 },
+        }),
+      });
+
+      const result = await requestBotMove({ board, difficulty: "Facil" });
+
+      expect(result).toEqual({
+        botId: "random_bot",
+        coords: { x: 1, y: 0, z: -1 },
+        apiVersion: null,
+        hasWon: false,
+      });
+    });
+
+    it("convierte hasWon a boolean", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+          coords: { x: 1, y: 0, z: -1 },
+          hasWon: 1,
+        }),
+      });
+
+      const result = await requestBotMove({ board, difficulty: "Facil" });
+
+      expect(result.hasWon).toBe(true);
+    });
+
+    it("lanza Error si response.ok es false con mensaje backend", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockResolvedValue({ message: "Error backend" }),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("Error backend");
+    });
+
+    it("lanza mensaje genérico si response.ok es false y no hay message", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockResolvedValue({}),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("No se pudo obtener el movimiento del bot.");
+    });
+
+    it("lanza mensaje genérico si response.json() falla y response.ok es false", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockRejectedValue(new Error("invalid json")),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("No se pudo obtener el movimiento del bot.");
+    });
+
+    it("lanza Error si ok=true pero no hay coords", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+        }),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("La respuesta del bot no incluye coordenadas.");
+    });
+
+    it("lanza Error si ok=true pero coords es null", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          bot_id: "random_bot",
+          api_version: "1.0.0",
+          coords: null,
+        }),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("La respuesta del bot no incluye coordenadas.");
+    });
+
+    it("si response.json() falla con ok=true, lanza error de coordenadas faltantes", async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockRejectedValue(new Error("invalid json")),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("La respuesta del bot no incluye coordenadas.");
+    });
+
+    it("propaga el error si fetch falla", async () => {
+      global.fetch.mockRejectedValue(new Error("Network error"));
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("Network error");
+    });
   });
 });

@@ -166,7 +166,7 @@ describe("gamePlayApi", () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
       const [url, options] = global.fetch.mock.calls[0];
 
-      expect(url).toContain(":4001/v1/ybot/choose/random_bot");
+      expect(url).toContain(":4001/v1/choose/random_bot");
       expect(options.method).toBe("POST");
       expect(options.headers["Content-Type"]).toBe("application/json");
 

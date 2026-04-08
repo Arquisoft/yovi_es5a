@@ -7,7 +7,7 @@ info:
     Diseñada para ser consumida tanto por clientes frontend como por bots.
 
 servers:
-  - url: http://localhost:3000
+  - url: http://158.158.8.82:3000
 
 components:
   securitySchemes:

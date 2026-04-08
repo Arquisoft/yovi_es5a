@@ -1,37 +1,214 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
-[[section-design-decisions]]
-== Architecture Decisions
+[[section-architecture-decisions]]
+== Decisiones arquitectónicas
 
+=== Enfoque y alcance
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-Important, expensive, large scale or risky architecture decisions including rationales.
-With "decisions" we mean selecting one alternative based on given criteria.
+Este apartado registra decisiones arquitectónicas relevantes, con impacto transversal, coste de cambio elevado o riesgo técnico significativo.
+Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio actual.
 
-Please use your judgement to decide whether an architectural decision should be documented
-here in this central section or whether you better document it locally
-(e.g. within the white box template of one building block).
+Además, se reconoce explícitamente el contexto de partida del proyecto: la base inicial del laboratorio fue aportada por profesorado (principalmente en commits iniciales), y posteriormente el equipo evolucionó esa base con nuevas funcionalidades, seguridad, pruebas, observabilidad y mejoras de dominio.
 
-Avoid redundancy. 
-Refer to section 4, where you already captured the most important decisions of your architecture.
+=== Resumen de decisiones aceptadas
 
-.Motivation
-Stakeholders of your system should be able to comprehend and retrace your decisions.
+[cols="1,2,1,3", options="header"]
+|===
+| ID | Decisión | Estado | Impacto principal
 
-.Form
-Various options:
+| ADR-00
+| Adoptar y evolucionar una base inicial de laboratorio en lugar de rehacer desde cero.
+| Aceptada
+| Aceleró el arranque, pero exigió refactorización y endurecimiento progresivo.
 
-* ADR (https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions[Documenting Architecture Decisions]) for every important decision
-* List or table, ordered by importance and consequences or:
-* more detailed in form of separate sections per decision
+| ADR-01
+| Usar notación YEN como formato canónico de intercambio entre componentes.
+| Aceptada
+| Interoperabilidad estable entre frontend, backend y motor.
 
-.Further Information
+| ADR-02
+| Separar responsabilidades en tres componentes: Webapp, Users y Gamey.
+| Aceptada
+| Mayor mantenibilidad, despliegue independiente y desacoplamiento tecnológico.
 
-See https://docs.arc42.org/section-9/[Architecture Decisions] in the arc42 documentation.
-There you will find links and examples about ADR.
+| ADR-03
+| Implementar reglas, validación y bots del juego Y en Rust (Gamey), dejando la UI sin reglas de victoria.
+| Aceptada
+| Coherencia funcional y menor duplicidad de lógica crítica.
 
-****
-endif::arc42help[]
+| ADR-04
+| Exponer API de juego versionada para bots y jugadas (rutas con versión v1).
+| Aceptada
+| Evolución controlada de contrato para integraciones externas.
+
+| ADR-05
+| Adoptar autenticación JWT con acceso corto + refresh y revocación/rotación.
+| Aceptada
+| Mejora de seguridad de sesiones en API.
+
+| ADR-06
+| Mantener dos topologías operativas de base de datos: local de desarrollo y despliegue en infraestructura Azure.
+| Aceptada
+| Reproducibilidad local y flexibilidad en producción sin acoplarse a una única topología.
+
+| ADR-07
+| Definir puntuación determinista y ranking persistido (histórico, perfil y leaderboard).
+| Aceptada
+| Trazabilidad de resultados y gamificación medible.
+
+| ADR-08
+| Instrumentar observabilidad con métricas y paneles (Prometheus y Grafana). 
+| Aceptada
+| Mejor diagnóstico operativo y apoyo a calidad de servicio.
+
+| ADR-09
+| Mantener varias estrategias de bot y mapear dificultad funcional a bots concretos.
+| Aceptada
+| Cumplimiento de requisito de múltiples estrategias seleccionables.
+|===
+
+=== ADR-00. Base inicial docente y evolución del equipo
+
+.Contexto
+El proyecto parte de una base inicial del laboratorio (plantilla y estructura funcional mínima), con contribuciones tempranas del profesorado, y se amplía después con trabajo del equipo.
+
+.Decisión
+Conservar la base inicial y evolucionarla incrementalmente, priorizando continuidad técnica y trazabilidad de cambios.
+
+.Consecuencias
+
+Positivas: menor tiempo de arranque y estructura común de trabajo.
+Costes: necesidad de revisar supuestos iniciales y endurecer diseño en seguridad, pruebas y contratos.
+
+=== ADR-01. YEN como contrato de dominio común
+
+.Contexto
+Los requisitos exigen interoperabilidad por JSON y notación YEN entre módulos.
+
+.Decisión
+YEN se establece como representación canónica del estado de partida para intercambio entre frontend y motor.
+
+.Consecuencias
+
+Evita conversiones ambiguas entre capas.
+Permite validación centralizada y pruebas de serialización/deserialización.
+Facilita integración de clientes externos.
+
+=== ADR-02. Arquitectura por componentes desacoplados
+
+.Contexto
+Se requiere al menos una aplicación web en TypeScript y un módulo en Rust para lógica de juego.
+
+.Decisión
+Separar el sistema en tres componentes principales:
+
+Webapp: experiencia de usuario y flujo de interacción.
+Users: autenticación, perfil, historial, ranking y persistencia.
+Gamey: validación de jugadas, estado de partida y bots.
+.Consecuencias
+
+Escalado y despliegue por componente.
+Mejor encapsulamiento de responsabilidades.
+Incremento de complejidad de integración (compensado con contratos y tests).
+
+=== ADR-03. Lógica de juego y bots centralizada en Rust
+
+.Contexto
+Las reglas del juego Y y la validación de jugadas son el núcleo crítico de consistencia.
+
+.Decisión
+Delegar en Gamey la validación de jugada, control de fin de partida y cálculo de movimiento de bots; la web no implementa reglas de victoria como fuente de verdad.
+
+.Consecuencias
+
+Integridad funcional más robusta.
+Menor riesgo de divergencia entre cliente y servidor.
+Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntricas.
+
+=== ADR-04. API de juego versionada para integraciones
+
+.Contexto
+Debe existir API utilizable por bots y consumidores externos.
+
+.Decisión
+Versionar los endpoints del motor de juego (prefijo v1) y soportar petición de movimiento con bot explícito o por defecto, manteniendo compatibilidad evolutiva.
+
+.Consecuencias
+
+Contrato más estable para terceros.
+Cambios futuros pueden introducirse sin romper consumidores existentes.
+Requiere disciplina de versionado en iteraciones posteriores.
+
+=== ADR-05. Seguridad con JWT y ciclo de refresh
+
+.Contexto
+Las operaciones sobre datos de usuario y registro de partidas requieren control de acceso.
+
+.Decisión
+Aplicar autenticación basada en token de acceso y token de refresco, con rotación/revocación de refresh en el servicio de autenticación.
+
+.Consecuencias
+
+Mejora del control de sesión y del riesgo de reutilización de credenciales.
+La persistencia de sesión de refresh actual está orientada a entorno de desarrollo; para escalado horizontal completo se requiere backend compartido de sesiones.
+
+=== ADR-06. Persistencia dual según entorno (local vs despliegue)
+
+.Contexto
+El equipo necesita rapidez de desarrollo local y despliegue real en Azure.
+
+.Decisión
+Mantener dos modos de operación de base de datos, con mismo modelo lógico:
+
+Desarrollo local: servicio MySQL en contenedor para pruebas y trabajo diario.
+Despliegue: conexión a base de datos de Azure mediante variables de entorno.
+.Consecuencias
+
+Reproducibilidad local con Docker Compose.
+Menor fricción para despliegue real sin depender del contenedor de base de datos local.
+La configuración por entorno se vuelve decisión crítica de operación.
+
+=== ADR-07. Modelo de puntuación y ranking
+
+.Contexto
+Los requisitos funcionales incluyen histórico y estadísticas de participación.
+
+.Decisión
+Usar una puntuación determinista por partida, calculada a partir de tamaño de tablero y número de turnos, y persistir resultados para leaderboard y perfil.
+
+.Formulación aplicada
+score = boardSize * 10 + max(0, 50 - turnNumber)
+
+.Consecuencias
+
+Métrica simple, trazable y explicable para el usuario.
+Permite ranking global, perfil y vistas centradas en usuario.
+Facilita pruebas de regresión sobre reglas de puntuación.
+
+=== ADR-08. Observabilidad incorporada desde la arquitectura
+
+.Contexto
+Los criterios de valoración incluyen disponibilidad y monitorización.
+
+.Decisión
+Instrumentar el backend y desplegar stack de monitorización con Prometheus y Grafana en entorno contenedorizado.
+
+.Consecuencias
+
+Visibilidad de salud y rendimiento de servicios.
+Detección temprana de problemas de latencia y errores.
+Coste operativo adicional asumido por el valor en diagnóstico.
+
+=== ADR-09. Estrategias múltiples de bot y dificultad seleccionable
+
+.Contexto
+Se exige más de una estrategia de juego contra máquina y selección de dificultad.
+
+.Decisión
+Mantener varias estrategias en Gamey (aleatoria, media y difícil) y mapear dificultad de UX a identificadores de bot concretos.
+
+.Consecuencias
+
+Cumplimiento directo del requisito funcional de estrategias.
+Extensible a nuevos bots sin rediseñar la UI.
+Necesidad de mantener coherencia entre nomenclatura de dificultad y bot real disponible.

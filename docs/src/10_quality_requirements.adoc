@@ -1,7 +1,7 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-quality-scenarios]]
-== Quality Requirements
+== Requisitos de calidad
 
 
 ifdef::arc42help[]
@@ -27,7 +27,7 @@ See https://docs.arc42.org/section-10/[Quality Requirements] in the arc42 docume
 ****
 endif::arc42help[]
 
-=== Quality Tree
+=== Árbol de calidad
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -50,6 +50,8 @@ In any case the tree should include links to the scenarios of the following sect
 ****
 endif::arc42help[]
 
+[plantuml,"Árbol de calidad",png]
+----
 @startuml
 left to right direction
 skinparam packageStyle rectangle
@@ -58,7 +60,7 @@ actor Usuario
 actor Bot
 actor "Sistema Externo" as ExtSystem
 
-rectangle "MÓDULO 1 - Aplicación Web" {
+rectangle "Módulo 1 - Aplicación Web" {
 
   package "RF01 - Gestión de Usuarios" {
     usecase "RF01.1\nRegistrarse" as UC1
@@ -72,7 +74,7 @@ rectangle "MÓDULO 1 - Aplicación Web" {
     usecase "RF02.2\nMostrar tablero en tiempo real" as UC6
     usecase "RF02.3\nRealizar movimientos" as UC7
     usecase "RF02.4\nMostrar turno actual" as UC8
-    usecase "RF02.5\nMostrar resultado partida" as UC9
+    usecase "RF02.5\nMostrar resultado de la partida" as UC9
   }
 
   package "RF03 - Historial de Partidas" {
@@ -87,14 +89,14 @@ rectangle "MÓDULO 1 - Aplicación Web" {
 
   package "RF04 - API Externa para Bots" {
     usecase "RF04.1\nExponer API" as UC17
-    usecase "RF04.2\nAutenticación API" as UC18
+    usecase "RF04.2\nAutenticación de API" as UC18
     usecase "RF04.3\nCrear partida como bot" as UC19
     usecase "RF04.4\nRealizar movimientos (bot)" as UC20
     usecase "RF04.5\nObtener estado en formato YEN" as UC21
   }
 }
 
-rectangle "MÓDULO 2 - Lógica (Rust)" {
+rectangle "Módulo 2 - Lógica (Rust)" {
 
   package "RF05 - Verificación de Victoria" {
     usecase "RF05.1\nDeterminar ganador" as UC22
@@ -107,7 +109,7 @@ rectangle "MÓDULO 2 - Lógica (Rust)" {
     usecase "RF06.1\nComunicación remota" as UC26
     usecase "RF06.2\nVerificar partida ganada" as UC27
     usecase "RF06.3\nVerificar disponibilidad" as UC28
-    usecase "RF06.4\nRespuestas en JSON" as UC29
+    usecase "RF06.4\nResponder en JSON" as UC29
   }
 
   package "RF07 - Procesamiento YEN" {
@@ -120,31 +122,42 @@ rectangle "MÓDULO 2 - Lógica (Rust)" {
 ' Relaciones Usuario
 Usuario --> UC1
 Usuario --> UC2
+Usuario --> UC3
 Usuario --> UC4
 Usuario --> UC5
+Usuario --> UC6
 Usuario --> UC7
+Usuario --> UC8
+Usuario --> UC9
 Usuario --> UC11
+Usuario --> UC12
 
+' Relaciones estadísticas
 UC12 .> UC13 : <<include>>
 UC12 .> UC14 : <<include>>
 UC12 .> UC15 : <<include>>
 UC12 .> UC16 : <<include>>
 
 ' Relaciones Bot
+Bot --> UC18
 Bot --> UC19
 Bot --> UC20
 Bot --> UC21
-Bot --> UC18
+
+' API expuesta a sistemas externos
+ExtSystem --> UC17
+ExtSystem --> UC18
+ExtSystem --> UC26
 
 ' Comunicación entre módulos
-ExtSystem --> UC26
 UC26 --> UC22
+UC26 --> UC27
 UC26 --> UC30
 
 @enduml
+----
 
-
-=== Quality Scenarios
+=== Escenarios de calidad
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -171,3 +184,112 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 Tabular or free form text.
 ****
 endif::arc42help[]
+
+==== Escenarios de rendimiento
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QP01 |Cuando 100 usuarios inician sesión y acceden simultáneamente al sistema, este mantiene tiempos de respuesta aceptables en la navegación principal.
+|QP02 |Cuando 100 usuarios juegan partidas al mismo tiempo, el tablero se actualiza sin bloqueos visibles para el usuario.
+|QP03 |Cuando un jugador realiza un movimiento, la interfaz refleja el cambio en el tablero en un tiempo coherente.
+|QP04 |Cuando la API recibe peticiones concurrentes de bots, el servicio responde sin degradar excesivamente el sistema.
+|QP05 |Cuando se consulta el historial de partidas de un usuario con muchas partidas almacenadas, la lista se carga en un tiempo razonable.
+|QP06 |Cuando se solicitan estadísticas básicas, el sistema las calcula y muestra de manera rápida.
+|QP07 |Cuando el motor del juego recibe una posición YEN válida, la validación de victoria se completa en un tiempo predecible.
+|QP08 |Cuando la API devuelve el estado de una partida en formato YEN, la serialización JSON no introduce demasiada latencia.
+
+|===
+
+==== Escenarios de seguridad
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QS01 |Cuando un usuario se registra, la contraseña se almacena con un hash seguro.
+|QS02 |Cuando un usuario mantiene una sesión activa, el sistema protege la sesión frente a accesos no autorizados.
+|QS03 |Cuando un usuario cierra sesión, la sesión queda invalidada y no puede reutilizarse.
+|QS04 |Cuando un bot llama a la API, debe autenticarse antes de crear o modificar partidas.
+
+|===
+
+==== Escenarios de mantenibilidad
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QM01 |Cuando se añade una nueva funcionalidad, la modificación se cubre con pruebas unitarias.
+|QM02 |Cuando un desarrollador incorpora una nueva funcionalidad en cualquier módulo del sistema, el código mantiene una cobertura de código mínima del 70%.
+|QM03 |Cuando un nuevo desarrollador revisa el código, puede entender la estructura principal a partir de la documentación del sistema.
+
+|===
+
+==== Escenarios de usabilidad
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QU01 |Cuando el tablero cambia tras un movimiento, el usuario entiende visualmente qué pieza se ha movido.
+|QU02 |Cuando termina una partida, el usuario identifica de forma inmediata si ha ganado, perdido o empatado.
+|QU03 |Cuando el usuario consulta su historial, puede localizar partidas anteriores sin esfuerzo excesivo.
+|QU04 |Cuando el usuario usa la plataforma por primera vez, entiende cómo registrarse, iniciar sesión y empezar una partida.
+
+|===
+
+==== Escenarios de interoperabilidad
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QI01 |Cuando la aplicación web envía una partida al módulo Rust, el intercambio se realiza exclusivamente en JSON con notación YEN.
+|QI02 |Cuando la API devuelve el estado de una partida, el formato es siempre JSON válido.
+|QI03 |Cuando un bot crea una partida, recibe una respuesta compatible con el contrato de la API sin necesidad de adaptaciones manuales.
+|QI04 |Cuando un bot envía un movimiento, la API interpreta correctamente la estructura JSON acordada.
+|QI05 |Cuando el módulo Rust recibe una notación YEN inválida, devuelve un error compatible con el contrato definido.
+
+|===
+
+==== Escenarios de funcionalidad crítica
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QF01 |Cuando un jugador realiza un movimiento legal, el sistema actualiza el estado de la partida correctamente.
+|QF02 |Cuando un jugador realiza un movimiento ilegal, el sistema lo rechaza sin corromper la partida.
+|QF03 |Cuando una partida termina, el sistema registra el resultado en el historial del usuario correcto.
+|QF04 |Cuando el módulo Rust analiza una posición YEN con victoria, identifica correctamente al ganador.
+|QF05 |Cuando el módulo Rust analiza una posición YEN sin ganador, informa correctamente de continuidad.
+
+|===
+
+==== Escenarios de cambio
+
+[cols="1,3", options="header"]
+
+|===
+
+|ID |Escenario
+
+|QC01 |Cuando se introduce una nueva implementación de un bot, no es necesario reescribir la lógica central.
+|QC04 |Si se sustituyera la base de datos empleada, el front-end no se vería afectado.
+|QC03 |Si se sustituyera la interfaz web por otra tecnología, el contrato con la API de bots sigue estable.
+
+|===

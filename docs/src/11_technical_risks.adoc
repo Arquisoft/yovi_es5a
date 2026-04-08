@@ -1,7 +1,7 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-technical-risks]]
-== Risks and Technical Debts
+== Riesgos y Deuda Técnica
 
 
 ifdef::arc42help[]
@@ -25,3 +25,117 @@ See https://docs.arc42.org/section-11/[Risks and Technical Debt] in the arc42 do
 
 ****
 endif::arc42help[]
+
+=== Enfoque
+
+Este apartado identifica los principales riesgos técnicos y deudas técnicas del estado actual del sistema, ordenados por prioridad. Se incluyen medidas de mitigación para facilitar su seguimiento.
+
+Criterio de priorización:
+
+* *Alta*: impacto elevado en seguridad, disponibilidad o corrección funcional.
+* *Media*: impacto relevante, pero con alternativas temporales.
+* *Baja*: impacto acotado o de mejora progresiva.
+
+=== Riesgos Técnicos (priorizados)
+
+[cols="1,1,3,2,2", options="header"]
+|===
+| ID | Prioridad | Riesgo | Evidencia en el repositorio | Mitigación propuesta
+
+| R-01
+| Alta
+| *Sesiones de refresh en memoria del proceso*: al reiniciar el servicio se pierde el estado de sesiones y en despliegue con varias instancias no hay sincronización de revocaciones.
+| `users/auth/sessionStore.js` usa `Map` en memoria. En `users/users-service.js` se indica explícitamente que para producción debe persistirse en DB.
+| Persistir sesiones de refresh en almacenamiento compartido (MySQL o Redis), con hash de token, revocación y trazabilidad de cadena de rotación.
+
+| R-02
+| Alta
+| *Respuesta potencialmente inconsistente al finalizar partida*: el endpoint devuelve `gameId`, pero en el servicio no se asigna valor final antes del retorno.
+| En `users/services/gameService.js`, `recordFinishedMatch` declara `let gameId;` y retorna `gameId` sin asignarlo tras `insertFinishedGame`.
+| Corregir retorno para devolver el id real de partida insertada y añadir prueba de integración que valide `gameId` no nulo.
+
+| R-03
+| Alta
+| *Superficie de ataque ampliada por CORS abierto*: aceptación global de orígenes y cabeceras.
+| `users/users-service.js` permite `Access-Control-Allow-Origin: *`; en `gamey/src/bot_server/mod.rs` y `gamey/src/game_server/mod.rs` se usa `allow_origin(Any)`.
+| Restringir CORS por entorno (lista blanca de dominios), limitar métodos y cabeceras, y documentar política de acceso por servicio.
+
+| R-04
+| Media
+| *Riesgo de configuración errónea en frontend para despliegue*: URL de Gamey hardcodeada a localhost.
+| `webapp/src/services/gamePlayApi.js` tiene `const GAMEY_BASE_URL = "http://localhost:4000"` y la opción por variable de entorno está comentada.
+| Reactivar configuración por `VITE_GAMEY_URL`, definir valores por entorno y añadir validación en build/release.
+
+| R-05
+| Media
+| *Fragmentación de contrato API*: la especificación OpenAPI documenta `users`, pero no centraliza completamente los endpoints de juego/bots de `gamey`.
+| `users/openapi.yaml` describe autenticación, historial y ranking; endpoints de `gamey` (`/game/play/`, `/{api_version}/play/{bot_id}`, `/{api_version}/choose/{bot_id}`) se implementan en Rust fuera de ese contrato.
+| Publicar contrato unificado o federado (Users + Gamey), versionado y validado en CI para evitar deriva entre implementación y documentación.
+
+| R-06
+| Media
+| *Ausencia de validación de carga extremo a extremo*: puede ocultar cuellos de botella en picos de uso.
+| Hay unit/integration/e2e y benchmarks en Rust (`gamey/benches`), pero no se identifican suites de carga HTTP integrales para el sistema desplegado.
+| Incorporar pruebas de carga (p. ej., k6) para `/auth/*`, `/finished-match`, `/leaderboard` y endpoints de bot, con umbrales de latencia y error.
+
+| R-07
+| Media
+| *Conexión DB única y reconexión limitada*: una única conexión puede degradar robustez en escenarios concurrentes o fallos intermedios.
+| `users/db.js` usa `mysql.createConnection` con cache global y reintentos solo al inicio.
+| Migrar a pool (`createPool`) con políticas de reconexión y timeouts; añadir métricas de saturación y errores de DB.
+
+| R-08
+| Media
+| *Dualidad de topología de BD local vs despliegue*: riesgo de desviación de configuración y operaciones entre entornos.
+| Local con `docker-compose` y servicio `mysql`; despliegue con DB externa en Azure por variables (`README.md`, `users/.env.example`, `users/scripts/init-db.sh`).
+| Definir checklist de paridad entre entornos (variables, esquema, backup/restore, red), automatizar migraciones y verificación post-despliegue.
+|===
+
+=== Deuda Técnica (priorizada)
+
+[cols="1,1,3,2,2", options="header"]
+|===
+| ID | Prioridad | Deuda técnica | Impacto | Plan de reducción
+
+| D-01
+| Alta
+| *Persistencia de refresh token no preparada para multi-instancia*.
+| Puede invalidar estrategia de seguridad en escalado horizontal.
+| Implementar almacenamiento persistente compartido y limpiar sesiones expiradas por tarea programada.
+
+| D-02
+| Alta
+| *Bug funcional pendiente en retorno de `gameId`* (`recordFinishedMatch`).
+| Inconsistencias en API y en trazabilidad de partidas guardadas.
+| Arreglar retorno, añadir pruebas en `users/__tests__` y control en contrato OpenAPI.
+
+| D-03
+| Media
+| *Configuración de endpoint de Gamey acoplada a localhost en frontend*.
+| Riesgo de errores en entornos de staging/producción y mayor coste de despliegue.
+| Parametrización por variables de entorno y validación en pipeline de release.
+
+| D-04
+| Media
+| *Contrato API no consolidado entre Users y Gamey*.
+| Mayor probabilidad de divergencia entre documentación y endpoints reales.
+| Mantener especificaciones sincronizadas y validación automática de contrato en CI.
+
+| D-05
+| Media
+| *Ausencia de pruebas de carga de sistema completo*.
+| Riesgo no cuantificado de latencia y degradación bajo concurrencia.
+| Definir escenarios de carga mínimos por requisito y ejecutarlos en cada release candidata.
+
+| D-06
+| Media
+| *Política CORS permisiva en varios servicios*.
+| Exposición innecesaria de endpoints en entornos públicos.
+| Endurecer CORS por entorno, auditar cabeceras y probar comportamiento con tests de seguridad básicos.
+
+| D-07
+| Baja
+| *Uso de valores por defecto de secretos para desarrollo* (`dev-access-secret-change-me`, `dev-refresh-secret-change-me`).
+| Riesgo bajo en local, pero crítico si se reutiliza en despliegue real por error.
+| Forzar secretos obligatorios en producción (fallo de arranque si faltan) y documentar política de rotación.
+|===

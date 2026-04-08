@@ -133,3 +133,82 @@ Here you can include the internal structure of (some) infrastructure elements fr
 Please copy the structure from level 1 for each selected element.
 ****
 endif::arc42help[]
+
+=== Nivel de infraestructura 2
+
+En este nivel se detalla la estructura interna de los elementos de infraestructura definidos en el nivel 1. En particular, se descompone el nodo Azure VM y el entorno Docker para mostrar cómo se organizan los contenedores, servicios auxiliares y la persistencia de datos.
+
+[plantuml,"Nivel de infraestructura 2",png]
+----
+@startuml
+skinparam monochrome true
+left to right direction
+
+node "Azure VM\n(Linux Ubuntu 24.04)" as VM {
+  node "Docker" as Docker {
+
+    node "webapp\n(React + Vite)" as WebApp
+    node "users\n(Node.js)" as Users
+    node "gamey\n(Rust)" as Gamey
+    database "MySQL" as Database
+
+    node "Monitoring" as Monitoring {
+      node "Prometheus" as Prometheus
+      node "Grafana" as Grafana
+    }
+  }
+}
+
+actor Navegador
+
+Navegador <--> WebApp : HTTPS / UI
+WebApp <--> Users : HTTP/JSON
+WebApp <--> Gamey : HTTP/JSON
+
+Users <--> Database : SQL
+Users <--> Prometheus : Métricas
+Grafana <--> Prometheus : Consultas de métricas
+
+@enduml
+----
+
+Motivación::
+
+El sistema se sostiene en una máquina virtual Ubuntu 24.04 en Azure sobre la que se despliega Docker, porque esto simplifica la ejecución aislada de cada servicio y permite reproducir el entorno de forma consistente en despliegues de prueba, integración y producción.
+Los módulos webapp, users y gamey se publican como imágenes independientes, mientras que MySQL actúa como base de datos persistente y Prometheus/Grafana proporcionan la observabilidad del sistema.
+
+El flujo de despliegue confirma además que cada release pasa por pruebas de Node, Rust y E2E antes de publicar imágenes y actualizar el sistema. Esto refuerza una estrategia de despliegue continua, basada en contenedores y con separación clara entre construcción, publicación y ejecución.
+
+Características de calidad/rendimiento::
+
+El uso de contenedores independientes mejora la portabilidad y reduce el acoplamiento entre servicios, porque cada bloque se ejecuta con sus dependencias y configuración propias.
+La base de datos MySQL queda aislada como servicio persistente, lo que facilita las tareas de mantenimiento y recuperación sin afectar al resto de componentes.
+
+La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.
+Además, el despliegue automático desde GitHub Actions favorece tiempos de entrega cortos y una actualización uniforme de los servicios desplegados.
+
+Mapeo de los bloques de construcción a infraestructura::
+
+[cols="1,2,2" options="header"]
+
+|===
+
+| Elemento de infraestructura | Rol | Responsabilidad
+
+| Azure VM | Host físico/virtual con Ubuntu 24.04 | Ejecuta toda la infraestructura mediante Docker.
+
+| Docker | Motor de contenedores y Docker Compose | Aísla y orquesta los servicios de la solución.
+
+| webapp | Imagen Docker del front-end React/Vite | Sirve la interfaz de usuario y consume las APIs del sistema.
+
+| users | Imagen Docker del backend Node.js | Gestiona autenticación, lógica de usuarios y acceso a datos.
+
+| gamey | Imagen Docker del motor Rust | Valida jugadas, gestiona la lógica del juego y la interacción con bots.
+
+| MySQL | Contenedor de base de datos | Persiste usuarios, partidas, puntuaciones y otros datos del sistema.
+
+| Prometheus | Contenedor de monitorización | Recoge métricas del backend y del entorno de ejecución.
+
+| Grafana | Contenedor de visualización | Presenta paneles y cuadros de mando a partir de las métricas de Prometheus.
+
+|===

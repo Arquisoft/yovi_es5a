@@ -1,74 +1,166 @@
-ifndef::imagesdir[:imagesdir: ../images]
-
 [[section-concepts]]
-== Cross-cutting Concepts
+== Conceptos Transversales (Cross-cutting Concepts)
 
+=== Resumen
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Content
-This section describes overall, principal regulations and solution ideas that are relevant in multiple parts (= cross-cutting) of your system.
-Such concepts are often related to multiple building blocks.
-They can include many different topics, such as
+Esta sección recoge decisiones y reglas que aplican a varios bloques de YOVI al mismo tiempo. Su objetivo es mantener coherencia funcional y técnica entre interfaz web, servicios backend, motor de juego y operación en contenedores.
 
-* models, especially domain models
-* architecture or design patterns
-* rules for using specific technology
-* principal, often technical decisions of an overarching (= cross-cutting) nature
-* implementation rules
+[cols="1,3", options="header"]
+|===
+| Concepto transversal | Idea clave
 
+| Modelo canónico del juego
+| La notación YEN es la representación común del estado de partida entre frontend y motor.
 
-.Motivation
-Concepts form the basis for _conceptual integrity_ (consistency, homogeneity) of the architecture. 
-Thus, they are an important contribution to achieve inner qualities of your system.
+| Validación centralizada de reglas
+| La UI no decide legalidad ni victoria: delega en Gamey para evitar duplicidad de lógica.
 
-Some of these concepts cannot be assigned to individual building blocks, e.g. security or safety. 
+| Arquitectura poliglota orientada a responsabilidades
+| React/Node priorizan UX e I/O; Rust prioriza cálculo determinista y robustez de reglas.
 
+| Puntuación y ranking trazables
+| La puntuación se calcula de forma explícita y el ranking usa criterios estables y paginación.
 
-.Form
-The form can be varied:
+| Bots como servicio desacoplado
+| Las estrategias de bot se exponen por API y pueden evolucionar sin romper la UI.
 
-* concept papers with any kind of structure
-* cross-cutting model excerpts or scenarios using notations of the architecture views
-* sample implementations, especially for technical concepts
-* reference to typical usage of standard frameworks (e.g. using Hibernate for object/relational mapping)
+| Seguridad por tokens
+| Se usa JWT para autenticación de operaciones sensibles y flujo de refresco de sesión.
 
-.Structure
-A potential (but not mandatory) structure for this section could be:
+| Portabilidad de datos entre entornos
+| En local se usa MySQL en Docker; en despliegue se configura host externo por variables de entorno.
+|===
 
-* Domain concepts
-* User Experience concepts (UX)
-* Safety and security concepts
-* Architecture and design patterns
-* "Under-the-hood"
-* development concepts
-* operational concepts
+=== Conceptos de dominio
 
-Note: it might be difficult to assign individual concepts to one specific topic
-on this list.
+==== YEN como lenguaje ubicuo
 
-image::08-concepts-EN.drawio.png["Possible topics for crosscutting concepts"]
+YOVI usa YEN como contrato de dominio compartido para representar partida, turno, jugadores y layout. Esta decisión evita traducciones ambiguas entre capas y permite que el mismo estado se valide igual en todos los componentes.
 
+Reglas derivadas:
 
-.Further Information
+Toda integración entre frontend y motor intercambia estado en JSON YEN.
+Las transformaciones de coordenadas se realizan en los bordes (UI/servicio), no en el núcleo de reglas.
+El motor es la referencia final de validez de jugada.
+=== Conceptos de UX y consistencia funcional
 
-See https://docs.arc42.org/section-8/[Concepts] in the arc42 documentation.
-****
-endif::arc42help[]
+==== SPA con estado local y confirmación de servidor
 
-=== _<Concept 1>_
+La Webapp ofrece respuesta inmediata en interfaz, pero la consistencia fuerte de reglas se obtiene al confirmar la jugada con Gamey. Este patrón equilibra fluidez y corrección.
 
-_<explanation>_
+Reglas derivadas:
 
+La interacción visual es optimista, pero el estado confirmado es el devuelto por backend/motor.
+En jugadas inválidas, se informa al usuario y no se consolida el turno.
+El frontend mantiene separadas lógica visual y reglas del juego.
+=== Conceptos de seguridad
 
+==== Autenticación con JWT y control de sesión
 
-=== _<Concept 2>_
+El servicio de usuarios emite access token y refresh token para autenticar llamadas. Operaciones de escritura relevantes (como registrar partida finalizada) exigen token válido.
 
-_<explanation>_
+Reglas derivadas:
 
-...
+El cliente debe enviar token de acceso en cabecera Authorization.
+El flujo de refresh rota tokens de refresco para reducir reutilización.
+Las credenciales de base de datos y secretos se inyectan por entorno, no en código fuente.
+Nota de implementación actual:
 
-=== _<Concept n>_
+El mecanismo de sesión de refresh está implementado en memoria del proceso, útil para entorno de desarrollo y pruebas, pero no ideal para escalado horizontal sin almacenamiento compartido.
+=== Conceptos de arquitectura y patrones
 
-_<explanation>_
+==== Control por modulos y responsabilidades
+
+La solución separa claramente I/O y experiencia de usuario de la lógica de juego:
+
+Webapp y servicio Users gestionan interacción, autenticación, persistencia y contratos HTTP.
+Gamey concentra validación de reglas y cálculo de jugadas/bots.
+Beneficio arquitectónico:
+
+Evolucionar reglas o estrategias de bot no obliga a rediseñar frontend.
+Cambios de UX o API no requieren reescribir núcleo algorítmico.
+
+==== APIs explícitas y contratos estables
+
+Cada capacidad se expone por endpoints definidos y estructuras de entrada/salida conocidas. Esto permite pruebas de integración más robustas y facilita uso por clientes externos.
+
+=== Conceptos de puntuación y ranking
+
+==== Modelo de puntuación (score) del sistema
+
+La puntuación de partida se calcula de forma determinista con dos factores:
+
+Tamaño de tablero.
+Número de turnos usados.
+Fórmula implementada:
+
+score = (boardSize * 10) + max(0, 50 - turnNumber)
+Implicaciones:
+
+Tableros mayores elevan puntuación base.
+Resolver en menos turnos mejora puntuación.
+La fórmula evita valores negativos en el término de eficiencia.
+
+==== Modelo de ranking
+
+El ranking global ordena usuarios por mejor puntuación y aplica criterios de desempate estables. El sistema soporta paginación controlada para evitar respuestas excesivas.
+
+Reglas derivadas:
+
+Page size permitido: 25, 50 o 100.
+Se ofrecen endpoints de leaderboard global, perfil, historial y vista centrada en usuario.
+El histórico separa partidas 1vsbot y 1vs1 para análisis funcional más claro.
+
+=== Conceptos de bots y dificultad
+
+==== Bots como capacidad transversal del sistema
+
+El motor Gamey expone bots como un servicio HTTP, desacoplando la estrategia de juego de la capa de presentación. Esto habilita:
+
+* Juego humano vs. bot en la WebApp.
+* Consumo potencial por clientes externos o bots de terceros.
+
+===== Estrategias y niveles
+
+* `random_bot`
+* `medium_bot`
+* `hard_bot`
+
+===== Mapeo de dificultad desde el frontend
+
+* Fácil → `random_bot`
+* Media → `medium_bot`
+* Difícil → `hard_bot`
+
+===== Reglas derivadas
+
+* La dificultad seleccionada por el usuario se traduce a un identificador de bot.
+* Si un bot no existe o no puede realizar un movimiento, la API devuelve un error explícito.
+* El motor valida que la partida no esté finalizada antes de sugerir una jugada.
+
+=== Conceptos de datos y despliegue
+
+==== Persistencia local vs despliegue
+
+Se distinguen dos escenarios operativos:
+
+Desarrollo local: MySQL en Docker Compose, inicializado por script SQL y volumen persistente.
+Despliegue: base de datos configurable por variables de entorno (host/usuario/clave/nombre), permitiendo usar base de datos externa en Azure en lugar del contenedor local.
+Consecuencia arquitectónica:
+
+El servicio Users no depende rígidamente de un único proveedor local; depende de parámetros de conexión.
+El contenedor MySQL es una comodidad de desarrollo e integración, no una obligación de producción.
+
+=== Conceptos de desarrollo y operación
+
+==== Reproducibilidad y observabilidad
+
+El sistema prioriza entorno reproducible con contenedores y añade piezas de monitorización para operación:
+
+Arranque de servicios coordinado por Docker Compose.
+Configuración de Prometheus y Grafana para métricas.
+Separación de componentes para facilitar pruebas, despliegue y mantenimiento.
+
+==== Calidad y pruebas como concepto transversal
+
+La estructura de pruebas cubre frontend, backend Node y backend Rust, incluyendo pruebas de integración y e2e. Esto refuerza la trazabilidad entre decisiones de arquitectura y comportamiento real del sistema.

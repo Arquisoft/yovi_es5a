@@ -1,7 +1,7 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-glossary]]
-== Glossary
+== Glosario
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -34,11 +34,116 @@ endif::arc42help[]
 
 [cols="e,2e" options="header"]
 |===
-|Term |Definition
+|Término |Definición
 
-|<Term-1>
-|<definition-1>
+|YOVI
+|Nombre del sistema desarrollado para jugar al juego Y mediante una aplicación web y servicios backend.
 
-|<Term-2>
-|<definition-2>
+|Juego Y
+|Juego abstracto de conexión sobre tablero triangular. Gana quien conecta los tres lados del tablero con fichas de su color.
+
+|YEN (Y-game Exchange Notation)
+|Notación JSON usada para representar una partida en un instante concreto. Es el formato canónico de intercambio entre servicios.
+
+|YGN
+|Notación relacionada con el dominio del juego Y, incluida en el motor como parte del soporte de formatos.
+
+|Layout
+|Campo de YEN que codifica la disposición de fichas por filas del tablero, usando símbolos de jugador y celdas vacías.
+
+|Turn
+|Campo de YEN que indica a qué jugador le corresponde realizar el siguiente movimiento.
+
+|Coordenadas baricéntricas
+|Sistema de coordenadas de tres valores `(x,y,z)` que expresa la distancia de una celda a cada lado del tablero triangular.
+
+|Coordenadas axiales de UI (`q,r`)
+|Coordenadas usadas en el frontend para identificar celdas del tablero. Se transforman a coordenadas baricéntricas en el backend/motor.
+
+|Webapp
+|Aplicación cliente desarrollada con React/Vite que gestiona interacción con el usuario, visualización del tablero y llamadas a APIs.
+
+|Users Service
+|Servicio Node/Express responsable de usuarios, autenticación, persistencia de partidas finalizadas, historial y leaderboard.
+
+|Gamey
+|Módulo Rust que implementa reglas del juego, validación de jugadas, detección de victoria y APIs de bots.
+
+|API versionada (`v1`)
+|Versión de API usada en endpoints del motor de juego/bots para permitir evolución controlada del contrato.
+
+|Bot
+|Agente automático que calcula jugadas válidas a partir del estado de una partida.
+
+|Estrategia de bot
+|Algoritmo concreto usado por un bot para elegir la siguiente jugada.
+
+|`random_bot`
+|Bot de dificultad baja que selecciona movimientos válidos de forma aleatoria.
+
+|`medium_bot`
+|Bot de dificultad media con heurísticas intermedias.
+
+|`hard_bot`
+|Bot de mayor dificultad usado por defecto en la API `play` cuando no se especifica otro bot.
+
+|Dificultad (`Facil`, `Media`, `Dificil`)
+|Nivel seleccionado por el usuario en frontend, mapeado internamente a bots concretos (`random_bot`, `medium_bot`, `hard_bot`).
+
+|JWT (JSON Web Token)
+|Mecanismo de autenticación utilizado para proteger endpoints sensibles mediante tokens firmados.
+
+|Access Token
+|Token JWT de vida corta usado para autorizar peticiones autenticadas.
+
+|Refresh Token
+|Token JWT usado para renovar el access token sin relogin; su uso está sujeto a revocación/rotación de sesión.
+
+|Session Store
+|Componente que mantiene el estado de sesiones de refresh token. En el estado actual se implementa en memoria del proceso.
+
+|`/finished-match`
+|Endpoint del servicio Users para registrar partidas terminadas y calcular/persistir puntuación.
+
+|Score (Puntuación)
+|Valor numérico de rendimiento de partida. En el estado actual se calcula como `boardSize * 10 + max(0, 50 - turnNumber)`.
+
+|Leaderboard
+|Clasificación global de usuarios ordenada por métricas de puntuación y actividad.
+
+|Historial de partidas
+|Conjunto de partidas previas de un usuario, incluyendo modos de juego, resultado y métricas asociadas.
+
+|OpenAPI
+|Especificación del contrato HTTP del servicio Users, publicada para facilitar integración y validación.
+
+|Swagger UI
+|Interfaz web para explorar y probar endpoints descritos en OpenAPI.
+
+|Docker Compose
+|Orquestación local de servicios (webapp, users, gamey, mysql y monitorización) para desarrollo y pruebas reproducibles.
+
+|MySQL local
+|Base de datos levantada en contenedor para desarrollo e integración en entorno local.
+
+|Base de datos en Azure
+|Base de datos usada en despliegue, configurada por variables de entorno y separada del contenedor MySQL local.
+
+|Volumen `mysql_data`
+|Volumen Docker que conserva datos de MySQL entre reinicios de contenedores en entorno local.
+
+|Prometheus
+|Sistema de recolección de métricas usado para observabilidad técnica de los servicios.
+
+|Grafana
+|Herramienta de visualización de métricas y paneles para monitorización operativa.
+
+|Pruebas unitarias
+|Pruebas de componentes/funciones aisladas en frontend, backend Node y motor Rust.
+
+|Pruebas de integración
+|Pruebas de interacción entre módulos o capas (por ejemplo, endpoint + servicio + repositorio).
+
+|Pruebas e2e
+|Pruebas extremo a extremo que validan flujos completos desde perspectiva de usuario.
 |===

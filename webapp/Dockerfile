@@ -10,8 +10,8 @@ RUN npm ci --silent
 COPY . .
 
 # ✅ Defaults a localhost para desarrollo local
-ARG VITE_API_URL="http://158.158.8.82:3000"
-ARG VITE_GAMEY_URL="http://158.158.8.82:4000"
+ARG VITE_API_URL="http://localhost:3000"
+ARG VITE_GAMEY_URL="http://localhost:4000"
 
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_GAMEY_URL=${VITE_GAMEY_URL}

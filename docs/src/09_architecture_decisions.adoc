@@ -1,3 +1,8 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-architecture-decisions]]
+== Decisiones arquitectónicas
+
 === Enfoque y alcance
 
 Este apartado registra decisiones arquitectónicas relevantes, con impacto transversal, coste de cambio elevado o riesgo técnico significativo.
@@ -74,6 +79,7 @@ Conservar la base inicial y evolucionarla incrementalmente, priorizando continui
 
 Positivas: menor tiempo de arranque y estructura común de trabajo.
 Costes: necesidad de revisar supuestos iniciales y endurecer diseño en seguridad, pruebas y contratos.
+
 === ADR-01. YEN como contrato de dominio común
 
 .Contexto
@@ -87,6 +93,7 @@ YEN se establece como representación canónica del estado de partida para inter
 Evita conversiones ambiguas entre capas.
 Permite validación centralizada y pruebas de serialización/deserialización.
 Facilita integración de clientes externos.
+
 === ADR-02. Arquitectura por componentes desacoplados
 
 .Contexto
@@ -103,6 +110,7 @@ Gamey: validación de jugadas, estado de partida y bots.
 Escalado y despliegue por componente.
 Mejor encapsulamiento de responsabilidades.
 Incremento de complejidad de integración (compensado con contratos y tests).
+
 === ADR-03. Lógica de juego y bots centralizada en Rust
 
 .Contexto
@@ -116,6 +124,7 @@ Delegar en Gamey la validación de jugada, control de fin de partida y cálculo 
 Integridad funcional más robusta.
 Menor riesgo de divergencia entre cliente y servidor.
 Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntricas.
+
 === ADR-04. API de juego versionada para integraciones
 
 .Contexto
@@ -129,6 +138,7 @@ Versionar los endpoints del motor de juego (prefijo v1) y soportar petición de 
 Contrato más estable para terceros.
 Cambios futuros pueden introducirse sin romper consumidores existentes.
 Requiere disciplina de versionado en iteraciones posteriores.
+
 === ADR-05. Seguridad con JWT y ciclo de refresh
 
 .Contexto
@@ -141,6 +151,7 @@ Aplicar autenticación basada en token de acceso y token de refresco, con rotaci
 
 Mejora del control de sesión y del riesgo de reutilización de credenciales.
 La persistencia de sesión de refresh actual está orientada a entorno de desarrollo; para escalado horizontal completo se requiere backend compartido de sesiones.
+
 === ADR-06. Persistencia dual según entorno (local vs despliegue)
 
 .Contexto
@@ -156,6 +167,7 @@ Despliegue: conexión a base de datos de Azure mediante variables de entorno.
 Reproducibilidad local con Docker Compose.
 Menor fricción para despliegue real sin depender del contenedor de base de datos local.
 La configuración por entorno se vuelve decisión crítica de operación.
+
 === ADR-07. Modelo de puntuación y ranking
 
 .Contexto
@@ -172,6 +184,7 @@ score = boardSize * 10 + max(0, 50 - turnNumber)
 Métrica simple, trazable y explicable para el usuario.
 Permite ranking global, perfil y vistas centradas en usuario.
 Facilita pruebas de regresión sobre reglas de puntuación.
+
 === ADR-08. Observabilidad incorporada desde la arquitectura
 
 .Contexto
@@ -185,6 +198,7 @@ Instrumentar el backend y desplegar stack de monitorización con Prometheus y Gr
 Visibilidad de salud y rendimiento de servicios.
 Detección temprana de problemas de latencia y errores.
 Coste operativo adicional asumido por el valor en diagnóstico.
+
 === ADR-09. Estrategias múltiples de bot y dificultad seleccionable
 
 .Contexto

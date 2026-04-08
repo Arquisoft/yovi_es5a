@@ -146,4 +146,5 @@ endif::arc42help[]
 
 |Pruebas e2e
 |Pruebas extremo a extremo que validan flujos completos desde perspectiva de usuario.
+
 |===

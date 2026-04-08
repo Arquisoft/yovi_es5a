@@ -12,7 +12,7 @@ function createPlayUrl() {
 function createBotUrl(botId) {
   const url = new URL(GAMEY_BASE_URL);
   url.port = "4001";
-  url.pathname = `/v1/ybot/choose/${botId}`;
+  url.pathname = `/v1/choose/${botId}`;
   return url.toString();
 }
 

@@ -96,6 +96,20 @@ jobs:
           cd webapp
           npm ci
 
+      - name: Install MySQL client
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..15}; do
+            mysqladmin ping -h 127.0.0.1 -uroot -prootpassword && break
+            sleep 2
+          done
+
+      - name: Initialize database
+        run: |
+          mysql -h 127.0.0.1 -uroot -prootpassword yovi_db < users/database/init.sql
+
       - name: Install Playwright browsers
         run: |
           cd webapp

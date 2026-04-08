@@ -7,7 +7,8 @@ async function createUser(username, email, password) {
     throw new Error('Username is required');
   }
   try {
-    const userId = await userRepo.insertUser(username, email, password);
+    const connection = await userRepo.getConnection();
+    const userId = await userRepo.insertUser(username, email, password, connection);
     return `Hello ${username}! Welcome to the course! User created with ID: ${userId}`;
   } catch (err) {
     throw new Error('Database error: ' + err.message);
@@ -15,7 +16,8 @@ async function createUser(username, email, password) {
 }
 
 async function getUserByUsername(username) {
-  const users = await userRepo.getUsersFromDB();
+  const conn = await userRepo.getConnection();
+  const users = await userRepo.getUsersFromDB(conn);
   return users.find(user => user.username === username);
 }
 

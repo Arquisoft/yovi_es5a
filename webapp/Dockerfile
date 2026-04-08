@@ -9,7 +9,7 @@ RUN npm ci --silent
 # Copy sources
 COPY . .
 
-# ✅ Defaults a localhost para desarrollo local
+# Defaults a localhost para desarrollo local
 ARG VITE_API_URL="http://localhost:3000"
 ARG VITE_GAMEY_URL="http://localhost:4000"
 
@@ -21,7 +21,7 @@ RUN npm run build
 FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# ✅ Config nginx para SPA (evita 404 al recargar rutas)
+#(evita 404 al recargar rutas)
 RUN echo 'server { \
     listen 80; \
     root /usr/share/nginx/html; \

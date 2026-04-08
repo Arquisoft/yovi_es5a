@@ -196,7 +196,6 @@ app.post('/auth/logout', async (req, res) => {
 
 app.post('/finished-match', authenticateAccessToken, async (req, res) => {
   const matchSummary = req.body;
-  console.log('Received finished match:', matchSummary);
   const validationError = validateFinishedMatchPayload(matchSummary);
   if (validationError) {
     return res.status(400).json({ message: validationError });

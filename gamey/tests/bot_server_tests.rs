@@ -2,10 +2,12 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
-use gamey::{YBotRegistry, YEN, create_default_state, create_router, state::AppState, RandomBot, MoveResponse, ErrorResponse};
+use gamey::{YBotRegistry, YEN, create_default_state, create_router, run_play_server, run_bot_server, status, state::AppState, RandomBot, MoveResponse, ErrorResponse};
 use http_body_util::BodyExt;
 use std::sync::Arc;
 use tower::ServiceExt;
+use axum::http::HeaderValue;
+use gamey::{play::PlayResponse, create_play_router};
 
 /// Helper to create a test app with the default state
 fn test_app() -> axum::Router {
@@ -317,4 +319,101 @@ async fn test_get_on_choose_endpoint_returns_method_not_allowed() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
+}
+
+// ============================================================================
+// Play endpoint tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_play_endpoint_with_valid_request() {
+    let app = create_play_router(create_default_state());
+
+    let yen = YEN::new(3, 0, vec!['B', 'R'], "./../...".to_string());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/v1/play/random_bot")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_string(&yen).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let play_response: PlayResponse = serde_json::from_slice(&body).unwrap();
+    assert_eq!(play_response.bot_id, "random_bot");
+}
+
+#[tokio::test]
+async fn test_play_endpoint_post_to_play_collection() {
+    let app = create_play_router(create_default_state());
+
+    let yen = YEN::new(3, 0, vec!['B', 'R'], "./../...".to_string());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/v1/play")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_string(&yen).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+}
+
+// ============================================================================
+// CORS header tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_cors_headers_present() {
+    let app = create_router(create_default_state());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("OPTIONS")
+                .uri("/v1/choose/random_bot")
+                .header("Origin", "http://example.com")
+                .header("Access-Control-Request-Method", "POST")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let headers = response.headers();
+    assert_eq!(
+        headers.get("access-control-allow-origin"),
+        Some(&HeaderValue::from_static("*"))
+    );
+}
+
+// ============================================================================
+// Status endpoint returns & IntoResponse coverage
+// ============================================================================
+
+#[tokio::test]
+async fn test_status_function_directly() {
+    use axum::response::IntoResponse;
+    use http_body_util::BodyExt; // <- necesario para `.collect()`
+
+    let resp = crate::status().await.into_response();
+    let (parts, body) = resp.into_parts();
+
+    assert_eq!(parts.status, StatusCode::OK);
+
+    // Convertimos a bytes usando BodyExt
+    let bytes = body.collect().await.unwrap().to_bytes();
+    assert_eq!(&bytes[..], b"OK");
 }

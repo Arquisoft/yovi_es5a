@@ -136,7 +136,11 @@ pub async fn play(
 
 #[cfg(test)]
 mod tests {
+
+    use crate::{YBot, YBotRegistry};
     use super::*;
+    use std::sync::Mutex;
+    use std::sync::Arc;
 
     fn sample_yen() -> YEN {
         YEN::new(3, 0, vec!['B', 'R'], ".../.../...".to_string())
@@ -202,4 +206,183 @@ mod tests {
         assert_eq!(response.bot_id, cloned.bot_id);
         assert_eq!(response.coords, cloned.coords);
     }
+
+    fn build_state_with_registry(registry: YBotRegistry) -> AppState {
+        AppState::new(registry)
+    }
+
+    fn valid_params(bot_id: Option<&str>) -> PlayParams {
+        PlayParams {
+            api_version: "v1".to_string(),
+            bot_id: bot_id.map(|s| s.to_string()),
+        }
+    }
+
+   fn valid_yen() -> YEN {
+        YEN::new(
+            3,
+            0,
+            vec!['R', 'B'],
+            "./.B/.RB".to_string()
+        )
+    }
+
+    fn finished_yen() -> YEN {
+        YEN::new(3, 9, vec!['B', 'R'], "BBB/RRR/BBB".to_string())
+    }
+
+    struct TestBot {
+        name: String,
+        moves: Mutex<Vec<Option<Coordinates>>>,
+    }
+
+    impl TestBot {
+        fn new(name: &str, moves: Vec<Option<Coordinates>>) -> Self {
+            Self {
+                name: name.to_string(),
+                moves: Mutex::new(moves),
+            }
+        }
+    }
+
+    impl YBot for TestBot {
+        fn name(&self) -> &str {
+            &self.name
+        }
+
+        fn choose_move(&self, _board: &GameY) -> Option<Coordinates> {
+            let mut moves = self.moves.lock().unwrap();
+
+            if moves.is_empty() {
+                None
+            } else {
+                moves.remove(0)
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_bot_not_found() {
+        let registry = YBotRegistry::new(); // vacío
+        let state = build_state_with_registry(registry);
+
+        let result = play(
+            State(state),
+            Path(valid_params(Some("ghost"))),
+            Json(valid_yen()),
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_game_already_over() {
+        let registry = YBotRegistry::new();
+        let state = build_state_with_registry(registry);
+
+        let result = play(
+            State(state),
+            Path(valid_params(None)),
+            Json(finished_yen()),
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_bot_without_moves() {
+        let registry = YBotRegistry::new().with_bot(Arc::new(TestBot::new(
+            "hard_bot",                 // nombre del bot
+            vec![None],                 // movimientos que quieres simular
+        )));
+
+        let state = build_state_with_registry(registry);
+
+        let result = play(
+            State(state),
+            Path(valid_params(None)),
+            Json(valid_yen()),
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_bot_skips_occupied_move() {
+        let valid = Coordinates::new(0, 0, 0); // coordenada libre en valid_yen()
+
+        // Primer movimiento del bot: ocupado en el tablero
+        let occupied = Coordinates::new(1, 1, 0); // B en la fila 1
+
+        let bot = TestBot::new(
+            "hard_bot",
+            vec![Some(occupied), Some(valid.clone())],
+        );
+
+        let registry = YBotRegistry::new().with_bot(Arc::new(bot));
+        let state = AppState::new(registry);
+
+        let result = play(
+            State(state),
+            Path(valid_params(None)),
+            Json(valid_yen()),
+        )
+        .await;
+
+        assert!(result.is_ok());
+
+        let Json(res) = result.unwrap();
+        assert_eq!(res.coords, valid); // ahora sí debería elegir el segundo movimiento
+        assert_eq!(res.bot_id, "hard_bot");
+    }
+
+    #[tokio::test]
+    async fn test_successful_play() {
+        let coords = Coordinates::new(1, 1, 1);
+
+        // Creamos el bot con un movimiento válido
+        let bot = TestBot::new("hard_bot", vec![Some(coords.clone())]);
+
+        // Registramos el bot en el registry
+        let registry = YBotRegistry::new().with_bot(Arc::new(bot));
+
+        // Creamos el estado con el registry
+        let state = AppState::new(registry);
+
+        // Llamamos al handler
+        let result = play(
+            State(state),
+            Path(valid_params(None)),
+            Json(valid_yen()),
+        )
+        .await;
+
+        // Comprobaciones
+        assert!(result.is_ok());
+
+        let Json(res) = result.unwrap();
+        assert_eq!(res.coords, coords);
+        assert_eq!(res.bot_id, "hard_bot");
+    }
+
+    #[tokio::test]
+    async fn test_invalid_yen() {
+        let registry = YBotRegistry::new();
+        let state = build_state_with_registry(registry);
+
+        let invalid = YEN::new(3, 0, vec!['B', 'R'], "invalid".to_string());
+
+        let result = play(
+            State(state),
+            Path(valid_params(None)),
+            Json(invalid),
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+    
 }

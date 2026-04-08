@@ -510,5 +510,204 @@ mod tests {
         assert!(debug.contains("Place"));
         assert!(debug.contains("5"));
     }
+
+    #[test]
+    fn test_parse_command_extra_whitespace() {
+        let cmd = parse_command("   3   ", 10);
+        assert_eq!(cmd, Command::Place { idx: 3 });
+    }
+
+    #[test]
+    fn test_parse_command_unknown_command() {
+        let cmd = parse_command("unknown_command", 10);
+        match cmd {
+            Command::Error { message } => {
+                assert!(message.contains("Error parsing"));
+            }
+            _ => panic!("Expected Error"),
+        }
+    }
+
+    #[test]
+    fn test_parse_command_large_number_boundary() {
+        let cmd = parse_command("9", 10);
+        assert_eq!(cmd, Command::Place { idx: 9 });
+    }
+
+    #[test]
+    fn test_parse_idx_upper_bound_minus_one() {
+        assert_eq!(parse_idx("4", 5), Ok(4));
+    }
+
+    #[test]
+    fn test_parse_idx_equal_bound() {
+        let result = parse_idx("5", 5);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_command_save_extra_args() {
+        let cmd = parse_command("save file extra", 10);
+        assert_eq!(
+            cmd,
+            Command::Save {
+                filename: "file".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_command_load_extra_args() {
+        let cmd = parse_command("load file extra", 10);
+        assert_eq!(
+            cmd,
+            Command::Load {
+                filename: "file".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn test_command_error_equality() {
+        let cmd1 = Command::Error {
+            message: "error".to_string(),
+        };
+        let cmd2 = Command::Error {
+            message: "error".to_string(),
+        };
+        assert_eq!(cmd1, cmd2);
+    }
+
+    #[test]
+    fn test_command_none_equality() {
+        assert_eq!(Command::None, Command::None);
+    }
+
+    #[test]
+    fn test_toggle_render_options_flags() {
+        let mut game = GameY::new(3);
+        let player = PlayerId::new(1);
+        let mut render_options = RenderOptions::default();
+
+        // show_coords
+        let prev = render_options.show_3d_coords;
+        process_input(
+            "show_coords",
+            &mut game,
+            &player,
+            &mut render_options,
+            Mode::Human,
+            &RandomBot,
+        )
+        .unwrap();
+        assert_eq!(render_options.show_3d_coords, !prev);
+
+        // show_idx
+        let prev = render_options.show_idx;
+        process_input(
+            "show_idx",
+            &mut game,
+            &player,
+            &mut render_options,
+            Mode::Human,
+            &RandomBot,
+        )
+        .unwrap();
+        assert_eq!(render_options.show_idx, !prev);
+
+        // show_colors
+        let prev = render_options.show_colors;
+        process_input(
+            "show_colors",
+            &mut game,
+            &player,
+            &mut render_options,
+            Mode::Human,
+            &RandomBot,
+        )
+        .unwrap();
+        assert_eq!(render_options.show_colors, !prev);
+    }
+
+    #[test]
+    fn test_process_input_none_command() {
+        let mut game = GameY::new(3);
+        let player = PlayerId::new(1);
+        let mut render_options = RenderOptions::default();
+
+        let result = process_input(
+            "",
+            &mut game,
+            &player,
+            &mut render_options,
+            Mode::Human,
+            &RandomBot,
+        );
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_process_input_help() {
+        let mut game = GameY::new(3);
+        let player = PlayerId::new(1);
+        let mut render_options = RenderOptions::default();
+
+        let result = process_input(
+            "help",
+            &mut game,
+            &player,
+            &mut render_options,
+            Mode::Human,
+            &RandomBot,
+        );
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_apply_move_invalid() {
+        let mut game = GameY::new(3);
+
+        // movimiento inválido: mismo jugador dos veces en misma celda
+        let coords = Coordinates::from_index(0, game.board_size());
+
+        let movement = Movement::Placement {
+            player: PlayerId::new(1),
+            coords,
+        };
+
+        assert!(apply_move(&mut game, movement.clone(), "err"));
+        let result = apply_move(&mut game, movement, "err");
+
+        assert!(!result);
+    }
+
+    #[test]
+    fn test_handle_place_command_basic() {
+        let mut game = GameY::new(3);
+        let bot = RandomBot;
+
+        handle_place_command(
+            &mut game,
+            0,
+            PlayerId::new(1),
+            Mode::Human,
+            &bot,
+        );
+
+        // debería haber al menos un movimiento aplicado
+        assert!(game.history().count() >= 1);
+    }
+
+    #[test]
+    fn test_trigger_bot_move_no_panic() {
+        let mut game = GameY::new(3);
+        let bot = RandomBot;
+
+        // solo comprobar que no hace panic
+        trigger_bot_move(&mut game, &bot);
+    }
+
 }
 

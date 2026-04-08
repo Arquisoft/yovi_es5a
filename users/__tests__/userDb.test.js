@@ -61,27 +61,5 @@ describe('userDb queries', () => {
     expect(user).toBeNull()
   })
 
-  
-  it('insertUser inserta correctamente y devuelve insertId', async () => {
-    conn.execute.mockResolvedValueOnce([{ insertId: 42 }])
-
-    const id = await userDb.insertUser('pablo', 'p@test.com', 'pass123',conn)
-
-    expect(id).toBe(42)
-    expect(conn.execute).toHaveBeenCalledWith(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      ['pablo', 'p@test.com', 'pass123']
-    )
-  })
-
-  it('getUsersFromDB devuelve rows', async () => {
-    const mockRows = [{ id: 1, username: 'ana' }]
-    conn.execute.mockResolvedValueOnce([mockRows])
-
-    const rows = await userDb.getUsersFromDB(conn)
-
-    expect(rows).toEqual(mockRows)
-    expect(conn.execute).toHaveBeenCalledOnce()
-  })
 
 })

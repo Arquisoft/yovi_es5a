@@ -34,7 +34,7 @@ When('I select a specific user', async function () {
 Then('I should see his game historial and global score', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('div.tableWrap', { timeout: 10000 })
+  await page.waitForSelector('div.tableWrap', { state: 'visible', timeout: 10000 })
   const v1 = await page.locator('div.tableWrap').isVisible()
   const noMatches = await page.getByText('Este usuario no tiene partidas.').isVisible()
   assert.ok(noMatches, 'El mensaje de usuario sin partidas no es visible')

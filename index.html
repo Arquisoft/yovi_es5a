@@ -475,6 +475,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_visión_general_del_sistema">5.1. Visión general del sistema</a></li>
 <li><a href="#_nivel_2_del_sistema">5.2. Nivel 2 del sistema</a></li>
+<li><a href="#_nivel_3_del_sistema">5.3. Nivel 3 del sistema</a></li>
 </ul>
 </li>
 <li><a href="#section-runtime-view">6. Vista de Ejecución (Runtime View)</a>
@@ -488,6 +489,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#section-deployment-view">7. Diagrama de despliegue</a>
 <ul class="sectlevel2">
 <li><a href="#_nivel_de_infraestructura_1">7.1. Nivel de infraestructura 1</a></li>
+<li><a href="#_nivel_de_infraestructura_2">7.2. Nivel de infraestructura 2</a></li>
 </ul>
 </li>
 <li><a href="#section-concepts">8. Conceptos Transversales (Cross-cutting Concepts)</a>
@@ -495,25 +497,41 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_resumen_2">8.1. Resumen</a></li>
 <li><a href="#_conceptos_de_dominio">8.2. Conceptos de dominio</a></li>
 <li><a href="#_conceptos_de_puntuación_y_ranking">8.3. Conceptos de puntuación y ranking</a></li>
-<li><a href="#_enfoque_y_alcance">8.4. Enfoque y alcance</a></li>
-<li><a href="#_resumen_de_decisiones_aceptadas">8.5. Resumen de decisiones aceptadas</a></li>
-<li><a href="#_adr_00_base_inicial_docente_y_evolución_del_equipo">8.6. ADR-00. Base inicial docente y evolución del equipo</a></li>
+<li><a href="#_conceptos_de_bots_y_dificultad">8.4. Conceptos de bots y dificultad</a></li>
+<li><a href="#_conceptos_de_datos_y_despliegue">8.5. Conceptos de datos y despliegue</a></li>
+<li><a href="#_conceptos_de_desarrollo_y_operación">8.6. Conceptos de desarrollo y operación</a></li>
 </ul>
 </li>
-<li><a href="#section-quality-scenarios">9. Quality Requirements</a>
+<li><a href="#section-architecture-decisions">9. Decisiones arquitectónicas</a>
 <ul class="sectlevel2">
-<li><a href="#_quality_tree">9.1. Quality Tree</a></li>
-<li><a href="#_quality_scenarios">9.2. Quality Scenarios</a></li>
+<li><a href="#_enfoque_y_alcance">9.1. Enfoque y alcance</a></li>
+<li><a href="#_resumen_de_decisiones_aceptadas">9.2. Resumen de decisiones aceptadas</a></li>
+<li><a href="#_adr_00_base_inicial_docente_y_evolución_del_equipo">9.3. ADR-00. Base inicial docente y evolución del equipo</a></li>
+<li><a href="#_adr_01_yen_como_contrato_de_dominio_común">9.4. ADR-01. YEN como contrato de dominio común</a></li>
+<li><a href="#_adr_02_arquitectura_por_componentes_desacoplados">9.5. ADR-02. Arquitectura por componentes desacoplados</a></li>
+<li><a href="#_adr_03_lógica_de_juego_y_bots_centralizada_en_rust">9.6. ADR-03. Lógica de juego y bots centralizada en Rust</a></li>
+<li><a href="#_adr_04_api_de_juego_versionada_para_integraciones">9.7. ADR-04. API de juego versionada para integraciones</a></li>
+<li><a href="#_adr_05_seguridad_con_jwt_y_ciclo_de_refresh">9.8. ADR-05. Seguridad con JWT y ciclo de refresh</a></li>
+<li><a href="#_adr_06_persistencia_dual_según_entorno_local_vs_despliegue">9.9. ADR-06. Persistencia dual según entorno (local vs despliegue)</a></li>
+<li><a href="#_adr_07_modelo_de_puntuación_y_ranking">9.10. ADR-07. Modelo de puntuación y ranking</a></li>
+<li><a href="#_adr_08_observabilidad_incorporada_desde_la_arquitectura">9.11. ADR-08. Observabilidad incorporada desde la arquitectura</a></li>
+<li><a href="#_adr_09_estrategias_múltiples_de_bot_y_dificultad_seleccionable">9.12. ADR-09. Estrategias múltiples de bot y dificultad seleccionable</a></li>
 </ul>
 </li>
-<li><a href="#section-technical-risks">10. Riesgos y Deuda Técnica</a>
+<li><a href="#section-quality-scenarios">10. Requisitos de calidad</a>
 <ul class="sectlevel2">
-<li><a href="#_enfoque">10.1. Enfoque</a></li>
-<li><a href="#_riesgos_técnicos_priorizados">10.2. Riesgos Técnicos (priorizados)</a></li>
-<li><a href="#_deuda_técnica_priorizada">10.3. Deuda Técnica (priorizada)</a></li>
+<li><a href="#_árbol_de_calidad">10.1. Árbol de calidad</a></li>
+<li><a href="#_escenarios_de_calidad">10.2. Escenarios de calidad</a></li>
 </ul>
 </li>
-<li><a href="#section-glossary">11. Glosario</a></li>
+<li><a href="#section-technical-risks">11. Riesgos y Deuda Técnica</a>
+<ul class="sectlevel2">
+<li><a href="#_enfoque">11.1. Enfoque</a></li>
+<li><a href="#_riesgos_técnicos_priorizados">11.2. Riesgos Técnicos (priorizados)</a></li>
+<li><a href="#_deuda_técnica_priorizada">11.3. Deuda Técnica (priorizada)</a></li>
+</ul>
+</li>
+<li><a href="#section-glossary">12. Glosario</a></li>
 </ul>
 </div>
 </div>
@@ -1411,24 +1429,9 @@ In the best case you will get away with examples or simple signatures.</p>
 </div>
 </div>
 </div>
-<div class="listingblock">
+<div class="imageblock">
 <div class="content">
-<pre>Failed to generate image: Could not load PlantUML. Either require 'asciidoctor-diagram-plantuml' or specify the location of the PlantUML JAR(s) using the 'DIAGRAM_PLANTUML_CLASSPATH' environment variable. Alternatively a PlantUML binary can be provided (plantuml-native in $PATH).
-@startuml
-skinparam monochrome true
-left to right direction
-
-actor User
-
-node "App" {
-}
-
-node "Gamey" {
-}
-
-"User" &lt;--&gt; "App" : Interactúa
-"App" &lt;--&gt; "Gamey" : Gestiona lógica\nmovimientos y bot
-@enduml</pre>
+<img src="./images/Vision%20general.png" alt="Vision general" width="443" height="94">
 </div>
 </div>
 <div class="dlist">
@@ -1547,44 +1550,9 @@ Its headline is the name of the black box.</p>
 <div class="paragraph">
 <p>Visión específica del módulo Yovi del sistema y las responsabilidades de los distintos subsistemas existentes en este.</p>
 </div>
-<div class="listingblock">
+<div class="imageblock">
 <div class="content">
-<pre>Failed to generate image: Could not load PlantUML. Either require 'asciidoctor-diagram-plantuml' or specify the location of the PlantUML JAR(s) using the 'DIAGRAM_PLANTUML_CLASSPATH' environment variable. Alternatively a PlantUML binary can be provided (plantuml-native in $PATH).
-@startuml
-skinparam monochrome true
-left to right direction
-
-actor Usuario
-
-frame "App" {
-  node "WebApp"
-  node "OpenApi"
-  node "Users"
-}
-
-node "Database"
-
-frame "Game Engine" {
-  node "Bot"
-  node "BotServer"
-  node "Core"
-  node "Notation"
-  node "GameServer"
-}
-
-"Usuario" &lt;--&gt; "WebApp" : Interactúa
-"WebApp" &lt;--&gt; "OpenApi" : Comunicarse con el back Node
-"OpenApi" &lt;--&gt; "Users" : Comunicarse con el front
-
-"Usuario" &lt;--&gt; "Database" : Almacena\extrae
-"WebApp" &lt;--&gt; "BotServer" : Comunicarse con los bots
-"WebApp" &lt;--&gt; "GameServer" : Comunicarse con el validador de movimientos
-"Core" &lt;--&gt; "Notation" : Usa YEN
-"BotServer" &lt;--&gt; "Bot" : Usar la lógica de los bots
-"Core" &lt;--&gt; "BotServer" : Arrancar el servidor del bot
-"Core" &lt;--&gt; "GameServer" : Arrancar el servidor del juego
-
-@enduml</pre>
+<img src="./images/Nivel%202.png" alt="Nivel 2" width="992" height="375">
 </div>
 </div>
 <div class="dlist">
@@ -1713,6 +1681,119 @@ part of arc42 for additional levels.</p>
 </div>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_nivel_3_del_sistema">5.3. Nivel 3 del sistema</h3>
+<div class="paragraph">
+<p>Visión más detallada de los subcomponentes internos de los bloques principales definidos en el nivel 2. En este nivel se describen las partes concretas que forman la interfaz web, el backend de usuarios y el motor de juego.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Nivel%203.png" alt="Nivel 3" width="1386" height="1005">
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Motivación</dt>
+<dd>
+<p>Este nivel permite mostrar la estructura interna de los módulos más importantes del sistema con mayor precisión. Así se entiende mejor cómo se organiza el código y cómo se separan responsabilidades entre presentación, servicios, persistencia y lógica de dominio.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>La descomposición facilita el mantenimiento, porque cada bloque queda aislado en una responsabilidad concreta. También ayuda a documentar los puntos más relevantes para evolución futura y para entender dependencias entre distintos módulos.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Componentes</dt>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Nombre</th>
+<th class="tableblock halign-left valign-top">Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pages</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contiene las pantallas principales de la aplicación web y coordina la vista con los servicios.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">components</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Agrupa componentes reutilizables de interfaz como el tablero de juego, distintos menús, &#8230;&#8203;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">services</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Centraliza las llamadas a APIs y la lógica de comunicación con el backend y el motor de juego.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">store</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gestiona el estado actual de la sesión del usuario y del tablero en un momento de una partida.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">parsers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Transforma el estado de una partida a formato YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">header</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Define la cabecera común de navegación y estructura visual.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">auth</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gestiona autenticación y registro de usuarios en el sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">database</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Define el esquema de la base de datos del sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">middleware</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Intercepta peticiones para validación, seguridad y control de flujo.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">repositories</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Encapsula el acceso a datos y abstrae la persistencia.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">services</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Permite interactuar con la base de datos haciendo uso de los repositorios.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">monitoring</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Proporciona trazabilidad, métricas y supervisión del servicio.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bot</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contiene la lógica específica de los distintos bots.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bot_server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Expone la funcionalidad de los bots como servicio.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">core</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementa las reglas del juego, el estado y la validación de movimientos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">game_server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Expone las operaciones principales del motor de juego.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">notation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Convierte y procesa la notación YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Verifica el comportamiento del core y del servidor del bot.</p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1892,37 +1973,9 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 </div>
-<div class="listingblock">
+<div class="imageblock">
 <div class="content">
-<pre>Failed to generate image: Could not load PlantUML. Either require 'asciidoctor-diagram-plantuml' or specify the location of the PlantUML JAR(s) using the 'DIAGRAM_PLANTUML_CLASSPATH' environment variable. Alternatively a PlantUML binary can be provided (plantuml-native in $PATH).
-@startuml
-skinparam monochrome true
-left to right direction
-
-actor Navegador
-
-node "Azure VM (Linux Ubuntu 24.04)" {
-
-    node "Docker" {
-
-        node "WebApp\n(React Front-end)" as WebApp
-
-        node "Users\n(Node Back-end)" as Users
-
-        node "Gamey\n(Rust Game Engine)" as Gamey
-
-        node "Database" as Database
-    }
-}
-
-Navegador &lt;--&gt; WebApp : Interacción UI
-
-WebApp &lt;--&gt; Users : HTTP/JSON
-
-WebApp &lt;--&gt; Gamey : Lógica juego / Bot
-
-Users &lt;--&gt; Database : Persistencia datos
-@enduml</pre>
+<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="940" height="251">
 </div>
 </div>
 <div class="dlist">
@@ -1989,6 +2042,103 @@ continuo de nuestra aplicación.</p>
 </div>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_nivel_de_infraestructura_2">7.2. Nivel de infraestructura 2</h3>
+<div class="paragraph">
+<p>En este nivel se detalla la estructura interna de los elementos de infraestructura definidos en el nivel 1. En particular, se descompone el nodo Azure VM y el entorno Docker para mostrar cómo se organizan los contenedores, servicios auxiliares y la persistencia de datos.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Nivel%20de%20infraestructura%202.png" alt="Nivel de infraestructura 2" width="844" height="368">
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Motivación</dt>
+<dd>
+<p>El sistema se sostiene en una máquina virtual Ubuntu 24.04 en Azure sobre la que se despliega Docker, porque esto simplifica la ejecución aislada de cada servicio y permite reproducir el entorno de forma consistente en despliegues de prueba, integración y producción.
+Los módulos webapp, users y gamey se publican como imágenes independientes, mientras que MySQL actúa como base de datos persistente y Prometheus/Grafana proporcionan la observabilidad del sistema.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>El flujo de despliegue confirma además que cada release pasa por pruebas de Node, Rust y E2E antes de publicar imágenes y actualizar el sistema. Esto refuerza una estrategia de despliegue continua, basada en contenedores y con separación clara entre construcción, publicación y ejecución.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Características de calidad/rendimiento</dt>
+<dd>
+<p>El uso de contenedores independientes mejora la portabilidad y reduce el acoplamiento entre servicios, porque cada bloque se ejecuta con sus dependencias y configuración propias.
+La base de datos MySQL queda aislada como servicio persistente, lo que facilita las tareas de mantenimiento y recuperación sin afectar al resto de componentes.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.
+Además, el despliegue automático desde GitHub Actions favorece tiempos de entrega cortos y una actualización uniforme de los servicios desplegados.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Mapeo de los bloques de construcción a infraestructura</dt>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Elemento de infraestructura</th>
+<th class="tableblock halign-left valign-top">Rol</th>
+<th class="tableblock halign-left valign-top">Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Azure VM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Host físico/virtual con Ubuntu 24.04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ejecuta toda la infraestructura mediante Docker.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Docker</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Motor de contenedores y Docker Compose</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aísla y orquesta los servicios de la solución.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Imagen Docker del front-end React/Vite</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sirve la interfaz de usuario y consume las APIs del sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Imagen Docker del backend Node.js</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gestiona autenticación, lógica de usuarios y acceso a datos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Imagen Docker del motor Rust</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Valida jugadas, gestiona la lógica del juego y la interacción con bots.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MySQL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor de base de datos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persiste usuarios, partidas, puntuaciones y otros datos del sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Prometheus</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor de monitorización</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recoge métricas del backend y del entorno de ejecución.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Grafana</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor de visualización</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Presenta paneles y cuadros de mando a partir de las métricas de Prometheus.</p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -2107,9 +2257,11 @@ Beneficio arquitectónico:</p>
 </div>
 <div class="paragraph">
 <p>Evolucionar reglas o estrategias de bot no obliga a rediseñar frontend.
-Cambios de UX o API no requieren reescribir núcleo algorítmico.
-==== APIs explícitas y contratos estables</p>
+Cambios de UX o API no requieren reescribir núcleo algorítmico.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_apis_explícitas_y_contratos_estables">8.2.5. APIs explícitas y contratos estables</h4>
 <div class="paragraph">
 <p>Cada capacidad se expone por endpoints definidos y estructuras de entrada/salida conocidas. Esto permite pruebas de integración más robustas y facilita uso por clientes externos.</p>
 </div>
@@ -2134,9 +2286,11 @@ Implicaciones:</p>
 <div class="paragraph">
 <p>Tableros mayores elevan puntuación base.
 Resolver en menos turnos mejora puntuación.
-La fórmula evita valores negativos en el término de eficiencia.
-==== Modelo de ranking</p>
+La fórmula evita valores negativos en el término de eficiencia.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_modelo_de_ranking">8.3.2. Modelo de ranking</h4>
 <div class="paragraph">
 <p>El ranking global ordena usuarios por mejor puntuación y aplica criterios de desempate estables. El sistema soporta paginación controlada para evitar respuestas excesivas.</p>
 </div>
@@ -2146,41 +2300,81 @@ La fórmula evita valores negativos en el término de eficiencia.
 <div class="paragraph">
 <p>Page size permitido: 25, 50 o 100.
 Se ofrecen endpoints de leaderboard global, perfil, historial y vista centrada en usuario.
-El histórico separa partidas 1vsbot y 1vs1 para análisis funcional más claro.
-=== Conceptos de bots y dificultad</p>
+El histórico separa partidas 1vsbot y 1vs1 para análisis funcional más claro.</p>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_conceptos_de_bots_y_dificultad">8.4. Conceptos de bots y dificultad</h3>
 <div class="sect3">
-<h4 id="_bots_como_capacidad_transversal_del_sistema">8.3.2. Bots como capacidad transversal del sistema</h4>
+<h4 id="_bots_como_capacidad_transversal_del_sistema">8.4.1. Bots como capacidad transversal del sistema</h4>
 <div class="paragraph">
-<p>El motor Gamey expone bots como servicio HTTP, desacoplando estrategia de juego y presentación. Esto habilita:</p>
+<p>El motor Gamey expone bots como un servicio HTTP, desacoplando la estrategia de juego de la capa de presentación. Esto habilita:</p>
 </div>
-<div class="paragraph">
-<p>Juego humano vs bot en la Webapp.
-Consumo potencial por clientes externos o bots de terceros.
-Estrategias y niveles:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Juego humano vs. bot en la WebApp.</p>
+</li>
+<li>
+<p>Consumo potencial por clientes externos o bots de terceros.</p>
+</li>
+</ul>
 </div>
-<div class="paragraph">
-<p>random_bot
-medium_bot
-hard_bot
-Mapeo de dificultad desde frontend:</p>
-</div>
-<div class="paragraph">
-<p>Facil &#8594; random_bot
-Media &#8594; medium_bot
-Dificil &#8594; hard_bot
-Reglas derivadas:</p>
-</div>
-<div class="paragraph">
-<p>La dificultad seleccionada por usuario se traduce a identificador de bot.
-Si un bot no existe o no puede mover, la API devuelve error explícito.
-El motor valida también que la partida no esté finalizada antes de sugerir jugada.
-=== Conceptos de datos y despliegue</p>
+<div class="sect4">
+<h5 id="_estrategias_y_niveles">Estrategias y niveles</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>random_bot</code></p>
+</li>
+<li>
+<p><code>medium_bot</code></p>
+</li>
+<li>
+<p><code>hard_bot</code></p>
+</li>
+</ul>
 </div>
 </div>
+<div class="sect4">
+<h5 id="_mapeo_de_dificultad_desde_el_frontend">Mapeo de dificultad desde el frontend</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Fácil → <code>random_bot</code></p>
+</li>
+<li>
+<p>Media → <code>medium_bot</code></p>
+</li>
+<li>
+<p>Difícil → <code>hard_bot</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_reglas_derivadas">Reglas derivadas</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>La dificultad seleccionada por el usuario se traduce a un identificador de bot.</p>
+</li>
+<li>
+<p>Si un bot no existe o no puede realizar un movimiento, la API devuelve un error explícito.</p>
+</li>
+<li>
+<p>El motor valida que la partida no esté finalizada antes de sugerir una jugada.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conceptos_de_datos_y_despliegue">8.5. Conceptos de datos y despliegue</h3>
 <div class="sect3">
-<h4 id="_persistencia_local_vs_despliegue">8.3.3. Persistencia local vs despliegue</h4>
+<h4 id="_persistencia_local_vs_despliegue">8.5.1. Persistencia local vs despliegue</h4>
 <div class="paragraph">
 <p>Se distinguen dos escenarios operativos:</p>
 </div>
@@ -2191,29 +2385,38 @@ Consecuencia arquitectónica:</p>
 </div>
 <div class="paragraph">
 <p>El servicio Users no depende rígidamente de un único proveedor local; depende de parámetros de conexión.
-El contenedor MySQL es una comodidad de desarrollo e integración, no una obligación de producción.
-=== Conceptos de desarrollo y operación</p>
+El contenedor MySQL es una comodidad de desarrollo e integración, no una obligación de producción.</p>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_conceptos_de_desarrollo_y_operación">8.6. Conceptos de desarrollo y operación</h3>
 <div class="sect3">
-<h4 id="_reproducibilidad_y_observabilidad">8.3.4. Reproducibilidad y observabilidad</h4>
+<h4 id="_reproducibilidad_y_observabilidad">8.6.1. Reproducibilidad y observabilidad</h4>
 <div class="paragraph">
 <p>El sistema prioriza entorno reproducible con contenedores y añade piezas de monitorización para operación:</p>
 </div>
 <div class="paragraph">
 <p>Arranque de servicios coordinado por Docker Compose.
 Configuración de Prometheus y Grafana para métricas.
-Separación de componentes para facilitar pruebas, despliegue y mantenimiento.
-==== Calidad y pruebas como concepto transversal</p>
+Separación de componentes para facilitar pruebas, despliegue y mantenimiento.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_calidad_y_pruebas_como_concepto_transversal">8.6.2. Calidad y pruebas como concepto transversal</h4>
 <div class="paragraph">
 <p>La estructura de pruebas cubre frontend, backend Node y backend Rust, incluyendo pruebas de integración y e2e. Esto refuerza la trazabilidad entre decisiones de arquitectura y comportamiento real del sistema.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="section-architecture-decisions">9. Decisiones arquitectónicas</h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="_enfoque_y_alcance">8.4. Enfoque y alcance</h3>
+<h3 id="_enfoque_y_alcance">9.1. Enfoque y alcance</h3>
 <div class="paragraph">
 <p>Este apartado registra decisiones arquitectónicas relevantes, con impacto transversal, coste de cambio elevado o riesgo técnico significativo.
 Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio actual.</p>
@@ -2223,7 +2426,7 @@ Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio act
 </div>
 </div>
 <div class="sect2">
-<h3 id="_resumen_de_decisiones_aceptadas">8.5. Resumen de decisiones aceptadas</h3>
+<h3 id="_resumen_de_decisiones_aceptadas">9.2. Resumen de decisiones aceptadas</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 14.2857%;">
@@ -2304,7 +2507,7 @@ Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio act
 </table>
 </div>
 <div class="sect2">
-<h3 id="_adr_00_base_inicial_docente_y_evolución_del_equipo">8.6. ADR-00. Base inicial docente y evolución del equipo</h3>
+<h3 id="_adr_00_base_inicial_docente_y_evolución_del_equipo">9.3. ADR-00. Base inicial docente y evolución del equipo</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>El proyecto parte de una base inicial del laboratorio (plantilla y estructura funcional mínima), con contribuciones tempranas del profesorado, y se amplía después con trabajo del equipo.</p>
@@ -2316,9 +2519,11 @@ Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio act
 <div class="paragraph">
 <div class="title">Consecuencias</div>
 <p>Positivas: menor tiempo de arranque y estructura común de trabajo.
-Costes: necesidad de revisar supuestos iniciales y endurecer diseño en seguridad, pruebas y contratos.
-=== ADR-01. YEN como contrato de dominio común</p>
+Costes: necesidad de revisar supuestos iniciales y endurecer diseño en seguridad, pruebas y contratos.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_01_yen_como_contrato_de_dominio_común">9.4. ADR-01. YEN como contrato de dominio común</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Los requisitos exigen interoperabilidad por JSON y notación YEN entre módulos.</p>
@@ -2331,9 +2536,11 @@ Costes: necesidad de revisar supuestos iniciales y endurecer diseño en segurida
 <div class="title">Consecuencias</div>
 <p>Evita conversiones ambiguas entre capas.
 Permite validación centralizada y pruebas de serialización/deserialización.
-Facilita integración de clientes externos.
-=== ADR-02. Arquitectura por componentes desacoplados</p>
+Facilita integración de clientes externos.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_02_arquitectura_por_componentes_desacoplados">9.5. ADR-02. Arquitectura por componentes desacoplados</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Se requiere al menos una aplicación web en TypeScript y un módulo en Rust para lógica de juego.</p>
@@ -2351,9 +2558,11 @@ Gamey: validación de jugadas, estado de partida y bots.
 <div class="paragraph">
 <p>Escalado y despliegue por componente.
 Mejor encapsulamiento de responsabilidades.
-Incremento de complejidad de integración (compensado con contratos y tests).
-=== ADR-03. Lógica de juego y bots centralizada en Rust</p>
+Incremento de complejidad de integración (compensado con contratos y tests).</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_03_lógica_de_juego_y_bots_centralizada_en_rust">9.6. ADR-03. Lógica de juego y bots centralizada en Rust</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Las reglas del juego Y y la validación de jugadas son el núcleo crítico de consistencia.</p>
@@ -2366,9 +2575,11 @@ Incremento de complejidad de integración (compensado con contratos y tests).
 <div class="title">Consecuencias</div>
 <p>Integridad funcional más robusta.
 Menor riesgo de divergencia entre cliente y servidor.
-Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntricas.
-=== ADR-04. API de juego versionada para integraciones</p>
+Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntricas.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_04_api_de_juego_versionada_para_integraciones">9.7. ADR-04. API de juego versionada para integraciones</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Debe existir API utilizable por bots y consumidores externos.</p>
@@ -2381,9 +2592,11 @@ Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntri
 <div class="title">Consecuencias</div>
 <p>Contrato más estable para terceros.
 Cambios futuros pueden introducirse sin romper consumidores existentes.
-Requiere disciplina de versionado en iteraciones posteriores.
-=== ADR-05. Seguridad con JWT y ciclo de refresh</p>
+Requiere disciplina de versionado en iteraciones posteriores.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_05_seguridad_con_jwt_y_ciclo_de_refresh">9.8. ADR-05. Seguridad con JWT y ciclo de refresh</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Las operaciones sobre datos de usuario y registro de partidas requieren control de acceso.</p>
@@ -2395,9 +2608,11 @@ Requiere disciplina de versionado en iteraciones posteriores.
 <div class="paragraph">
 <div class="title">Consecuencias</div>
 <p>Mejora del control de sesión y del riesgo de reutilización de credenciales.
-La persistencia de sesión de refresh actual está orientada a entorno de desarrollo; para escalado horizontal completo se requiere backend compartido de sesiones.
-=== ADR-06. Persistencia dual según entorno (local vs despliegue)</p>
+La persistencia de sesión de refresh actual está orientada a entorno de desarrollo; para escalado horizontal completo se requiere backend compartido de sesiones.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_06_persistencia_dual_según_entorno_local_vs_despliegue">9.9. ADR-06. Persistencia dual según entorno (local vs despliegue)</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>El equipo necesita rapidez de desarrollo local y despliegue real en Azure.</p>
@@ -2414,9 +2629,11 @@ Despliegue: conexión a base de datos de Azure mediante variables de entorno.
 <div class="paragraph">
 <p>Reproducibilidad local con Docker Compose.
 Menor fricción para despliegue real sin depender del contenedor de base de datos local.
-La configuración por entorno se vuelve decisión crítica de operación.
-=== ADR-07. Modelo de puntuación y ranking</p>
+La configuración por entorno se vuelve decisión crítica de operación.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_07_modelo_de_puntuación_y_ranking">9.10. ADR-07. Modelo de puntuación y ranking</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Los requisitos funcionales incluyen histórico y estadísticas de participación.</p>
@@ -2433,9 +2650,11 @@ La configuración por entorno se vuelve decisión crítica de operación.
 <div class="title">Consecuencias</div>
 <p>Métrica simple, trazable y explicable para el usuario.
 Permite ranking global, perfil y vistas centradas en usuario.
-Facilita pruebas de regresión sobre reglas de puntuación.
-=== ADR-08. Observabilidad incorporada desde la arquitectura</p>
+Facilita pruebas de regresión sobre reglas de puntuación.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_08_observabilidad_incorporada_desde_la_arquitectura">9.11. ADR-08. Observabilidad incorporada desde la arquitectura</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Los criterios de valoración incluyen disponibilidad y monitorización.</p>
@@ -2448,9 +2667,11 @@ Facilita pruebas de regresión sobre reglas de puntuación.
 <div class="title">Consecuencias</div>
 <p>Visibilidad de salud y rendimiento de servicios.
 Detección temprana de problemas de latencia y errores.
-Coste operativo adicional asumido por el valor en diagnóstico.
-=== ADR-09. Estrategias múltiples de bot y dificultad seleccionable</p>
+Coste operativo adicional asumido por el valor en diagnóstico.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_09_estrategias_múltiples_de_bot_y_dificultad_seleccionable">9.12. ADR-09. Estrategias múltiples de bot y dificultad seleccionable</h3>
 <div class="paragraph">
 <div class="title">Contexto</div>
 <p>Se exige más de una estrategia de juego contra máquina y selección de dificultad.</p>
@@ -2470,7 +2691,7 @@ Necesidad de mantener coherencia entre nomenclatura de dificultad y bot real dis
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-quality-scenarios">9. Quality Requirements</h2>
+<h2 id="section-quality-scenarios">10. Requisitos de calidad</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -2495,7 +2716,7 @@ concrete and measurable.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quality_tree">9.1. Quality Tree</h3>
+<h3 id="_árbol_de_calidad">10.1. Árbol de calidad</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2525,132 +2746,14 @@ concrete and measurable.</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p>@startuml
-left to right direction
-skinparam packageStyle rectangle</p>
-</div>
-<div class="paragraph">
-<p>actor Usuario
-actor Bot
-actor "Sistema Externo" as ExtSystem</p>
-</div>
-<div class="paragraph">
-<p>rectangle "MÓDULO 1 - Aplicación Web" {</p>
-</div>
-<div class="literalblock">
+<div class="imageblock">
 <div class="content">
-<pre>package "RF01 - Gestión de Usuarios" {
-  usecase "RF01.1\nRegistrarse" as UC1
-  usecase "RF01.2\nIniciar sesión" as UC2
-  usecase "RF01.3\nMantener sesión activa" as UC3
-  usecase "RF01.4\nCerrar sesión" as UC4
-}</pre>
+<img src="./images/Árbol%20de%20calidad.png" alt="Árbol de calidad" width="937" height="2360">
 </div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>package "RF02 - Interfaz de Juego" {
-  usecase "RF02.1\nInterfaz web interactiva" as UC5
-  usecase "RF02.2\nMostrar tablero en tiempo real" as UC6
-  usecase "RF02.3\nRealizar movimientos" as UC7
-  usecase "RF02.4\nMostrar turno actual" as UC8
-  usecase "RF02.5\nMostrar resultado partida" as UC9
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>package "RF03 - Historial de Partidas" {
-  usecase "RF03.1\nGuardar historial" as UC10
-  usecase "RF03.2\nConsultar partidas anteriores" as UC11
-  usecase "RF03.3\nMostrar estadísticas" as UC12
-  usecase "RF03.3.1\nPartidas ganadas" as UC13
-  usecase "RF03.3.2\nPartidas perdidas" as UC14
-  usecase "RF03.3.3\nPartidas empatadas" as UC15
-  usecase "RF03.3.4\nTiempo total jugado" as UC16
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>  package "RF04 - API Externa para Bots" {
-    usecase "RF04.1\nExponer API" as UC17
-    usecase "RF04.2\nAutenticación API" as UC18
-    usecase "RF04.3\nCrear partida como bot" as UC19
-    usecase "RF04.4\nRealizar movimientos (bot)" as UC20
-    usecase "RF04.5\nObtener estado en formato YEN" as UC21
-  }
-}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>rectangle "MÓDULO 2 - Lógica (Rust)" {</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>package "RF05 - Verificación de Victoria" {
-  usecase "RF05.1\nDeterminar ganador" as UC22
-  usecase "RF05.2\nIdentificar jugador ganador" as UC23
-  usecase "RF05.3\nDetectar empate" as UC24
-  usecase "RF05.4\nResponder en JSON" as UC25
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>package "RF06 - Servicio Web" {
-  usecase "RF06.1\nComunicación remota" as UC26
-  usecase "RF06.2\nVerificar partida ganada" as UC27
-  usecase "RF06.3\nVerificar disponibilidad" as UC28
-  usecase "RF06.4\nRespuestas en JSON" as UC29
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>  package "RF07 - Procesamiento YEN" {
-    usecase "RF07.1\nInterpretar formato YEN" as UC30
-    usecase "RF07.2\nValidar sintaxis YEN" as UC31
-    usecase "RF07.3\nRechazar YEN inválido" as UC32
-  }
-}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>' Relaciones Usuario
-Usuario -&#8594; UC1
-Usuario -&#8594; UC2
-Usuario -&#8594; UC4
-Usuario -&#8594; UC5
-Usuario -&#8594; UC7
-Usuario -&#8594; UC11</p>
-</div>
-<div class="paragraph">
-<p>UC12 .&gt; UC13 : <a href="#include">[include]</a>
-UC12 .&gt; UC14 : <a href="#include">[include]</a>
-UC12 .&gt; UC15 : <a href="#include">[include]</a>
-UC12 .&gt; UC16 : <a href="#include">[include]</a></p>
-</div>
-<div class="paragraph">
-<p>' Relaciones Bot
-Bot -&#8594; UC19
-Bot -&#8594; UC20
-Bot -&#8594; UC21
-Bot -&#8594; UC18</p>
-</div>
-<div class="paragraph">
-<p>' Comunicación entre módulos
-ExtSystem -&#8594; UC26
-UC26 -&#8594; UC22
-UC26 -&#8594; UC30</p>
-</div>
-<div class="paragraph">
-<p>@enduml</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quality_scenarios">9.2. Quality Scenarios</h3>
+<h3 id="_escenarios_de_calidad">10.2. Escenarios de calidad</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -2689,12 +2792,259 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_escenarios_de_rendimiento">10.2.1. Escenarios de rendimiento</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando 100 usuarios inician sesión y acceden simultáneamente al sistema, este mantiene tiempos de respuesta aceptables en la navegación principal.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando 100 usuarios juegan partidas al mismo tiempo, el tablero se actualiza sin bloqueos visibles para el usuario.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un jugador realiza un movimiento, la interfaz refleja el cambio en el tablero en un tiempo coherente.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando la API recibe peticiones concurrentes de bots, el servicio responde sin degradar excesivamente el sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando se consulta el historial de partidas de un usuario con muchas partidas almacenadas, la lista se carga en un tiempo razonable.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP06</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando se solicitan estadísticas básicas, el sistema las calcula y muestra de manera rápida.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP07</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el motor del juego recibe una posición YEN válida, la validación de victoria se completa en un tiempo predecible.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QP08</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando la API devuelve el estado de una partida en formato YEN, la serialización JSON no introduce demasiada latencia.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_escenarios_de_seguridad">10.2.2. Escenarios de seguridad</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QS01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un usuario se registra, la contraseña se almacena con un hash seguro.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QS02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un usuario mantiene una sesión activa, el sistema protege la sesión frente a accesos no autorizados.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QS03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un usuario cierra sesión, la sesión queda invalidada y no puede reutilizarse.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QS04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un bot llama a la API, debe autenticarse antes de crear o modificar partidas.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_escenarios_de_mantenibilidad">10.2.3. Escenarios de mantenibilidad</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QM01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando se añade una nueva funcionalidad, la modificación se cubre con pruebas unitarias.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QM02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un desarrollador incorpora una nueva funcionalidad en cualquier módulo del sistema, el código mantiene una cobertura de código mínima del 70%.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QM03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un nuevo desarrollador revisa el código, puede entender la estructura principal a partir de la documentación del sistema.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_escenarios_de_usabilidad">10.2.4. Escenarios de usabilidad</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QU01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el tablero cambia tras un movimiento, el usuario entiende visualmente qué pieza se ha movido.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QU02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando termina una partida, el usuario identifica de forma inmediata si ha ganado, perdido o empatado.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QU03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el usuario consulta su historial, puede localizar partidas anteriores sin esfuerzo excesivo.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QU04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el usuario usa la plataforma por primera vez, entiende cómo registrarse, iniciar sesión y empezar una partida.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_escenarios_de_interoperabilidad">10.2.5. Escenarios de interoperabilidad</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QI01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando la aplicación web envía una partida al módulo Rust, el intercambio se realiza exclusivamente en JSON con notación YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QI02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando la API devuelve el estado de una partida, el formato es siempre JSON válido.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QI03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un bot crea una partida, recibe una respuesta compatible con el contrato de la API sin necesidad de adaptaciones manuales.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QI04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un bot envía un movimiento, la API interpreta correctamente la estructura JSON acordada.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QI05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el módulo Rust recibe una notación YEN inválida, devuelve un error compatible con el contrato definido.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_escenarios_de_funcionalidad_crítica">10.2.6. Escenarios de funcionalidad crítica</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QF01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un jugador realiza un movimiento legal, el sistema actualiza el estado de la partida correctamente.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QF02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando un jugador realiza un movimiento ilegal, el sistema lo rechaza sin corromper la partida.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QF03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando una partida termina, el sistema registra el resultado en el historial del usuario correcto.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QF04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el módulo Rust analiza una posición YEN con victoria, identifica correctamente al ganador.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QF05</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando el módulo Rust analiza una posición YEN sin ganador, informa correctamente de continuidad.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_escenarios_de_cambio">10.2.7. Escenarios de cambio</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QC01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando se introduce una nueva implementación de un bot, no es necesario reescribir la lógica central.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QC04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Si se sustituyera la base de datos empleada, el front-end no se vería afectado.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QC03</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Si se sustituyera la interfaz web por otra tecnología, el contrato con la API de bots sigue estable.</p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="section-technical-risks">10. Riesgos y Deuda Técnica</h2>
+<h2 id="section-technical-risks">11. Riesgos y Deuda Técnica</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -2720,7 +3070,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_enfoque">10.1. Enfoque</h3>
+<h3 id="_enfoque">11.1. Enfoque</h3>
 <div class="paragraph">
 <p>Este apartado identifica los principales riesgos técnicos y deudas técnicas del estado actual del sistema, ordenados por prioridad. Se incluyen medidas de mitigación para facilitar su seguimiento.</p>
 </div>
@@ -2742,7 +3092,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_riesgos_técnicos_priorizados">10.2. Riesgos Técnicos (priorizados)</h3>
+<h3 id="_riesgos_técnicos_priorizados">11.2. Riesgos Técnicos (priorizados)</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 11.1111%;">
@@ -2821,7 +3171,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </table>
 </div>
 <div class="sect2">
-<h3 id="_deuda_técnica_priorizada">10.3. Deuda Técnica (priorizada)</h3>
+<h3 id="_deuda_técnica_priorizada">11.3. Deuda Técnica (priorizada)</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 11.1111%;">
@@ -2896,7 +3246,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 <div class="sect1">
-<h2 id="section-glossary">11. Glosario</h2>
+<h2 id="section-glossary">12. Glosario</h2>
 <div class="sectionbody">
 <div class="sidebarblock arc42help">
 <div class="content">
@@ -3102,7 +3452,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-03-20 00:22:31 +0100
+Last updated 2026-03-26 00:17:49 +0100
 </div>
 </div>
 </body>

@@ -62,17 +62,17 @@ services:
     networks:
       - monitor-net
 
-  swagger-ui:                                          # ← 2 espacios
-    image: swaggerapi/swagger-ui                       # ← 4 espacios
+  swagger-ui:
+    image: swaggerapi/swagger-ui
     container_name: swagger-ui
     ports:
       - "8080:8080"
     environment:
-      SWAGGER_URLS: >
-        [{"url":"/openapi-users.yaml","name":"Users API"},{"url":"/openapi-gamey.yaml","name":"GameY Bot API"}]
+      SWAGGER_JSON: ""
     volumes:
       - ./users/openapi.yaml:/usr/share/nginx/html/openapi-users.yaml:ro
       - ./gamey/openapi.yaml:/usr/share/nginx/html/openapi-gamey.yaml:ro
+      - ./swagger-initializer.js:/usr/share/nginx/html/swagger-initializer.js:ro
     networks:
       - monitor-net
 

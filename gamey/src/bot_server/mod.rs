@@ -43,11 +43,11 @@ pub fn create_play_router(state: AppState) -> axum::Router {
         .route("/status", axum::routing::get(status))
         .route(
             "/{api_version}/play/{bot_id}",
-            axum::routing::post(play::play),
+            axum::routing::get(play::play),
         )
         .route(
             "/{api_version}/play",
-            axum::routing::post(play::play),
+            axum::routing::get(play::play),
         )
         .with_state(state)
         .layer(cors_layer())

@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import PlayerBadge from "./PlayerBadge";
 import { useBoardStore } from "../store/boardStore";
 
@@ -9,6 +10,7 @@ export default function Header({
   playerOneName,
   playerTwoName,
 }) {
+  const { t } = useTranslation();
   const secondsElapsed = useBoardStore((state) => state.elapsedSeconds);
   const incrementElapsedSeconds = useBoardStore((state) => state.incrementElapsedSeconds);
 
@@ -52,7 +54,9 @@ export default function Header({
 
       {/* Centro: turno y tiempo */}
       <div style={{ textAlign: "center", flex: 1 }}>
-        <div style={{ fontSize: "1rem", fontWeight: 600 }}>Turno {turnNumber}</div>
+        <div style={{ fontSize: "1rem", fontWeight: 600 }}>
+          {t("header.turn", { turnNumber })}
+        </div>
         <div
           style={{
             fontSize: "1.2rem",

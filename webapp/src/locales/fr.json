@@ -1,0 +1,174 @@
+{
+  "app": {
+    "title": "Yovi",
+    "logout": "Se déconnecter",
+    "logoutAria": "Déconnexion",
+    "viewLeaderboard": "Classement",
+    "language": "Langue"
+  },
+  "auth": {
+    "title": "Connexion",
+    "subtitle": "Gérez votre compte ou inscrivez-vous",
+    "ariaLabel": "Onglets d'authentification",
+    "tab": {
+      "login": "Se connecter",
+      "register": "S'inscrire"
+    },
+    "login": {
+      "identifier": "Nom d'utilisateur ou e-mail",
+      "identifierPlaceholder": "Entrez votre nom d'utilisateur ou e-mail",
+      "password": "Mot de passe",
+      "loading": "Connexion en cours...",
+      "submit": "Entrer"
+    },
+    "register": {
+      "email": "E-mail",
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "passwordRepeat": "Répéter le mot de passe",
+      "loading": "Inscription en cours...",
+      "submit": "Créer un compte"
+    },
+    "error": {
+      "missingUsername": "Entrez un nom d'utilisateur ou un e-mail",
+      "missingPassword": "Entrez un mot de passe",
+      "loginFailed": "Échec de la connexion",
+      "invalidEmail": "E-mail invalide",
+      "missingRegisterUsername": "Entrez un nom d'utilisateur",
+      "passwordTooShort": "Le mot de passe est trop court",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "registrationFailed": "Échec de l'inscription",
+      "authenticationFailed": "Authentification échouée",
+      "sessionExpired": "Session expirée"
+    },
+    "success": {
+      "registrationSent": "Inscription envoyée avec succès"
+    }
+  },
+  "leaderboard": {
+    "pageTitle": "Classement",
+    "backToGame": "Retour au jeu",
+    "loading": "Chargement du classement...",
+    "error": {
+      "loadFailed": "Impossible de charger le classement"
+    },
+    "emptyState": "Aucun joueur à afficher.",
+    "position": "Position",
+    "player": "Joueur",
+    "bestScore": "Meilleur score"
+  },
+  "pagination": {
+    "ariaLabel": "Commandes de pagination",
+    "previous": "Précédent",
+    "pageInfo": "Page {{page}} sur {{totalPages}}",
+    "next": "Suivant",
+    "size": "Taille"
+  },
+  "search": {
+    "ariaLabel": "Rechercher des joueurs",
+    "placeholder": "Rechercher des joueurs...",
+    "suggestionsAria": "Suggestions de recherche de joueurs",
+    "errorMessage": "Entrez au moins 3 caractères pour rechercher",
+    "error": {
+      "suggestionsFailed": "Impossible de charger les suggestions.",
+      "userNotFound": "Utilisateur non trouvé"
+    }
+  },
+  "header": {
+    "turn": "Tour {{turnNumber}}"
+  },
+  "startGame": {
+    "title": "Configurer la partie",
+    "modeLabel": "Mode",
+    "mode": {
+      "1vs1": "2 joueurs (1vs1)",
+      "1vsbot": "1 joueur (vs Bot)"
+    },
+    "error": {
+      "noAuth": "Vous n'êtes pas authentifié",
+      "guestNameRequired": "Le nombre d'invité est requis",
+      "sessionExpired": "Session expirée"
+    },
+    "authenticatedPlayer": "Joueur authentifié",
+    "guestNameLabel": "Nom de l'invité",
+    "guestPlaceholder": "Entrez un nom d'invité",
+    "difficultyLabel": "Difficulté",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "boardSizeLabel": "Taille du plateau",
+    "loading": "Création de la partie...",
+    "startButton": "Commencer le jeu"
+  },
+  "game": {
+    "error": {
+      "invalidCell": "Case invalide",
+      "invalidMoveTurnNotChange": "Mouvement invalide : le tour n'a pas changé",
+      "couldNotConfirmMove": "Impossible de confirmer le mouvement",
+      "serverCommunication": "Erreur de communication avec le serveur",
+      "invalidMove": "Mouvement invalide",
+      "couldNotConfirmPlayerMove": "Impossible de confirmer le mouvement du joueur",
+      "noValidBotMove": "Aucun mouvement valide pour le bot",
+      "couldNotApplyBotMove": "Impossible d'appliquer le mouvement du bot",
+      "serverValidationFailed": "Impossible de valider le mouvement sur le serveur.",
+      "serverBotMoveFailed": "Impossible de récupérer le mouvement du bot.",
+      "botCoordsMissing": "La réponse du bot n'inclut pas de coordonnées."
+    },
+    "winMessage": "Vainqueur : {{playerName}}",
+    "defeatTitle": "Défaite",
+    "defeatSubtitle": "Le bot a gagné",
+    "loadingBoard": "Chargement du plateau...",
+    "difficulty": "Difficulté : {{difficulty}}",
+    "suggestionLoading": "Récupération d'une suggestion...",
+    "suggestion": "Suggérer un mouvement",
+    "validating": "Validation du mouvement..."
+  },
+  "victory": {
+    "title": "Résultat",
+    "defaultMessage": "Résultat du match pour {{playerName}}",
+    "defaultSubtitle": "Consultez votre score et terminez.",
+    "unknownScoreError": "Impossible de charger le score",
+    "score": "Score : {{score}}",
+    "loadingScore": "Chargement du score...",
+    "scoreError": "Erreur lors du chargement du score",
+    "finishButton": "Terminer"
+  },
+  "users": {
+    "error": {
+      "scoreCalculationFailed": "Impossible de calculer le score des utilisateurs.",
+      "invalidScoreResponse": "La réponse des utilisateurs n'inclut pas de score valide."
+    }
+  },
+  "profile": {
+    "error": {
+      "loadProfile": "Impossible de charger le profil"
+    },
+    "title": "Utilisateur : {{username}}",
+    "backToGame": "Retour au jeu",
+    "backToLeaderboard": "Retour au classement",
+    "loadingProfile": "Chargement du profil...",
+    "loadingCentered": "Chargement du classement...",
+    "loadingHistory": "Chargement de l'historique...",
+    "noMatchesMessage": "Cet utilisateur n'a aucun match.",
+    "field": {
+      "name": "Nom :",
+      "globalPosition": "Position globale :",
+      "bestScore": "Meilleur score :",
+      "totalGames": "Total des parties :"
+    },
+    "centeredLeaderboardTitle": "Classement centré sur l'utilisateur",
+    "historyTitle": "Historique des matchs",
+    "botMatchesTitle": "Matchs contre le bot",
+    "pvpMatchesTitle": "Matchs Joueur vs Joueur",
+    "table": {
+      "id": "ID",
+      "score": "Score",
+      "board": "Plateau",
+      "turns": "Tours",
+      "difficulty": "Difficulté",
+      "winner": "Vainqueur",
+      "player1": "Joueur 1",
+      "player2": "Joueur 2"
+    }
+  }
+}

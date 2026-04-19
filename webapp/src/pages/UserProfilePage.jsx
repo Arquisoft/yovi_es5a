@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import LeaderboardTable from "../components/LeaderboardTable";
 import PaginationControls from "../components/PaginationControls";
@@ -10,6 +11,7 @@ import {
 import "./Leaderboard.css";
 
 export default function UserProfilePage() {
+  const { t } = useTranslation();
   const { nombreUsuario } = useParams();
   const decodedUsername = decodeURIComponent(nombreUsuario || "");
 
@@ -43,7 +45,7 @@ export default function UserProfilePage() {
       })
       .catch((err) => {
         if (active) {
-          setError(err.message || "No se pudo cargar el perfil");
+          setError(err.message || t("profile.error.loadProfile"));
         }
       })
       .finally(() => {
@@ -146,32 +148,32 @@ export default function UserProfilePage() {
   return (
     <section className="leaderboardPage">
       <header className="pageHeader">
-        <h2>Usuario: {decodedUsername}</h2>
+        <h2>{t("profile.title", { username: decodedUsername })}</h2>
         <div className="pageLinks">
           <Link className="secondaryLinkButton" to="/">
-            Volver al juego
+            {t("profile.backToGame")}
           </Link>
           <Link className="secondaryLinkButton" to="/puntuaciones">
-            Volver a puntuaciones
+            {t("profile.backToLeaderboard")}
           </Link>
         </div>
       </header>
 
       {error ? <p className="errorText">{error}</p> : null}
-      {loadingProfile ? <p className="loadingText">Cargando perfil...</p> : null}
+      {loadingProfile ? <p className="loadingText">{t("profile.loadingProfile")}</p> : null}
 
       {profile ? (
         <article className="profileCard">
-          <p><strong>Nombre:</strong> {profile.username}</p>
-          <p><strong>Posición global:</strong> {profile.globalPosition}</p>
-          <p><strong>Puntuación máxima:</strong> {profile.bestScore}</p>
-          <p><strong>Partidas totales:</strong> {profile.totalGames}</p>
+          <p><strong>{t("profile.field.name")}</strong> {profile.username}</p>
+          <p><strong>{t("profile.field.globalPosition")}</strong> {profile.globalPosition}</p>
+          <p><strong>{t("profile.field.bestScore")}</strong> {profile.bestScore}</p>
+          <p><strong>{t("profile.field.totalGames")}</strong> {profile.totalGames}</p>
         </article>
       ) : null}
 
       <section>
-        <h3>Leaderboard (centrado en usuario)</h3>
-        {loadingCentered ? <p className="loadingText">Cargando clasificación...</p> : null}
+        <h3>{t("profile.centeredLeaderboardTitle")}</h3>
+        {loadingCentered ? <p className="loadingText">{t("profile.loadingCentered")}</p> : null}
         {!loadingCentered ? (
           <LeaderboardTable rows={centered.items || []} highlightedUsername={centered.highlightedUsername} />
         ) : (
@@ -190,25 +192,25 @@ export default function UserProfilePage() {
       </section>
 
       <section>
-        <h3>Historial de partidas</h3>
-        {loadingHistory ? <p className="loadingText">Cargando historial...</p> : null}
+        <h3>{t("profile.historyTitle")}</h3>
+        {loadingHistory ? <p className="loadingText">{t("profile.loadingHistory")}</p> : null}
         {!loadingHistory && !(history.botItems || []).length && !(history.pvpItems || []).length ? (
-          <p className="emptyState">Este usuario no tiene partidas.</p>
+          <p className="emptyState">{t("profile.noMatchesMessage")}</p>
         ) : null}
 
         {!!(history.botItems || []).length ? (
           <>
-            <h4>Partidas contra bot</h4>
+            <h4>{t("profile.botMatchesTitle")}</h4>
             <div className="tableWrap">
               <table className="leaderboardTable">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Puntuación</th>
-                    <th>Tablero</th>
-                    <th>Turnos</th>
-                    <th>Dificultad</th>
-                    <th>Ganador</th>
+                    <th>{t("profile.table.id")}</th>
+                    <th>{t("profile.table.score")}</th>
+                    <th>{t("profile.table.board")}</th>
+                    <th>{t("profile.table.turns")}</th>
+                    <th>{t("profile.table.difficulty")}</th>
+                    <th>{t("profile.table.winner")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,18 +241,18 @@ export default function UserProfilePage() {
 
         {!!(history.pvpItems || []).length ? (
           <>
-            <h4>Partidas jugador contra jugador</h4>
+            <h4>{t("profile.pvpMatchesTitle")}</h4>
             <div className="tableWrap">
               <table className="leaderboardTable">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Puntuación</th>
-                    <th>Tablero</th>
-                    <th>Turnos</th>
-                    <th>Jugador 1</th>
-                    <th>Jugador 2</th>
-                    <th>Ganador</th>
+                    <th>{t("profile.table.id")}</th>
+                    <th>{t("profile.table.score")}</th>
+                    <th>{t("profile.table.board")}</th>
+                    <th>{t("profile.table.turns")}</th>
+                    <th>{t("profile.table.player1")}</th>
+                    <th>{t("profile.table.player2")}</th>
+                    <th>{t("profile.table.winner")}</th>
                   </tr>
                 </thead>
                 <tbody>

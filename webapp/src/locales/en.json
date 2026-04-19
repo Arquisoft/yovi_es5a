@@ -1,0 +1,174 @@
+{
+  "app": {
+    "title": "Yovi",
+    "logout": "Log out",
+    "logoutAria": "Log out",
+    "viewLeaderboard": "Leaderboard",
+    "language": "Language"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Manage your account or register",
+    "ariaLabel": "Authentication tabs",
+    "tab": {
+      "login": "Login",
+      "register": "Register"
+    },
+    "login": {
+      "identifier": "Username or email",
+      "identifierPlaceholder": "Enter your username or email",
+      "password": "Password",
+      "loading": "Signing in...",
+      "submit": "Sign in"
+    },
+    "register": {
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "passwordRepeat": "Repeat password",
+      "loading": "Registering...",
+      "submit": "Create account"
+    },
+    "error": {
+      "missingUsername": "Please enter a username or email",
+      "missingPassword": "Please enter a password",
+      "loginFailed": "Login failed",
+      "invalidEmail": "Invalid email address",
+      "missingRegisterUsername": "Please enter a username",
+      "passwordTooShort": "Password is too short",
+      "passwordMismatch": "Passwords do not match",
+      "registrationFailed": "Registration failed",
+      "authenticationFailed": "Authentication failed",
+      "sessionExpired": "Session expired"
+    },
+    "success": {
+      "registrationSent": "Registration submitted successfully"
+    }
+  },
+  "leaderboard": {
+    "pageTitle": "Leaderboard",
+    "backToGame": "Back to game",
+    "loading": "Loading leaderboard...",
+    "error": {
+      "loadFailed": "Failed to load leaderboard"
+    },
+    "emptyState": "No players to display.",
+    "position": "Position",
+    "player": "Player",
+    "bestScore": "Best score"
+  },
+  "pagination": {
+    "ariaLabel": "Pagination controls",
+    "previous": "Previous",
+    "pageInfo": "Page {{page}} of {{totalPages}}",
+    "next": "Next",
+    "size": "Size"
+  },
+  "search": {
+    "ariaLabel": "Search players",
+    "placeholder": "Search players...",
+    "suggestionsAria": "Player search suggestions",
+    "errorMessage": "Please enter at least 3 characters to search",
+    "error": {
+      "suggestionsFailed": "Unable to load suggestions.",
+      "userNotFound": "User not found"
+    }
+  },
+  "header": {
+    "turn": "Turn {{turnNumber}}"
+  },
+  "startGame": {
+    "title": "Configure game",
+    "modeLabel": "Mode",
+    "mode": {
+      "1vs1": "2 players (1vs1)",
+      "1vsbot": "1 player (1vsbot)"
+    },
+    "error": {
+      "noAuth": "You are not authenticated",
+      "guestNameRequired": "Guest name is required",
+      "sessionExpired": "Session expired"
+    },
+    "authenticatedPlayer": "Authenticated player",
+    "guestNameLabel": "Guest name",
+    "guestPlaceholder": "Enter a guest name",
+    "difficultyLabel": "Difficulty",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "boardSizeLabel": "Board size",
+    "loading": "Creating game...",
+    "startButton": "Start game"
+  },
+  "game": {
+    "error": {
+      "invalidCell": "Invalid cell",
+      "invalidMoveTurnNotChange": "Invalid move: turn did not change",
+      "couldNotConfirmMove": "Could not confirm move",
+      "serverCommunication": "Server communication error",
+      "invalidMove": "Invalid move",
+      "couldNotConfirmPlayerMove": "Could not confirm player move",
+      "noValidBotMove": "No valid move for bot",
+      "couldNotApplyBotMove": "Could not apply bot move",
+      "serverValidationFailed": "Unable to validate the move on the server.",
+      "serverBotMoveFailed": "Unable to retrieve the bot move.",
+      "botCoordsMissing": "Bot response did not include coordinates."
+    },
+    "winMessage": "Winner: {{playerName}}",
+    "defeatTitle": "Defeat",
+    "defeatSubtitle": "The bot won",
+    "loadingBoard": "Loading board...",
+    "difficulty": "Difficulty: {{difficulty}}",
+    "suggestionLoading": "Fetching suggestion...",
+    "suggestion": "Suggest move",
+    "validating": "Validating move..."
+  },
+  "victory": {
+    "title": "Result",
+    "defaultMessage": "Match result for {{playerName}}",
+    "defaultSubtitle": "Review your score and finish.",
+    "unknownScoreError": "Unable to load score",
+    "score": "Score: {{score}}",
+    "loadingScore": "Loading score...",
+    "scoreError": "Error loading score",
+    "finishButton": "Finish"
+  },
+  "users": {
+    "error": {
+      "scoreCalculationFailed": "Unable to calculate the score on users.",
+      "invalidScoreResponse": "Users response did not include a valid score."
+    }
+  },
+  "profile": {
+    "error": {
+      "loadProfile": "Unable to load profile"
+    },
+    "title": "User: {{username}}",
+    "backToGame": "Back to game",
+    "backToLeaderboard": "Back to leaderboard",
+    "loadingProfile": "Loading profile...",
+    "loadingCentered": "Loading leaderboard...",
+    "loadingHistory": "Loading history...",
+    "noMatchesMessage": "This user has no matches.",
+    "field": {
+      "name": "Name:",
+      "globalPosition": "Global position:",
+      "bestScore": "Best score:",
+      "totalGames": "Total games:"
+    },
+    "centeredLeaderboardTitle": "Leaderboard centered on user",
+    "historyTitle": "Match history",
+    "botMatchesTitle": "Matches against bot",
+    "pvpMatchesTitle": "Player versus player matches",
+    "table": {
+      "id": "ID",
+      "score": "Score",
+      "board": "Board",
+      "turns": "Turns",
+      "difficulty": "Difficulty",
+      "winner": "Winner",
+      "player1": "Player 1",
+      "player2": "Player 2"
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 const USERS_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
   "http://localhost:3000";
@@ -25,7 +27,7 @@ async function requestJson(path, payload) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.error || "Error de autenticación");
+    throw new Error(data?.message || data?.error || i18n.t("auth.error.authenticationFailed"));
   }
 
   return data;

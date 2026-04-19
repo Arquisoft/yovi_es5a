@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 import Header from "../header/Header";
 import { useBoardStore } from "../store/boardStore";
@@ -16,6 +17,7 @@ export default function GameBoard() {
     state.turnNumber % 2 === 1 ? "player1" : "player2"
   );
   const playTurn = useBoardStore((state) => state.playTurn);
+  const { t } = useTranslation();
   const setCellOwner = useBoardStore((state) => state.setCellOwner);
   const nextTurn = useBoardStore((state) => state.nextTurn);
   const gameMode = useBoardStore((state) => state.gameMode);
@@ -94,7 +96,7 @@ export default function GameBoard() {
       if (gameMode === "1vs1") {
         const selectedCell = parseCellId(id);
         if (!selectedCell) {
-          setTurnError("Celda seleccionada inválida.");
+          setTurnError(t("game.error.invalidCell"));
           return;
         }
         setIsSubmittingTurn(true);
@@ -102,13 +104,13 @@ export default function GameBoard() {
           const board = boardToYen({ size, turnNumber, cells });
           const result = await validateTwoPlayerMove({ board, selectedCell });
           if (!result.isValidMove) {
-            setTurnError(result.message || "Movimiento inválido. El turno no cambia.");
+            setTurnError(result.message || t("game.error.invalidMoveTurnNotChange"));
             setSelectedId(null);
             return;
           }
           const moved = setCellOwner(id, currentPlayer);
           if (!moved) {
-            setTurnError("No se pudo confirmar el movimiento.");
+            setTurnError(t("game.error.couldNotConfirmMove"));
             return;
           }
           setSelectedId(null);
@@ -117,9 +119,7 @@ export default function GameBoard() {
               currentPlayer === "player1" ? players.player1Name : players.player2Name;
             const winner = currentPlayer === "player1" ? "player" : "guest";
             setGameOver({
-              title: "¡Victoria!",
-              message: `${winnerName} ha ganado la partida.`,
-              subtitle: "Enhorabuena por esta partida.",
+              message: t("game.winMessage", { playerName: winnerName }),
               matchSummary: {
                 mode: "1vs1",
                 elapsedSeconds,
@@ -136,7 +136,7 @@ export default function GameBoard() {
           nextTurn();
         } catch (error) {
           setTurnError(
-            error instanceof Error ? error.message : "Error de comunicación con el servidor."
+            error instanceof Error ? error.message : t("game.error.serverCommunication")
           );
         } finally {
           setIsSubmittingTurn(false);
@@ -154,7 +154,7 @@ export default function GameBoard() {
       // ── Modo 1vsBot ──────────────────────────────────────────────────────
       const selectedCell = parseCellId(id);
       if (!selectedCell) {
-        setTurnError("Celda seleccionada inválida.");
+        setTurnError(t("game.error.invalidCell"));
         return;
       }
       setIsSubmittingTurn(true);
@@ -162,22 +162,20 @@ export default function GameBoard() {
         const boardBeforeMove = boardToYen({ size, turnNumber, cells });
         const result = await validateTwoPlayerMove({ board: boardBeforeMove, selectedCell });
         if (!result.isValidMove) {
-          setTurnError(result.message || "Movimiento inválido.");
+          setTurnError(result.message || t("game.error.invalidMove"));
           setSelectedId(null);
           return;
         }
         const playerMoved = setCellOwner(id, "player1");
         if (!playerMoved) {
-          setTurnError("No se pudo confirmar el movimiento del jugador.");
+          setTurnError(t("game.error.couldNotConfirmPlayerMove"));
           setSelectedId(null);
           return;
         }
         setSelectedId(null);
         if (result.hasWon) {
           setGameOver({
-            title: "¡Victoria!",
-            message: `${players.player1Name} ha ganado la partida.`,
-            subtitle: "Enhorabuena por esta partida.",
+            message: t("game.winMessage", { playerName: players.player1Name }),
             matchSummary: {
               mode: "1vsbot",
               elapsedSeconds,
@@ -208,7 +206,7 @@ export default function GameBoard() {
           typeof botCoords.y !== "number" ||
           typeof botCoords.z !== "number"
         ) {
-          setTurnError("El servidor no devolvió una jugada válida del bot.");
+          setTurnError(t("game.error.noValidBotMove"));
           return;
         }
 
@@ -216,15 +214,15 @@ export default function GameBoard() {
         const botCellId = `${botCell.q},${botCell.r}`;
         const botMoved = setCellOwner(botCellId, "player2");
         if (!botMoved) {
-          setTurnError("No se pudo aplicar el movimiento del bot en el tablero.");
+          setTurnError(t("game.error.couldNotApplyBotMove"));
           return;
         }
 
         if (botResult.hasWon) {
           setGameOver({
-            title: "Derrota",
-            message: `${players.player2Name} ha ganado la partida.`,
-            subtitle: "El bot ha encontrado una jugada ganadora.",
+            title: t("game.defeatTitle"),
+            message: t("game.winMessage", { playerName: players.player2Name }),
+            subtitle: t("game.defeatSubtitle"),
             matchSummary: {
               mode: "1vsbot",
               elapsedSeconds,
@@ -242,7 +240,7 @@ export default function GameBoard() {
         nextTurn();
       } catch (error) {
         setTurnError(
-          error instanceof Error ? error.message : "Error de comunicación con el servidor."
+          error instanceof Error ? error.message : t("game.error.serverCommunication")
         );
       } finally {
         setIsSubmittingTurn(false);
@@ -265,7 +263,7 @@ export default function GameBoard() {
     ]
   );
 
-  if (!cells?.length) return <p>Cargando tablero...</p>;
+  if (!cells?.length) return <p>{t("game.loadingBoard")}</p>;
 
   const showSuggestionPanel = gameMode === "1vsbot" || gameMode === "1vs1";
 
@@ -274,7 +272,7 @@ export default function GameBoard() {
 
       {/* Dificultad — solo en modo bot */}
       {gameMode === "1vsbot" && difficulty ? (
-        <p className="dificultad">Dificultad: {difficulty}</p>
+        <p className="dificultad">{t("game.difficulty", { difficulty })}</p>
       ) : null}
 
       {/* Header con badges de jugadores */}
@@ -312,7 +310,7 @@ export default function GameBoard() {
                 <span className="suggestionBtn__icon">💡</span>
               )}
               <span className="suggestionBtn__label">
-                {isFetchingSuggestion ? "Buscando..." : "Sugerencia"}
+                {isFetchingSuggestion ? t("game.suggestionLoading") : t("game.suggestion")}
               </span>
             </button>
           </div>
@@ -326,7 +324,7 @@ export default function GameBoard() {
             showValidating || turnError ? "isVisible" : ""
           } ${turnError && !showValidating ? "isError" : ""}`}
         >
-          {showValidating ? "Validando..." : turnError || "\u00A0"}
+          {showValidating ? t("game.validating") : turnError || "\u00A0"}
         </p>
       </div>
 

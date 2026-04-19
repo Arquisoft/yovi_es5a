@@ -38,6 +38,14 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+function sendError(res, status, code, text, key = "error") {
+  return res.status(status).json({ [key]: text, code });
+}
+
+function sendErrorFromException(res, err, key = "error") {
+  return res.status(err.statusCode || 400).json({ [key]: err.message, code: err.code || "UNEXPECTED_ERROR" });
+}
+
 function validateFinishedMatchPayload(matchSummary) {
   if (!matchSummary || typeof matchSummary !== 'object') {
     return 'Datos de partida requeridos';
@@ -93,17 +101,17 @@ app.post('/createuser', async (req, res) => {
   const { username, email, password } = req.body;
   try {
     if (!username) {
-      return res.status(400).json({ error: 'Faltan el usuario' });
+      return sendError(res, 400, 'MISSING_USERNAME', 'Faltan el usuario');
     }
     if (!email) {
-      return res.status(400).json({ error: 'Faltan el correo electrónico' });
+      return sendError(res, 400, 'MISSING_EMAIL', 'Faltan el correo electrónico');
     }
     if (!password) {
-      return res.status(400).json({ error: 'Faltan la contraseña' });
+      return sendError(res, 400, 'MISSING_PASSWORD', 'Faltan la contraseña');
     }
 
     if (await userService.resolveUserByExactEmail(email)) {
-      return res.status(400).json({ error: 'El email ya está registrado' });
+      return sendError(res, 400, 'EMAIL_ALREADY_REGISTERED', 'El email ya está registrado');
     }
 
     // bcrypt ya está importado al inicio del módulo
@@ -113,7 +121,7 @@ app.post('/createuser', async (req, res) => {
     res.status(200).json({ message: 'Usuario creado correctamente' });
   } catch (err) {
     console.error('Error:', err.message);
-    res.status(400).json({ error: err.message });
+    return sendErrorFromException(res, err);
   }
 });
 
@@ -121,18 +129,18 @@ app.post('/auth/login', async (req, res) => {
   const { identifier, password } = req.body;
   try {
     if (!identifier || !password) {
-      return res.status(400).json({ error: 'Faltan datos' });
+      return sendError(res, 400, 'MISSING_LOGIN_DATA', 'Faltan datos');
     }
 
     const user = await userService.resolveUserByExactUsername(identifier);
     if (!user) {
-      return res.status(400).json({ error: 'Usuario no encontrado' });
+      return sendError(res, 400, 'USER_NOT_FOUND', 'Usuario no encontrado');
     }
 
     // Compara la contraseña proporcionada con el hash almacenado en la base de datos
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ error: 'Usuario o Contraseña incorrecta' });
+      return sendError(res, 400, 'INVALID_CREDENTIALS', 'Usuario o Contraseña incorrecta');
     }
 
     const tokens = tokenService.issueTokenPair({ userId: user.id, username: user.username });
@@ -141,7 +149,7 @@ app.post('/auth/login', async (req, res) => {
       ...tokens,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendErrorFromException(res, err);
   }
 });
 
@@ -156,7 +164,7 @@ app.post('/auth/refresh', async (req, res) => {
     const rotatedTokens = tokenService.rotateRefreshToken(refreshToken);
     return res.status(200).json(rotatedTokens);
   } catch (err) {
-    return res.status(err.statusCode || 401).json({ message: err.message });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 
@@ -164,13 +172,13 @@ app.post('/auth/register', async (req, res) => {
   const { email, username, password, confirmPassword } = req.body;
   try {
     if (!email || !username || !password || !confirmPassword) {
-      return res.status(400).json({ error: 'Faltan datos' });
+      return sendError(res, 400, 'MISSING_REGISTRATION_DATA', 'Faltan datos');
     }
     if (password !== confirmPassword) {
-      return res.status(400).json({ error: 'Las contraseñas no coinciden' });
+      return sendError(res, 400, 'PASSWORDS_MISMATCH', 'Las contraseñas no coinciden');
     }
     if (await userService.resolveUserByExactEmail(email)) {
-      return res.status(400).json({ error: 'El email ya está registrado' });
+      return sendError(res, 400, 'EMAIL_ALREADY_REGISTERED', 'El email ya está registrado');
     }
 
     // Hashear la contraseña antes de guardarla en la base de datos
@@ -206,7 +214,7 @@ app.post('/finished-match', authenticateAccessToken, async (req, res) => {
     return res.json({ score, saved: true, gameId });
   } catch (err) {
     console.error('Error al finalizar partida:', err.message);
-    return res.status(err.statusCode || 500).json({ message: err.message });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 
@@ -219,9 +227,7 @@ app.get('/leaderboard', async (req, res) => {
     return res.json(response);
   } catch (err) {
     console.error('Error en leaderboard:', err.message);
-    return res.status(err.statusCode || 500).json({
-      message: err.message || 'Error al obtener leaderboard',
-    });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 

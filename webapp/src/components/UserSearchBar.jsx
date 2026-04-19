@@ -1,9 +1,11 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { fetchUserSuggestions, resolveUserExact } from "../services/leaderboardApi";
 import useDebouncedValue from "../hooks/useDebouncedValue";
 
 export default function UserSearchBar() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = React.useState("");
   const [suggestions, setSuggestions] = React.useState([]);
@@ -35,7 +37,7 @@ export default function UserSearchBar() {
           return;
         }
         setSuggestions([]);
-        setError("No se pudieron cargar sugerencias.");
+        setError(t("search.error.suggestionsFailed"));
       }
     }
 
@@ -57,7 +59,7 @@ export default function UserSearchBar() {
       const response = await resolveUserExact({ username: normalized });
       navigate(`/user/${encodeURIComponent(response.username)}`);
     } catch {
-      setError("Usuario no encontrado");
+      setError(t("search.error.userNotFound"));
     }
   }
 
@@ -69,18 +71,18 @@ export default function UserSearchBar() {
     <div className="searchWrap">
       <form onSubmit={handleSubmit}>
         <input
-          aria-label="Buscar usuario"
+          aria-label={t("search.ariaLabel")}
           className="searchInput"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar usuario..."
+          placeholder={t("search.placeholder")}
         />
       </form>
 
       {error ? <p className="errorText">{error}</p> : null}
 
       {suggestions.length ? (
-        <ul className="suggestionsList" role="listbox" aria-label="Sugerencias de usuarios">
+        <ul className="suggestionsList" role="listbox" aria-label={t("search.suggestionsAria")}> 
           {suggestions.map((username) => (
             <li key={username}>
               <button type="button" onClick={() => handleSuggestionClick(username)}>

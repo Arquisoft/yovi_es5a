@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 const GAMEY_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_GAMEY_URL) ||
   "http://localhost:4000";
@@ -46,7 +48,7 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || "No se pudo validar el movimiento en el servidor.");
+    throw new Error(data?.message || i18n.t("game.error.serverValidationFailed"));
   }
 
   return {
@@ -74,11 +76,11 @@ export async function requestBotMove({ board, difficulty = "Facil" }) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || "No se pudo obtener el movimiento del bot.");
+    throw new Error(data?.message || i18n.t("game.error.serverBotMoveFailed"));
   }
 
   if (!data?.coords) {
-    throw new Error("La respuesta del bot no incluye coordenadas.");
+    throw new Error(i18n.t("game.error.botCoordsMissing"));
   }
 
   return {

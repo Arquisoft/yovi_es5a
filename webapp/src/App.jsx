@@ -1,9 +1,11 @@
 import React from 'react';
 import "./App.css";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import StartGameForm from "./components/StartGameForm";
 import GameBoard from "./components/GameBoard";
+import LanguageSelector from "./components/LanguageSelector";
 import { useBoardStore } from "./store/boardStore";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
@@ -39,22 +41,24 @@ function HomePage() {
     }
   };
 
+  const { t } = useTranslation();
+
   return (
     <div className="App">
       <div className="topBar">
-        <button className="logoutButton" onClick={handleLogout} aria-label="Cerrar sesión">
+        <button className="logoutButton" onClick={handleLogout} aria-label={t("app.logoutAria")}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          Salir
+          {t("app.logout")}
         </button>
       </div>
 
       <div className="homeHero">
-        <h1 className="homeTitle">Juego Y</h1>
+        <h1 className="homeTitle">{t("app.title")}</h1>
         {user ? (
           <p className="homeSessionBadge">
             <span className="homeSessionBadge__dot" />
@@ -63,7 +67,7 @@ function HomePage() {
         ) : null}
         <div className="homeActions">
           <Link className="primaryLinkButton" to="/puntuaciones">
-            Ver puntuaciones
+            {t("app.viewLeaderboard")}
           </Link>
         </div>
       </div>
@@ -73,21 +77,27 @@ function HomePage() {
 }
 
 
+
 function App() {
   return (
-    <Routes>
-      <Route path="/auth" element={<AuthPage />} />
-      <Route
-        path="/"
-        element={(
-          <RequireAuth>
-            <HomePage />
-          </RequireAuth>
-        )}
-      />
-      <Route path="/puntuaciones" element={<LeaderboardPage />} />
-      <Route path="/user/:nombreUsuario" element={<UserProfilePage />} />
-    </Routes>
+    <>
+      <div className="globalLanguageSelector">
+        <LanguageSelector />
+      </div>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route
+          path="/"
+          element={(
+            <RequireAuth>
+              <HomePage />
+            </RequireAuth>
+          )}
+        />
+        <Route path="/puntuaciones" element={<LeaderboardPage />} />
+        <Route path="/user/:nombreUsuario" element={<UserProfilePage />} />
+      </Routes>
+    </>
   );
 }
 

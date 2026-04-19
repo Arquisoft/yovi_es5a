@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { login, register } from "../services/authApi";
 import { useSessionStore } from "../store/sessionStore";
@@ -17,6 +18,7 @@ function isEmail(value) {
 
 
 export default function AuthPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const setSession = useSessionStore((state) => state.setSession);
 
@@ -43,12 +45,12 @@ export default function AuthPage() {
     clearMessages();
 
     if (!loginIdentifier.trim()) {
-      setError("Debes indicar un usuario.");
+      setError(t("auth.error.missingUsername"));
       return;
     }
 
     if (!loginPassword.trim()) {
-      setError("Debes indicar la contraseña.");
+      setError(t("auth.error.missingPassword"));
       return;
     }
 
@@ -68,7 +70,7 @@ export default function AuthPage() {
       });
       navigate("/");
     } catch (err) {
-      setError(err.message || "No se pudo iniciar sesión.");
+      setError(err.message || t("auth.error.loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -79,22 +81,22 @@ export default function AuthPage() {
     clearMessages();
 
     if (!isEmail(registerEmail)) {
-      setError("Debes indicar un correo electrónico válido.");
+      setError(t("auth.error.invalidEmail"));
       return;
     }
 
     if (!registerUsername.trim()) {
-      setError("Debes indicar el nombre de usuario.");
+      setError(t("auth.error.missingRegisterUsername"));
       return;
     }
 
     if (registerPassword.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
+      setError(t("auth.error.passwordTooShort"));
       return;
     }
 
     if (registerPassword !== registerPasswordRepeat) {
-      setError("Las contraseñas no coinciden.");
+      setError(t("auth.error.passwordMismatch"));
       return;
     }
 
@@ -107,9 +109,9 @@ export default function AuthPage() {
         confirmPassword: registerPasswordRepeat,
       });
       setActiveTab("login");
-      setSuccessMessage("Registro enviado. Ya puedes iniciar sesión.");
+      setSuccessMessage(t("auth.success.registrationSent"));
     } catch (err) {
-      setError(err.message || "No se pudo completar el registro.");
+      setError(err.message || t("auth.error.registrationFailed"));
     } finally {
       setLoading(false);
     }
@@ -119,11 +121,11 @@ export default function AuthPage() {
     <section className="authPage">
       <article className="authCard">
         <header className="authHeader">
-          <h1 className="authTitle">Juego Y</h1>
-          <p className="authSubtitle">Accede para empezar la partida</p>
+          <h1 className="authTitle">{t("auth.title")}</h1>
+          <p className="authSubtitle">{t("auth.subtitle")}</p>
         </header>
 
-        <div className="authTabs" role="tablist" aria-label="Autenticación">
+        <div className="authTabs" role="tablist" aria-label={t("auth.ariaLabel")}> 
           <button
             type="button"
             role="tab"
@@ -134,7 +136,7 @@ export default function AuthPage() {
               clearMessages();
             }}
           >
-            Iniciar sesión
+            {t("auth.tab.login")}
           </button>
           <button
             data-testid="tab-register"
@@ -147,22 +149,22 @@ export default function AuthPage() {
               clearMessages();
             }}
           >
-            Registro
+            {t("auth.tab.register")}
           </button>
         </div>
 
         {activeTab === "login" ? (
           <form className="authForm" onSubmit={handleLoginSubmit}>
-            <label htmlFor="identifier">Usuario</label>
+            <label htmlFor="identifier">{t("auth.login.identifier")}</label>
             <input
               id="identifier"
               value={loginIdentifier}
               onChange={(event) => setLoginIdentifier(event.target.value)}
-              placeholder="usuario"
+              placeholder={t("auth.login.identifierPlaceholder")}
               autoComplete="username"
             />
 
-            <label htmlFor="loginPassword">Contraseña</label>
+            <label htmlFor="loginPassword">{t("auth.login.password")}</label>
             <input
               id="loginPassword"
               type="password"
@@ -172,12 +174,12 @@ export default function AuthPage() {
             />
 
             <button type="submit" className="authSubmit" disabled={loading}>
-              {loading ? "Comprobando..." : "Entrar"}
+              {loading ? t("auth.login.loading") : t("auth.login.submit")}
             </button>
           </form>
         ) : (
           <form className="authForm" onSubmit={handleRegisterSubmit}>
-            <label htmlFor="registerEmail">Correo electrónico</label>
+            <label htmlFor="registerEmail">{t("auth.register.email")}</label>
             <input
               id="registerEmail"
               type="email"
@@ -186,7 +188,7 @@ export default function AuthPage() {
               autoComplete="email"
             />
 
-            <label htmlFor="registerUsername">Nombre de usuario</label>
+            <label htmlFor="registerUsername">{t("auth.register.username")}</label>
             <input
               id="registerUsername"
               value={registerUsername}
@@ -194,7 +196,7 @@ export default function AuthPage() {
               autoComplete="username"
             />
 
-            <label htmlFor="registerPassword">Contraseña</label>
+            <label htmlFor="registerPassword">{t("auth.register.password")}</label>
             <input
               id="registerPassword"
               type="password"
@@ -203,7 +205,7 @@ export default function AuthPage() {
               autoComplete="new-password"
             />
 
-            <label htmlFor="registerPasswordRepeat">Repite la contraseña</label>
+            <label htmlFor="registerPasswordRepeat">{t("auth.register.passwordRepeat")}</label>
             <input
               id="registerPasswordRepeat"
               type="password"
@@ -213,7 +215,7 @@ export default function AuthPage() {
             />
 
             <button type="submit" className="registerSubmit" disabled={loading}>
-              {loading ? "Enviando..." : "Crear cuenta"}
+              {loading ? t("auth.register.loading") : t("auth.register.submit")}
             </button>
           </form>
         )}

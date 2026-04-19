@@ -1,0 +1,174 @@
+{
+  "app": {
+    "title": "Yovi",
+    "logout": "Cerrar sesión",
+    "logoutAria": "Cerrar sesión",
+    "viewLeaderboard": "Puntuaciones",
+    "language": "Idioma"
+  },
+  "auth": {
+    "title": "Acceder",
+    "subtitle": "Gestiona tu cuenta o regístrate",
+    "ariaLabel": "Pestañas de autenticación",
+    "tab": {
+      "login": "Iniciar sesión",
+      "register": "Registrarse"
+    },
+    "login": {
+      "identifier": "Usuario o correo electrónico",
+      "identifierPlaceholder": "Introduce tu usuario o correo",
+      "password": "Contraseña",
+      "loading": "Iniciando sesión...",
+      "submit": "Entrar"
+    },
+    "register": {
+      "email": "Correo electrónico",
+      "username": "Nombre de usuario",
+      "password": "Contraseña",
+      "passwordRepeat": "Repite la contraseña",
+      "loading": "Registrando...",
+      "submit": "Crear cuenta"
+    },
+    "error": {
+      "missingUsername": "Introduce un nombre de usuario o correo",
+      "missingPassword": "Introduce una contraseña",
+      "loginFailed": "Error al iniciar sesión",
+      "invalidEmail": "Correo electrónico no válido",
+      "missingRegisterUsername": "Introduce un nombre de usuario",
+      "passwordTooShort": "La contraseña es demasiado corta",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "registrationFailed": "Error al registrarse",
+      "authenticationFailed": "Error de autenticación",
+      "sessionExpired": "La sesión ha caducado"
+    },
+    "success": {
+      "registrationSent": "Registro enviado correctamente"
+    }
+  },
+  "leaderboard": {
+    "pageTitle": "Puntuaciones",
+    "backToGame": "Volver al juego",
+    "loading": "Cargando puntuaciones...",
+    "error": {
+      "loadFailed": "No se pudo cargar la puntuación"
+    },
+    "emptyState": "No hay jugadores para mostrar.",
+    "position": "Posición",
+    "player": "Jugador",
+    "bestScore": "Puntuación máxima"
+  },
+  "pagination": {
+    "ariaLabel": "Controles de paginación",
+    "previous": "Anterior",
+    "pageInfo": "Página {{page}} de {{totalPages}}",
+    "next": "Siguiente",
+    "size": "Tamaño"
+  },
+  "search": {
+    "ariaLabel": "Buscar jugadores",
+    "placeholder": "Buscar jugadores...",
+    "suggestionsAria": "Sugerencias de búsqueda de jugadores",
+    "errorMessage": "Introduce al menos 3 caracteres para buscar",
+    "error": {
+      "suggestionsFailed": "No se pudieron cargar sugerencias.",
+      "userNotFound": "Usuario no encontrado"
+    }
+  },
+  "header": {
+    "turn": "Turno {{turnNumber}}"
+  },
+  "startGame": {
+    "title": "Configurar partida",
+    "modeLabel": "Modo",
+    "mode": {
+      "1vs1": "2 jugadores (1vs1)",
+      "1vsbot": "1 jugador (1vsbot)"
+    },
+    "error": {
+      "noAuth": "No estás autenticado",
+      "guestNameRequired": "Introduce un nombre para el invitado",
+      "sessionExpired": "La sesión ha caducado"
+    },
+    "authenticatedPlayer": "Jugador autenticado",
+    "guestNameLabel": "Nombre del invitado",
+    "guestPlaceholder": "Introduce un nombre para el invitado",
+    "difficultyLabel": "Dificultad",
+    "easy": "Fácil",
+    "medium": "Media",
+    "hard": "Difícil",
+    "boardSizeLabel": "Tamaño del tablero",
+    "loading": "Creando partida...",
+    "startButton": "Iniciar partida"
+  },
+  "game": {
+    "error": {
+      "invalidCell": "Celda no válida",
+      "invalidMoveTurnNotChange": "Movimiento inválido: el turno no cambia",
+      "couldNotConfirmMove": "No se pudo confirmar el movimiento",
+      "serverCommunication": "Error de comunicación con el servidor",
+      "invalidMove": "Movimiento inválido",
+      "couldNotConfirmPlayerMove": "No se pudo confirmar el movimiento del jugador",
+      "noValidBotMove": "No hay jugada válida para el bot",
+      "couldNotApplyBotMove": "No se pudo aplicar la jugada del bot",
+      "serverValidationFailed": "No se pudo validar el movimiento en el servidor.",
+      "serverBotMoveFailed": "No se pudo obtener el movimiento del bot.",
+      "botCoordsMissing": "La respuesta del bot no incluye coordenadas."
+    },
+    "winMessage": "Ganador: {{playerName}}",
+    "defeatTitle": "Derrota",
+    "defeatSubtitle": "El bot ha ganado",
+    "loadingBoard": "Cargando tablero...",
+    "difficulty": "Dificultad: {{difficulty}}",
+    "suggestionLoading": "Buscando sugerencia...",
+    "suggestion": "Sugerir movimiento",
+    "validating": "Validando jugada..."
+  },
+  "victory": {
+    "title": "Resultado",
+    "defaultMessage": "Resultado de la partida para {{playerName}}",
+    "defaultSubtitle": "Revisa tu puntuación y finaliza.",
+    "unknownScoreError": "No se pudo obtener la puntuación",
+    "score": "Puntuación: {{score}}",
+    "loadingScore": "Obteniendo puntuación...",
+    "scoreError": "Error al cargar la puntuación",
+    "finishButton": "Finalizar"
+  },
+  "users": {
+    "error": {
+      "scoreCalculationFailed": "No se pudo calcular la puntuación en users.",
+      "invalidScoreResponse": "La respuesta de users no incluye una puntuación válida."
+    }
+  },
+  "profile": {
+    "error": {
+      "loadProfile": "No se pudo cargar el perfil"
+    },
+    "title": "Usuario: {{username}}",
+    "backToGame": "Volver al juego",
+    "backToLeaderboard": "Volver a puntuaciones",
+    "loadingProfile": "Cargando perfil...",
+    "loadingCentered": "Cargando clasificación...",
+    "loadingHistory": "Cargando historial...",
+    "noMatchesMessage": "Este usuario no tiene partidas.",
+    "field": {
+      "name": "Nombre:",
+      "globalPosition": "Posición global:",
+      "bestScore": "Puntuación máxima:",
+      "totalGames": "Partidas totales:"
+    },
+    "centeredLeaderboardTitle": "Clasificación centrada en usuario",
+    "historyTitle": "Historial de partidas",
+    "botMatchesTitle": "Partidas contra bot",
+    "pvpMatchesTitle": "Partidas jugador contra jugador",
+    "table": {
+      "id": "ID",
+      "score": "Puntuación",
+      "board": "Tablero",
+      "turns": "Turnos",
+      "difficulty": "Dificultad",
+      "winner": "Ganador",
+      "player1": "Jugador 1",
+      "player2": "Jugador 2"
+    }
+  }
+}

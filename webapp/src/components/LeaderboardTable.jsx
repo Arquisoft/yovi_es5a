@@ -1,9 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 export default function LeaderboardTable({ rows, highlightedUsername }) {
+  const { t } = useTranslation();
+
   if (!rows.length) {
-    return <p className="emptyState">No hay jugadores para mostrar.</p>;
+    return <p className="emptyState">{t("leaderboard.emptyState")}</p>;
   }
 
   return (
@@ -11,9 +14,9 @@ export default function LeaderboardTable({ rows, highlightedUsername }) {
       <table className="leaderboardTable">
         <thead>
           <tr>
-            <th>Posición</th>
-            <th>Jugador</th>
-            <th>Puntuación máxima</th>
+            <th>{t("leaderboard.position")}</th>
+            <th>{t("leaderboard.player")}</th>
+            <th>{t("leaderboard.bestScore")}</th>
           </tr>
         </thead>
         <tbody>

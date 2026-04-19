@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 const USERS_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
   "http://localhost:3000";
@@ -23,7 +25,7 @@ async function requestJson(url, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || "Error en la petición al servidor");
+    throw new Error(data?.message || i18n.t("leaderboard.error.loadFailed"));
   }
 
   return data;

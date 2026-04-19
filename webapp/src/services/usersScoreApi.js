@@ -1,7 +1,7 @@
 import i18n from "../i18n";
+import { getBackendErrorMessage } from "./apiErrorHelper";
 import { refreshToken as refreshAccessToken } from "./authApi";
 import { useSessionStore } from "../store/sessionStore";
-
 
 const USERS_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
@@ -123,7 +123,7 @@ export async function requestMatchScore(matchSummary) {
       }
 
         if (!response.ok) {
-          throw new Error(data?.message || i18n.t("users.error.scoreCalculationFailed"));
+          throw new Error(getBackendErrorMessage(data, "users.error.scoreCalculationFailed"));
         }
 
         const rawScore = data?.score ?? data?.points ?? data?.puntuacion;

@@ -8,7 +8,7 @@ describe('POST /createuser - casos de error', () => {
       .post('/createuser')
       .send({ email: 'a@a.com', password: '123' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Faltan el usuario')
+    expect(res.body.error).toBe('Missing username')
   })
 
   it('retorna 400 si falta email', async () => {
@@ -16,7 +16,7 @@ describe('POST /createuser - casos de error', () => {
       .post('/createuser')
       .send({ username: 'a', password: '123' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Faltan el correo electrónico')
+    expect(res.body.error).toBe('Missing email')
   })
 
   it('retorna 400 si falta password', async () => {
@@ -24,7 +24,7 @@ describe('POST /createuser - casos de error', () => {
       .post('/createuser')
       .send({ username: 'a', email: 'a@a.com' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Faltan la contraseña')
+    expect(res.body.error).toBe('Missing password')
   })
 
   it('retorna 400 si email ya existe', async () => {
@@ -37,7 +37,7 @@ describe('POST /createuser - casos de error', () => {
       .send({ username: 'a', email: 'a@a.com', password: '123' })
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('El email ya está registrado')
+    expect(res.body.error).toBe('Email already registered')
   })
 
   it('lanza error natural al pasar datos no esperados', async () => {

@@ -35,7 +35,7 @@ describe('leaderboardService', () => {
   it('lanza 404 cuando perfil no existe', async () => {
     // getUserProfile usa userService.resolveUserByExactUsername, no gameRepo
     userService.resolveUserByExactUsername = vi.fn().mockResolvedValue(null)
-    await expect(leaderboardService.getUserProfile('desconocido')).rejects.toThrow('Usuario no encontrado')
+    await expect(leaderboardService.getUserProfile('desconocido')).rejects.toThrow('User not found')
   })
 
   it('getUserSuggestions consulta repositorio para query larga', async () => {

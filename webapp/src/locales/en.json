@@ -32,12 +32,24 @@
     "error": {
       "missingUsername": "Please enter a username or email",
       "missingPassword": "Please enter a password",
-      "loginFailed": "Login failed",
-      "invalidEmail": "Invalid email address",
+      "missingEmail": "Please enter your email",
+      "emailAlreadyRegistered": "Email is already registered",
+      "missingLoginData": "Please enter username and password",
+      "userNotFound": "User not found",
+      "invalidCredentials": "Invalid username or password",
       "missingRegisterUsername": "Please enter a username",
+      "missingRegistrationData": "Please enter all registration data",
       "passwordTooShort": "Password is too short",
       "passwordMismatch": "Passwords do not match",
       "registrationFailed": "Registration failed",
+      "refreshTokenRequired": "refreshToken is required",
+      "refreshTokenInvalidOrExpired": "Refresh token invalid or expired",
+      "refreshTokenInvalid": "Refresh token invalid",
+      "refreshTokenSessionNotFound": "Refresh token session not found",
+      "refreshTokenRevoked": "Refresh token reused or revoked",
+      "accessTokenRequired": "Access token required",
+      "accessTokenInvalid": "Access token invalid or expired",
+      "invalidFinishedMatchPayload": "Finished match payload is invalid",
       "authenticationFailed": "Authentication failed",
       "sessionExpired": "Session expired"
     },
@@ -136,7 +148,8 @@
   "users": {
     "error": {
       "scoreCalculationFailed": "Unable to calculate the score on users.",
-      "invalidScoreResponse": "Users response did not include a valid score."
+      "invalidScoreResponse": "Users response did not include a valid score.",
+      "invalidFinishedMatchPayload": "Finished match payload is invalid"
     }
   },
   "profile": {

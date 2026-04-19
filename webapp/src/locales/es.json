@@ -32,12 +32,23 @@
     "error": {
       "missingUsername": "Introduce un nombre de usuario o correo",
       "missingPassword": "Introduce una contraseña",
-      "loginFailed": "Error al iniciar sesión",
-      "invalidEmail": "Correo electrónico no válido",
-      "missingRegisterUsername": "Introduce un nombre de usuario",
+      "missingEmail": "Introduce un correo electrónico",
+      "emailAlreadyRegistered": "El correo electrónico ya está registrado",
+      "missingLoginData": "Introduce usuario y contraseña",
+      "userNotFound": "Usuario no encontrado",
+      "invalidCredentials": "Usuario o contraseña incorrectos",
+      "missingRegistrationData": "Introduce todos los datos de registro",
       "passwordTooShort": "La contraseña es demasiado corta",
       "passwordMismatch": "Las contraseñas no coinciden",
       "registrationFailed": "Error al registrarse",
+      "refreshTokenRequired": "refreshToken es obligatorio",
+      "refreshTokenInvalidOrExpired": "Refresh token inválido o expirado",
+      "refreshTokenInvalid": "Refresh token inválido",
+      "refreshTokenSessionNotFound": "Sesión de refresh token no encontrada",
+      "refreshTokenRevoked": "Refresh token reutilizado o revocado",
+      "accessTokenRequired": "Se requiere access token",
+      "accessTokenInvalid": "El token de acceso es inválido o expirado",
+      "invalidFinishedMatchPayload": "El payload de la partida terminada no es válido",
       "authenticationFailed": "Error de autenticación",
       "sessionExpired": "La sesión ha caducado"
     },
@@ -136,7 +147,8 @@
   "users": {
     "error": {
       "scoreCalculationFailed": "No se pudo calcular la puntuación en users.",
-      "invalidScoreResponse": "La respuesta de users no incluye una puntuación válida."
+      "invalidScoreResponse": "La respuesta de users no incluye una puntuación válida.",
+      "invalidFinishedMatchPayload": "El payload de la partida terminada no es válido"
     }
   },
   "profile": {

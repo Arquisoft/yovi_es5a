@@ -48,22 +48,22 @@ function sendErrorFromException(res, err, key = "error") {
 
 function validateFinishedMatchPayload(matchSummary) {
   if (!matchSummary || typeof matchSummary !== 'object') {
-    return 'Datos de partida requeridos';
+    return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'Match data is required' };
   }
 
   const boardSize = Number(matchSummary.boardSize);
   if (!Number.isFinite(boardSize) || boardSize <= 0) {
-    return 'boardSize debe ser un número positivo';
+    return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'boardSize must be a positive number' };
   }
 
   const turnNumber = Number(matchSummary.turnNumber);
   if (!Number.isFinite(turnNumber) || turnNumber < 0) {
-    return 'turnNumber debe ser un número mayor o igual que 0';
+    return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'turnNumber must be a number greater than or equal to 0' };
   }
 
   const elapsedSeconds = Number(matchSummary.elapsedSeconds ?? 0);
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 0) {
-    return 'elapsedSeconds debe ser un número mayor o igual que 0';
+    return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'elapsedSeconds must be a number greater than or equal to 0' };
   }
 
   if (matchSummary.mode === '1vs1') {
@@ -71,10 +71,10 @@ function validateFinishedMatchPayload(matchSummary) {
     const guestName = String(matchSummary.guestName || '').trim();
     const winner = String(matchSummary.winner || '').trim();
     if (!playerName || !guestName) {
-      return 'playerName y guestName son obligatorios en 1vs1';
+      return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'playerName and guestName are required for 1vs1' };
     }
     if (!['player', 'guest', 'draw'].includes(winner)) {
-      return 'winner debe ser player, guest o draw en 1vs1';
+      return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'winner must be player, guest, or draw in 1vs1' };
     }
     return null;
   }
@@ -87,38 +87,38 @@ function validateFinishedMatchPayload(matchSummary) {
     const isDraw = Boolean(matchSummary.isDraw);
     const winner = String(matchSummary.winner || '').trim();
 
-    if (!playerName) return 'playerName es obligatorio en 1vsbot';
-    if (!difficulty) return 'difficulty es obligatorio en 1vsbot';
-    if (!isDraw && !winner) return 'winner es obligatorio en 1vsbot si no hay empate';
+    if (!playerName) return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'playerName is required for 1vsbot' };
+    if (!difficulty) return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'difficulty is required for 1vsbot' };
+    if (!isDraw && !winner) return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'winner is required for 1vsbot if there is no draw' };
 
     return null;
   }
 
-  return 'mode debe ser 1vs1 o 1vsbot';
+  return { code: 'INVALID_FINISHED_MATCH_PAYLOAD', message: 'mode must be 1vs1 or 1vsbot' };
 }
 
 app.post('/createuser', async (req, res) => {
   const { username, email, password } = req.body;
   try {
     if (!username) {
-      return sendError(res, 400, 'MISSING_USERNAME', 'Faltan el usuario');
+      return sendError(res, 400, 'MISSING_USERNAME', 'Missing username');
     }
     if (!email) {
-      return sendError(res, 400, 'MISSING_EMAIL', 'Faltan el correo electrónico');
+      return sendError(res, 400, 'MISSING_EMAIL', 'Missing email');
     }
     if (!password) {
-      return sendError(res, 400, 'MISSING_PASSWORD', 'Faltan la contraseña');
+      return sendError(res, 400, 'MISSING_PASSWORD', 'Missing password');
     }
 
     if (await userService.resolveUserByExactEmail(email)) {
-      return sendError(res, 400, 'EMAIL_ALREADY_REGISTERED', 'El email ya está registrado');
+      return sendError(res, 400, 'EMAIL_ALREADY_REGISTERED', 'Email already registered');
     }
 
     // bcrypt ya está importado al inicio del módulo
     // 10 rondas de hashing para proteger contra fuerza bruta
     const hashedPassword = await bcrypt.hash(password, 10);
     await userService.createUser(username, email, hashedPassword);
-    res.status(200).json({ message: 'Usuario creado correctamente' });
+    res.status(200).json({ message: 'User created successfully' });
   } catch (err) {
     console.error('Error:', err.message);
     return sendErrorFromException(res, err);
@@ -129,18 +129,18 @@ app.post('/auth/login', async (req, res) => {
   const { identifier, password } = req.body;
   try {
     if (!identifier || !password) {
-      return sendError(res, 400, 'MISSING_LOGIN_DATA', 'Faltan datos');
+      return sendError(res, 400, 'MISSING_LOGIN_DATA', 'Missing login data');
     }
 
     const user = await userService.resolveUserByExactUsername(identifier);
     if (!user) {
-      return sendError(res, 400, 'USER_NOT_FOUND', 'Usuario no encontrado');
+      return sendError(res, 400, 'USER_NOT_FOUND', 'User not found');
     }
 
     // Compara la contraseña proporcionada con el hash almacenado en la base de datos
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return sendError(res, 400, 'INVALID_CREDENTIALS', 'Usuario o Contraseña incorrecta');
+      return sendError(res, 400, 'INVALID_CREDENTIALS', 'Invalid username or password');
     }
 
     const tokens = tokenService.issueTokenPair({ userId: user.id, username: user.username });
@@ -158,7 +158,7 @@ app.post('/auth/refresh', async (req, res) => {
   // (refresh token hash, revocación y cadena de reemplazo).
   const refreshToken = String(req.body?.refreshToken || '').trim();
   if (!refreshToken) {
-    return res.status(400).json({ message: 'refreshToken es obligatorio' });
+    return sendError(res, 400, 'REFRESH_TOKEN_REQUIRED', 'refreshToken is required', 'message');
   }
   try {
     const rotatedTokens = tokenService.rotateRefreshToken(refreshToken);
@@ -172,22 +172,22 @@ app.post('/auth/register', async (req, res) => {
   const { email, username, password, confirmPassword } = req.body;
   try {
     if (!email || !username || !password || !confirmPassword) {
-      return sendError(res, 400, 'MISSING_REGISTRATION_DATA', 'Faltan datos');
+      return sendError(res, 400, 'MISSING_REGISTRATION_DATA', 'Missing registration data');
     }
     if (password !== confirmPassword) {
-      return sendError(res, 400, 'PASSWORDS_MISMATCH', 'Las contraseñas no coinciden');
+      return sendError(res, 400, 'PASSWORDS_MISMATCH', 'Passwords do not match');
     }
     if (await userService.resolveUserByExactEmail(email)) {
-      return sendError(res, 400, 'EMAIL_ALREADY_REGISTERED', 'El email ya está registrado');
+      return sendError(res, 400, 'EMAIL_ALREADY_REGISTERED', 'Email already registered');
     }
 
     // Hashear la contraseña antes de guardarla en la base de datos
     const hashedPassword = await bcrypt.hash(password, 10);
     await userService.createUser(username, email, hashedPassword);
-    res.status(200).json({ message: 'Registro correcto' });
+    res.status(200).json({ message: 'Registration successful' });
   } catch (err) {
     console.error('Error:', err.message);
-    res.status(400).json({ error: err.message });
+    return sendErrorFromException(res, err);
   }
 });
 
@@ -196,7 +196,7 @@ app.post('/auth/logout', async (req, res) => {
   // en almacenamiento persistente compartido.
   const refreshToken = String(req.body?.refreshToken || '').trim();
   if (!refreshToken) {
-    return res.status(400).json({ message: 'refreshToken es obligatorio' });
+    return sendError(res, 400, 'REFRESH_TOKEN_REQUIRED', 'refreshToken is required', 'message');
   }
   const revoked = tokenService.revokeRefreshToken(refreshToken);
   return res.status(200).json({ revoked });
@@ -206,7 +206,7 @@ app.post('/finished-match', authenticateAccessToken, async (req, res) => {
   const matchSummary = req.body;
   const validationError = validateFinishedMatchPayload(matchSummary);
   if (validationError) {
-    return res.status(400).json({ message: validationError });
+    return sendError(res, 400, validationError.code, validationError.message, 'message');
   }
   try {
     const score = ScoreService.calculate(matchSummary);
@@ -238,9 +238,7 @@ app.get('/leaderboard/suggest', async (req, res) => {
     return res.json({ items });
   } catch (err) {
     console.error('Error en sugerencias:', err.message);
-    return res.status(err.statusCode || 500).json({
-      message: err.message || 'Error al obtener sugerencias',
-    });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 
@@ -248,18 +246,16 @@ app.get('/users/resolve', async (req, res) => {
   try {
     const username = String(req.query.username || '').trim();
     if (!username) {
-      return res.status(400).json({ message: 'username es obligatorio' });
+      return sendError(res, 400, 'MISSING_USERNAME', 'username is required', 'message');
     }
     const user = await userService.resolveUserByExactUsername(username);
     if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+      return sendError(res, 404, 'USER_NOT_FOUND', 'User not found', 'message');
     }
     return res.json({ username: user.username });
   } catch (err) {
     console.error('Error al resolver usuario:', err.message);
-    return res.status(err.statusCode || 500).json({
-      message: err.message || 'Error al resolver usuario',
-    });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 
@@ -269,9 +265,7 @@ app.get('/users/:username', async (req, res) => {
     return res.json(profile);
   } catch (err) {
     console.error('Error al obtener perfil:', err.message);
-    return res.status(err.statusCode || 500).json({
-      message: err.message || 'Error al obtener perfil',
-    });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 
@@ -288,9 +282,7 @@ app.get('/users/:username/history', async (req, res) => {
     return res.json(response);
   } catch (err) {
     console.error('Error al obtener historial:', err.message);
-    return res.status(err.statusCode || 500).json({
-      message: err.message || 'Error al obtener historial',
-    });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 
@@ -303,9 +295,7 @@ app.get('/users/:username/centered-leaderboard', async (req, res) => {
     return res.json(response);
   } catch (err) {
     console.error('Error al obtener leaderboard centrado:', err.message);
-    return res.status(err.statusCode || 500).json({
-      message: err.message || 'Error al obtener leaderboard centrado',
-    });
+    return sendErrorFromException(res, err, 'message');
   }
 });
 

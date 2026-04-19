@@ -30,7 +30,7 @@ describe('POST /finished-match', () => {
       .send(null)
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toBe('Datos de partida requeridos')
+    expect(res.body.message).toBe('Match data is required')
   })
 
   it('retorna 400 si boardSize <= 0', async () => {
@@ -48,7 +48,7 @@ describe('POST /finished-match', () => {
       })
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toBe('boardSize debe ser un número positivo')
+    expect(res.body.message).toBe('boardSize must be a positive number')
   })
 
   it('retorna 400 si turnNumber < 0', async () => {
@@ -66,7 +66,7 @@ describe('POST /finished-match', () => {
       })
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toBe('turnNumber debe ser un número mayor o igual que 0')
+    expect(res.body.message).toBe('turnNumber must be a number greater than or equal to 0')
   })
 
   it('retorna 400 si elapsedSeconds < 0', async () => {
@@ -84,7 +84,7 @@ describe('POST /finished-match', () => {
       })
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toBe('elapsedSeconds debe ser un número mayor o igual que 0')
+    expect(res.body.message).toBe('elapsedSeconds must be a number greater than or equal to 0')
   })
 
   it('retorna 400 si falta playerName o guestName en 1vs1', async () => {
@@ -101,7 +101,7 @@ describe('POST /finished-match', () => {
         winner: 'player'
       })
     expect(res1.status).toBe(400)
-    expect(res1.body.message).toMatch(/playerName y guestName son obligatorios/)
+    expect(res1.body.message).toBe('playerName and guestName are required for 1vs1')
 
     const res2 = await request(app)
       .post('/finished-match')
@@ -116,7 +116,7 @@ describe('POST /finished-match', () => {
         winner: 'player'
       })
     expect(res2.status).toBe(400)
-    expect(res2.body.message).toMatch(/playerName y guestName son obligatorios/)
+    expect(res2.body.message).toBe('playerName and guestName are required for 1vs1')
   })
 
   it('retorna 400 si winner inválido en 1vs1', async () => {
@@ -133,7 +133,7 @@ describe('POST /finished-match', () => {
         winner: 'invalid'
       })
     expect(res.status).toBe(400)
-    expect(res.body.message).toMatch(/winner debe ser player, guest o draw/)
+    expect(res.body.message).toBe('winner must be player, guest, or draw in 1vs1')
   })
 
 
@@ -148,7 +148,7 @@ describe('POST /finished-match', () => {
         mode: 'invalid'
       })
     expect(res.status).toBe(400)
-    expect(res.body.message).toMatch(/mode debe ser 1vs1 o 1vsbot/)
+    expect(res.body.message).toBe('mode must be 1vs1 or 1vsbot')
   })
 
   it('devuelve score correctamente en 1vs1', async () => {
@@ -184,7 +184,7 @@ describe('POST /finished-match', () => {
       })
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toMatch(/difficulty es obligatorio/)
+    expect(res.body.message).toBe('difficulty is required for 1vsbot')
   })
 
   it('retorna 400 si falta winner en 1vsbot sin empate', async () => {
@@ -200,7 +200,7 @@ describe('POST /finished-match', () => {
       })
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toMatch(/winner es obligatorio/)
+    expect(res.body.message).toBe('winner is required for 1vsbot if there is no draw')
   })
 
   it('retorna 500 si ocurre un error inesperado en el servidor', async () => {

@@ -9,7 +9,7 @@ describe('POST /auth/login - casos de error', () => {
       .post('/auth/login')
       .send({ identifier: 'user' })
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Faltan datos')
+    expect(res.body.error).toBe('Missing login data')
   })
 
   it('retorna 400 si usuario no existe', async () => {
@@ -21,7 +21,7 @@ describe('POST /auth/login - casos de error', () => {
       .send({ identifier: 'user', password: '123' })
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Usuario no encontrado')
+    expect(res.body.error).toBe('User not found')
   })
 
   it('retorna 400 si contraseña incorrecta', async () => {
@@ -36,7 +36,7 @@ describe('POST /auth/login - casos de error', () => {
       .send({ identifier: 'a', password: '123' })
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Usuario o Contraseña incorrecta')
+    expect(res.body.error).toBe('Invalid username or password')
   })
 
   it('lanza error natural al pasar password no string', async () => {

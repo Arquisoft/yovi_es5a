@@ -73,7 +73,7 @@ describe('GET /leaderboard y endpoints de usuario', () => {
     const res = await request(app).get('/users/resolve?username=   ')
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toBe('username es obligatorio')
+    expect(res.body.message).toBe('username is required')
   })
 
   it('retorna 500 si userService.resolveUserByExactUsername falla', async () => {

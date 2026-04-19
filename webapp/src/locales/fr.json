@@ -32,13 +32,25 @@
     "error": {
       "missingUsername": "Entrez un nom d'utilisateur ou un e-mail",
       "missingPassword": "Entrez un mot de passe",
-      "loginFailed": "Échec de la connexion",
-      "invalidEmail": "E-mail invalide",
+      "missingEmail": "Entrez votre e-mail",
+      "emailAlreadyRegistered": "L'e-mail est déjà enregistré",
+      "missingLoginData": "Entrez le nom d'utilisateur et le mot de passe",
+      "userNotFound": "Utilisateur non trouvé",
+      "invalidCredentials": "Nom d'utilisateur ou mot de passe invalide",
       "missingRegisterUsername": "Entrez un nom d'utilisateur",
+      "missingRegistrationData": "Entrez toutes les informations d'inscription",
       "passwordTooShort": "Le mot de passe est trop court",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
       "registrationFailed": "Échec de l'inscription",
-      "authenticationFailed": "Authentification échouée",
+      "refreshTokenRequired": "refreshToken est requis",
+      "refreshTokenInvalidOrExpired": "Refresh token invalide ou expiré",
+      "refreshTokenInvalid": "Refresh token invalide",
+      "refreshTokenSessionNotFound": "Session de refresh token introuvable",
+      "refreshTokenRevoked": "Refresh token réutilisé ou révoqué",
+      "accessTokenRequired": "Jeton d'accès requis",
+      "accessTokenInvalid": "Le token d'accès est invalide ou expiré",
+      "invalidFinishedMatchPayload": "La payload de la partie terminée est invalide",
+      "authenticationFailed": "Échec de l'authentification",
       "sessionExpired": "Session expirée"
     },
     "success": {
@@ -136,7 +148,8 @@
   "users": {
     "error": {
       "scoreCalculationFailed": "Impossible de calculer le score des utilisateurs.",
-      "invalidScoreResponse": "La réponse des utilisateurs n'inclut pas de score valide."
+      "invalidScoreResponse": "La réponse des utilisateurs n'inclut pas de score valide.",
+      "invalidFinishedMatchPayload": "La payload de la partie terminée est invalide"
     }
   },
   "profile": {

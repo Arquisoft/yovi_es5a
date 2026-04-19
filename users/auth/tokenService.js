@@ -79,27 +79,31 @@ function rotateRefreshToken(refreshToken) {
   try {
     decoded = verifyRefreshToken(refreshToken);
   } catch (error) {
-    const err = new Error('Refresh token inválido o expirado');
+    const err = new Error('Refresh token invalid or expired');
     err.statusCode = 401;
+    err.code = 'REFRESH_TOKEN_INVALID_OR_EXPIRED';
     throw err;
   }
 
   if (decoded.type !== 'refresh' || !decoded.jti) {
-    const err = new Error('Refresh token inválido');
+    const err = new Error('Refresh token invalid');
     err.statusCode = 401;
+    err.code = 'REFRESH_TOKEN_INVALID';
     throw err;
   }
 
   const currentSession = sessionStore.getSessionByJti(decoded.jti);
   if (!currentSession) {
-    const err = new Error('Sesión de refresh token no encontrada');
+    const err = new Error('Refresh token session not found');
     err.statusCode = 401;
+    err.code = 'REFRESH_SESSION_NOT_FOUND';
     throw err;
   }
 
   if (currentSession.revokedAt) {
-    const err = new Error('Refresh token reutilizado o revocado');
+    const err = new Error('Refresh token reused or revoked');
     err.statusCode = 401;
+    err.code = 'REFRESH_TOKEN_REVOKED';
     throw err;
   }
 

@@ -59,7 +59,7 @@ async function getUserSuggestions(query) {
 async function getUserProfile(username) {
   const user = await userService.resolveUserByExactUsername(username);
   if (!user) {
-    const error = new Error('Usuario no encontrado');
+    const error = new Error('User not found');
     error.statusCode = 404;
     throw error;
   }
@@ -79,7 +79,7 @@ async function getUserProfile(username) {
 async function getUserHistory(username, { page, pageSize, botPage, botPageSize, pvpPage, pvpPageSize }) {
   const user = await userService.resolveUserByExactUsername(username);
   if (!user) {
-    const error = new Error('Usuario no encontrado');
+    const error = new Error('User not found');
     error.statusCode = 404;
     throw error;
   }
@@ -107,7 +107,7 @@ async function getUserHistory(username, { page, pageSize, botPage, botPageSize, 
     totalTurns: Number(row.total_turns),
     elapsedSeconds: Number(row.elapsed_seconds),
     winner: row.winner,
-    winnerName: row.winner === 'player' ? user.username : row.winner === 'bot' ? row.bot_name : 'Empate',
+    winnerName: row.winner === 'player' ? user.username : row.winner === 'bot' ? row.bot_name : 'Draw',
     difficulty: row.difficulty,
     botName: row.bot_name,
     finishedAt: row.finished_at,
@@ -152,7 +152,7 @@ async function getUserHistory(username, { page, pageSize, botPage, botPageSize, 
 async function getCenteredLeaderboard(username, { page, pageSize }) {
   const user = await userService.resolveUserByExactUsername(username);
   if (!user) {
-    const error = new Error('Usuario no encontrado');
+    const error = new Error('User not found');
     error.statusCode = 404;
     throw error;
   }

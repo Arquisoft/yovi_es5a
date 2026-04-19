@@ -1,790 +1,1089 @@
-use crate::{Coordinates, GameY, Movement, PlayerId, YBot};
+//! Hard bot: Hybrid MCTS + Alpha-Beta tactical refinement.
+//! v3 â€” improved opponent-path blocking, always-active threat scan,
+//! threat-frontier candidate pass, stronger evaluation.
+
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
-use std::sync::atomic::{AtomicI32, Ordering};
+use std::collections::VecDeque;
+use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant};
+
 use rayon::prelude::*;
 
-// ──────────────────────────────────────────────
-// Tablas auxiliares
-// ──────────────────────────────────────────────
+use crate::{Coordinates, GameStatus, GameY, Movement, PlayerId, YBot};
 
-/// Construye un array indexado por índice de celda que indica qué jugador
-/// ocupa cada celda (None si está vacía). Permite acceso O(1) en lugar de
-/// buscar en el HashMap de GameY en cada consulta.
-fn build_owner_table(game: &GameY) -> Vec<Option<PlayerId>> {
-    let size = game.board_size();
-    let total = (size * (size + 1)) / 2;
-    let mut table = vec![None; total as usize];
-    for (coords, (_, player)) in game.board_map() {
-        table[coords.to_index(size) as usize] = Some(*player);
-    }
-    table
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Configuration
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+#[derive(Debug, Clone)]
+struct HardConfig {
+    mcts_iterations:  u32,
+    mcts_time_ms:     u64,
+    top_k_tactical:   usize,
+    tactical_depth:   u32,
+    candidate_limit:  usize,
+    threads:          usize,
+    mcts_weight:      f64,
+    w_center:         f32,
+    w_side_touch:     f32,
+    w_neighbor_own:   f32,
+    w_neighbor_opp:   f32,
+    w_bridge:         f32,
+    // Blocking-specific weights
+    w_block_path:     f32,   // bonus for cutting opponent's shortest path
+    threat_scan_limit: usize, // max cells evaluated in per-cell threat scan
 }
 
-/// Precalcula los vecinos de cada celda como índices lineales.
-/// En el juego Y con coordenadas baricéntricas, cada celda tiene hasta 6 vecinos:
-/// modificamos uno de los tres ejes en +1 y otro en -1 para obtenerlos.
-/// Al calcularlo una sola vez evitamos repetir la aritmética baricéntrica
-/// en cada nodo del árbol de búsqueda.
-fn build_neighbor_table(board_size: u32) -> Vec<Vec<u32>> {
-    let total = (board_size * (board_size + 1)) / 2;
-    (0..total)
-        .map(|idx| {
+impl Default for HardConfig {
+    fn default() -> Self {
+        let threads = std::thread::available_parallelism()
+            .map(|n| n.get()).unwrap_or(4).min(8);
+        Self {
+            mcts_iterations:   18_000,
+            mcts_time_ms:      4_500,
+            top_k_tactical:    7,
+            tactical_depth:    5,
+            candidate_limit:   24,
+            threads,
+            mcts_weight:       0.45,  // lean more on tactics (better at blocking)
+            w_center:          14.0,
+            w_side_touch:      1.5,
+            w_neighbor_own:    2.5,
+            w_neighbor_opp:    12.0,  // increased: punish opponent connectivity hard
+            w_bridge:          7.0,
+            w_block_path:      30.0,  // new: reward cutting opponent's path
+            threat_scan_limit: 30,    // scan top-30 cells by centrality in threat pass
+        }
+    }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Precomputed tables
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+struct SharedTables {
+    board_size:     u32,
+    total_cells:    usize,
+    neighbors:      Vec<Vec<u32>>,
+    centrality:     Vec<f32>,
+    side_mask:      Vec<u8>,
+    center_order:   Vec<u32>,
+    neighbor_count: Vec<u8>,
+}
+
+impl SharedTables {
+    fn new(board_size: u32) -> Self {
+        let total_cells = ((board_size * (board_size + 1)) / 2) as usize;
+        let mut neighbors      = vec![Vec::new(); total_cells];
+        let mut centrality     = vec![0.0f32; total_cells];
+        let mut side_mask      = vec![0u8; total_cells];
+        let mut neighbor_count = vec![0u8; total_cells];
+
+        let center   = (board_size as f32 - 1.0) / 3.0;
+        let max_dist = center * std::f32::consts::SQRT_2 + 1.0;
+        let n = board_size - 1;
+
+        for idx in 0..total_cells as u32 {
             let c = Coordinates::from_index(idx, board_size);
-            let (x, y, z) = (c.x(), c.y(), c.z());
-            let mut n = Vec::with_capacity(6);
-            if x > 0 {
-                n.push(Coordinates::new(x - 1, y + 1, z).to_index(board_size));
-                n.push(Coordinates::new(x - 1, y, z + 1).to_index(board_size));
-            }
-            if y > 0 {
-                n.push(Coordinates::new(x + 1, y - 1, z).to_index(board_size));
-                n.push(Coordinates::new(x, y - 1, z + 1).to_index(board_size));
-            }
-            if z > 0 {
-                n.push(Coordinates::new(x + 1, y, z - 1).to_index(board_size));
-                n.push(Coordinates::new(x, y + 1, z - 1).to_index(board_size));
-            }
-            n
-        })
-        .collect()
-}
+            let (cx, cy, cz) = (c.x(), c.y(), c.z());
+            let raw: [(i64, i64, i64); 6] = [
+                (cx as i64 - 1, cy as i64 + 1, cz as i64),
+                (cx as i64 - 1, cy as i64,     cz as i64 + 1),
+                (cx as i64 + 1, cy as i64 - 1, cz as i64),
+                (cx as i64,     cy as i64 - 1, cz as i64 + 1),
+                (cx as i64 + 1, cy as i64,     cz as i64 - 1),
+                (cx as i64,     cy as i64 + 1, cz as i64 - 1),
+            ];
+            let nbrs: Vec<u32> = raw.iter()
+                .filter(|&&(nx, ny, nz)|
+                    nx >= 0 && ny >= 0 && nz >= 0
+                    && nx as u32 + ny as u32 + nz as u32 == n)
+                .map(|&(nx, ny, nz)|
+                    Coordinates::new(nx as u32, ny as u32, nz as u32).to_index(board_size))
+                .collect();
+            neighbor_count[idx as usize] = nbrs.len() as u8;
+            neighbors[idx as usize] = nbrs;
 
-/// Devuelve los índices de las celdas que tocan cada uno de los tres lados
-/// del tablero triangular (lado A: x==0, lado B: y==0, lado C: z==0).
-/// Estas celdas son los puntos de partida de Dijkstra para calcular
-/// la distancia mínima de conexión entre lados.
-fn side_cells(board_size: u32) -> (Vec<u32>, Vec<u32>, Vec<u32>) {
-    let total = (board_size * (board_size + 1)) / 2;
-    let mut a = vec![];
-    let mut b = vec![];
-    let mut c = vec![];
-    for idx in 0..total {
-        let coords = Coordinates::from_index(idx, board_size);
-        if coords.x() == 0 { a.push(idx); }
-        if coords.y() == 0 { b.push(idx); }
-        if coords.z() == 0 { c.push(idx); }
+            let dist = ((cx as f32 - center).powi(2)
+                + (cy as f32 - center).powi(2)
+                + (cz as f32 - center).powi(2)).sqrt();
+            centrality[idx as usize] = (1.0 - dist / max_dist).max(0.0);
+
+            let mut mask = 0u8;
+            if c.touches_side_a() { mask |= 0b001; }
+            if c.touches_side_b() { mask |= 0b010; }
+            if c.touches_side_c() { mask |= 0b100; }
+            side_mask[idx as usize] = mask;
+        }
+
+        let mut center_order: Vec<u32> = (0..total_cells as u32).collect();
+        center_order.sort_unstable_by(|&a, &b|
+            centrality[b as usize].partial_cmp(&centrality[a as usize]).unwrap());
+
+        Self { board_size, total_cells, neighbors, centrality, side_mask,
+               center_order, neighbor_count }
     }
-    (a, b, c)
+
+    #[inline] fn neighbors_of(&self, idx: u32) -> &[u32]  { &self.neighbors[idx as usize] }
+    #[inline] fn centrality_of(&self, idx: u32) -> f32    { self.centrality[idx as usize] }
+    #[inline] fn side_mask_of(&self, idx: u32) -> u8      { self.side_mask[idx as usize] }
 }
 
-// ──────────────────────────────────────────────
-// Dijkstra
-// ──────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Lock-free transposition table (4 M entries)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/// Algoritmo de Dijkstra adaptado al juego Y:
-/// - Celda propia del jugador: coste 0 (ya conquistada, se atraviesa gratis)
-/// - Celda vacía: coste 1 (habría que colocar una ficha)
-/// - Celda del rival: bloqueada, no se puede atravesar
-///
-/// Devuelve un array con la distancia mínima desde cualquiera de las
-/// `sources` hasta cada celda del tablero. Las celdas inalcanzables
-/// quedan con valor u32::MAX.
-fn dijkstra(
-    sources: &[u32],
+struct TTEntry {
+    key:  AtomicU64,
+    data: AtomicU64,
+}
+impl TTEntry {
+    const fn new() -> Self { Self { key: AtomicU64::new(0), data: AtomicU64::new(0) } }
+    fn encode(value: i32, depth: u8, bound: u8, mv: u32) -> u64 {
+        ((value as i32 as u32 as u64) << 32)
+            | ((depth as u64) << 24)
+            | ((bound as u64) << 22)
+            | (mv as u64 & 0x3F_FFFF)
+    }
+    fn decode(data: u64) -> (i32, u8, u8, u32) {
+        let value = (data >> 32) as u32 as i32;
+        let depth = ((data >> 24) & 0xFF) as u8;
+        let bound = ((data >> 22) & 0x3) as u8;
+        let mv    = (data & 0x3F_FFFF) as u32;
+        (value, depth, bound, mv)
+    }
+}
+
+struct TranspositionTable { size: usize, entries: Vec<TTEntry> }
+unsafe impl Send for TranspositionTable {}
+unsafe impl Sync for TranspositionTable {}
+
+impl TranspositionTable {
+    fn new(size: usize) -> Self {
+        let size = size.next_power_of_two();
+        let mut entries = Vec::with_capacity(size);
+        for _ in 0..size { entries.push(TTEntry::new()); }
+        Self { size, entries }
+    }
+    #[inline] fn slot(&self, hash: u64) -> usize { hash as usize & (self.size - 1) }
+    fn probe(&self, hash: u64, depth: u8, alpha: i32, beta: i32) -> Option<(i32, u32)> {
+        let e    = &self.entries[self.slot(hash)];
+        let key  = e.key.load(Ordering::Relaxed);
+        let data = e.data.load(Ordering::Relaxed);
+        if key != hash { return None; }
+        let (val, edepth, bound, mv) = TTEntry::decode(data);
+        if edepth < depth { return None; }
+        match bound {
+            0 => Some((val, mv)),
+            1 if val >= beta  => Some((val, mv)),
+            2 if val <= alpha => Some((val, mv)),
+            _ => None,
+        }
+    }
+    fn store(&self, hash: u64, depth: u8, value: i32, mv: u32, bound: u8) {
+        let slot     = self.slot(hash);
+        let e        = &self.entries[slot];
+        let old_data = e.data.load(Ordering::Relaxed);
+        let (_, old_depth, _, _) = TTEntry::decode(old_data);
+        if depth >= old_depth || e.key.load(Ordering::Relaxed) != hash {
+            e.key.store(hash, Ordering::Relaxed);
+            e.data.store(TTEntry::encode(value, depth, bound, mv), Ordering::Relaxed);
+        }
+    }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Killer move table
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+const MAX_KILLER_DEPTH: usize = 8;
+struct KillerTable { killers: [[u32; 2]; MAX_KILLER_DEPTH] }
+impl KillerTable {
+    fn new() -> Self { Self { killers: [[u32::MAX; 2]; MAX_KILLER_DEPTH] } }
+    fn store(&mut self, depth: usize, mv: u32) {
+        if depth >= MAX_KILLER_DEPTH { return; }
+        if self.killers[depth][0] != mv {
+            self.killers[depth][1] = self.killers[depth][0];
+            self.killers[depth][0] = mv;
+        }
+    }
+    fn is_killer(&self, depth: usize, mv: u32) -> bool {
+        depth < MAX_KILLER_DEPTH
+            && (self.killers[depth][0] == mv || self.killers[depth][1] == mv)
+    }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Zobrist
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+struct ZobristTable { table: Vec<[u64; 2]> }
+impl ZobristTable {
+    fn new(total_cells: usize) -> Self {
+        let table = (0..total_cells).map(|i| {
+            [0usize, 1].map(|p| {
+                let s = (i as u64).wrapping_mul(6_364_136_223_846_793_005)
+                    ^ (p as u64).wrapping_mul(1_442_695_040_888_963_407)
+                    ^ 0xDEAD_BEEF_CAFE_1337;
+                let v = (s ^ (s >> 30)).wrapping_mul(0xbf58476d1ce4e5b9);
+                let v = (v ^ (v >> 27)).wrapping_mul(0x94d049bb133111eb);
+                v ^ (v >> 31)
+            })
+        }).collect();
+        Self { table }
+    }
+    #[inline] fn hash_for(&self, cell: u32, player: PlayerId) -> u64 {
+        self.table[cell as usize][player.id() as usize]
+    }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Helpers
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+#[inline] fn other_player(p: PlayerId) -> PlayerId {
+    if p.id() == 0 { PlayerId::new(1) } else { PlayerId::new(0) }
+}
+#[inline] fn is_game_over(b: &GameY) -> bool {
+    matches!(b.status(), GameStatus::Finished { .. })
+}
+#[inline] fn get_winner(b: &GameY) -> Option<PlayerId> {
+    match b.status() { GameStatus::Finished { winner } => Some(*winner), _ => None }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Win distance â€” Dijkstra over (cell, side_mask) state space
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+fn win_distance(owner: &[Option<PlayerId>], player: PlayerId, tables: &SharedTables) -> u32 {
+    let n   = tables.total_cells;
+    let opp = other_player(player);
+    let mut dist = vec![[u32::MAX; 8]; n];
+    let mut heap = BinaryHeap::new();
+
+    for idx in 0..n as u32 {
+        if owner[idx as usize] == Some(opp) { continue; }
+        let mask = tables.side_mask_of(idx) as usize;
+        if mask == 0 {
+            if owner[idx as usize] == Some(player) && dist[idx as usize][0] > 0 {
+                dist[idx as usize][0] = 0;
+                heap.push(Reverse((0u32, idx, 0u8)));
+            }
+            continue;
+        }
+        let cost = if owner[idx as usize].is_some() { 0u32 } else { 1u32 };
+        if cost < dist[idx as usize][mask] {
+            dist[idx as usize][mask] = cost;
+            heap.push(Reverse((cost, idx, mask as u8)));
+        }
+    }
+
+    let mut best = u32::MAX;
+    while let Some(Reverse((d, idx, smask))) = heap.pop() {
+        let sm = smask as usize;
+        if sm == 0b111 { best = d; break; }
+        if d > dist[idx as usize][sm] { continue; }
+        for &nb in tables.neighbors_of(idx) {
+            if owner[nb as usize] == Some(opp) { continue; }
+            let nb_cost  = if owner[nb as usize].is_some() { 0u32 } else { 1u32 };
+            let new_mask = sm | tables.side_mask_of(nb) as usize;
+            let nd       = d + nb_cost;
+            if nd < dist[nb as usize][new_mask] {
+                dist[nb as usize][new_mask] = nd;
+                heap.push(Reverse((nd, nb, new_mask as u8)));
+            }
+        }
+    }
+    best
+}
+
+fn win_distances_parallel(
+    owner: &[Option<PlayerId>],
     player: PlayerId,
-    owner: &[Option<PlayerId>],
-    neighbors: &[Vec<u32>],
-    total: usize,
-) -> Vec<u32> {
-    let mut dist = vec![u32::MAX; total];
-    let mut heap = BinaryHeap::new(); // min-heap gracias a Reverse
+    tables: &SharedTables,
+) -> (u32, u32) {
+    let opp     = other_player(player);
+    let owner_a = owner.to_vec();
+    let owner_b = owner_a.clone();
+    let tptr    = tables as *const SharedTables as usize;
+    rayon::join(
+        move || { let t = unsafe { &*(tptr as *const SharedTables) }; win_distance(&owner_a, player, t) },
+        move || { let t = unsafe { &*(tptr as *const SharedTables) }; win_distance(&owner_b, opp,    t) },
+    )
+}
 
-    // Inicializamos con todas las fuentes a coste 0
-    for &src in sources {
-        if owner[src as usize] == Some(opponent(player)) {
-            continue; // Bloquear fuentes inválidas
-        }
-        dist[src as usize] = 0;
-        heap.push(Reverse((0u32, src)));
-    }
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Fast win check â€” BFS
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    while let Some(Reverse((cost, idx))) = heap.pop() {
-        // Si ya encontramos un camino más corto, descartamos esta entrada
-        if cost > dist[idx as usize] { continue; }
-        for &nidx in &neighbors[idx as usize] {
-            let cell_cost = match owner[nidx as usize] {
-                Some(p) if p == player => 0,  // propia: gratis
-                None => 1,                     // vacía: coste 1
-                Some(_) => continue,           // rival: bloqueada
-            };
-            let new_cost = cost + cell_cost;
-            if new_cost < dist[nidx as usize] {
-                dist[nidx as usize] = new_cost;
-                heap.push(Reverse((new_cost, nidx)));
+#[inline]
+fn is_winning_move_fast(
+    mv: u32, owner: &[Option<PlayerId>], player: PlayerId, tables: &SharedTables,
+) -> bool {
+    if owner[mv as usize].is_some() { return false; }
+    let mut mask = tables.side_mask_of(mv);
+    if mask == 0b111 { return true; }
+
+    if tables.total_cells <= 512 {
+        let mut queue   = [0u32; 512];
+        let mut visited = [false; 512];
+        let (mut head, mut tail) = (0, 0);
+        for &nb in tables.neighbors_of(mv) {
+            if owner[nb as usize] == Some(player) && !visited[nb as usize] {
+                visited[nb as usize] = true;
+                mask |= tables.side_mask_of(nb);
+                if mask == 0b111 { return true; }
+                queue[tail] = nb; tail += 1;
             }
         }
-    }
-
-    dist
-}
-
-/// Construye la lista de celdas fuente para Dijkstra a partir de un lado:
-/// incluimos todas las celdas del lado que no estén ocupadas por el rival,
-/// ya que el rival bloquea el acceso a esas celdas del borde.
-fn combined_sources(
-    player: PlayerId,
-    owner: &[Option<PlayerId>],
-    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
-) -> Vec<u32> {
-    [&sides.0, &sides.1, &sides.2]
-        .iter()
-        .flat_map(|side| side.iter())
-        .filter(|&&idx| owner[idx as usize] != Some(opponent(player)))
-        .copied()
-        .collect()
-}
-
-/// Calcula el coste mínimo para que `player` conecte los tres lados del tablero.
-///
-/// Estrategia: lanzamos Dijkstra desde cada lado por separado (da, db, dc).
-/// Para cada celda del tablero, da[i] + db[i] + dc[i] representa el coste
-/// total de un camino que pase por esa celda conectando los tres lados.
-/// Restamos 2*cell_cost porque la celda aparece contada tres veces pero
-/// solo se paga una.
-///
-/// El mínimo sobre todas las celdas es el coste óptimo de conexión.
-fn connection_cost(
-    player: PlayerId,
-    owner: &[Option<PlayerId>],
-    neighbors: &[Vec<u32>],
-    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
-    total: usize,
-) -> i32 {
-    // Fuentes de cada lado: celdas del borde no bloqueadas por el rival
-    let src = |side: &Vec<u32>| -> Vec<u32> {
-        side.iter()
-            .filter(|&&idx| owner[idx as usize] != Some(opponent(player)))
-            .copied()
-            .collect()
-    };
-
-    // Tres Dijkstras independientes, uno desde cada lado
-    let da = dijkstra(&src(&sides.0), player, owner, neighbors, total);
-    let db = dijkstra(&src(&sides.1), player, owner, neighbors, total);
-    let dc = dijkstra(&src(&sides.2), player, owner, neighbors, total);
-
-    let mut min_cost = i32::MAX;
-    for idx in 0..total {
-        // Si algún lado es inalcanzable desde esta celda, la descartamos
-        if da[idx] == u32::MAX || db[idx] == u32::MAX || dc[idx] == u32::MAX { continue; }
-        // La celda actúa como punto de unión de los tres caminos;
-        // su coste se descuenta dos veces porque se sumó tres veces
-        let cell_cost = if owner[idx] == Some(player) { 0u32 } else { 1 };
-        let cost = (da[idx] + db[idx] + dc[idx]).saturating_sub(2 * cell_cost);
-        if (cost as i32) < min_cost {
-            min_cost = cost as i32;
-        }
-    }
-
-    // 1000 como valor de "imposible" si el jugador está completamente bloqueado
-    if min_cost == i32::MAX { 1000 } else { min_cost }
-}
-
-// ──────────────────────────────────────────────
-// Evaluación y ordenación
-// ──────────────────────────────────────────────
-
-/// Función de evaluación estática del tablero desde la perspectiva del bot.
-///
-/// - Si el juego terminó: +10000 si ganó el bot, -10000 si ganó el rival.
-/// - Si sigue en curso: `opp_cost * 2 - bot_cost`
-///   El factor 2 hace que el bot priorice bloquear al rival sobre avanzar,
-///   ya que reducir el camino del rival vale el doble que acortar el propio.
-fn evaluate_position(
-    game: &GameY,
-    bot_player: PlayerId,
-    owner: &[Option<PlayerId>],
-    neighbors: &[Vec<u32>],
-    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
-) -> i32 {
-    if game.check_game_over() {
-        if let Some(last) = game.history().last() {
-            let last_player = match last {
-                Movement::Placement { player, .. } => *player,
-                Movement::Action { player, .. } => *player,
-            };
-            return if last_player == bot_player { 10_000 } else { -10_000 };
-        }
-    }
-
-    let total = owner.len();
-    let opp = opponent(bot_player);
-    let bot_cost = connection_cost(bot_player, owner, neighbors, sides, total);
-    let opp_cost = connection_cost(opp, owner, neighbors, sides, total);
-
-    opp_cost * 2 - bot_cost
-}
-
-/// Ordena los movimientos disponibles por relevancia estratégica para
-/// maximizar la eficiencia de la poda alfa-beta.
-///
-/// Usamos dos Dijkstras combinados (uno por jugador con todos los lados
-/// como fuente a la vez) para estimar qué celdas están en los caminos
-/// críticos de ambos jugadores. Una celda con distancia combinada baja
-/// es estratégicamente urgente: o acelera al bot o bloquea al rival.
-fn order_moves_with_tables(
-    cells: &[u32],
-    bot_player: PlayerId,
-    owner: &[Option<PlayerId>],
-    neighbors: &[Vec<u32>],
-    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
-    total: usize,
-) -> Vec<u32> {
-    let opp = opponent(bot_player);
-    // Un Dijkstra por jugador con todos sus lados como fuentes simultáneas
-    let dist_bot = dijkstra(&combined_sources(bot_player, owner, sides), bot_player, owner, neighbors, total);
-    let dist_opp = dijkstra(&combined_sources(opp, owner, sides), opp, owner, neighbors, total);
-
-    let mut scored: Vec<(u32, i32)> = cells
-        .iter()
-        .map(|&idx| {
-            let db = dist_bot[idx as usize] as i32;
-            let do_ = dist_opp[idx as usize] as i32;
-            // Tomamos el mínimo: la celda más urgente para cualquiera de los dos
-            // Negativo porque queremos ordenar de mayor a menor urgencia
-            (idx, -(db.min(do_)))
-        })
-        .collect();
-
-    // Ordenamos de más a menos urgente (mayor score = más prioritario)
-    scored.sort_unstable_by(|a, b| b.1.cmp(&a.1));
-    scored.into_iter().map(|(idx, _)| idx).collect()
-}
-
-fn opponent(player: PlayerId) -> PlayerId {
-    if player.id() == 0 { PlayerId::new(1) } else { PlayerId::new(0) }
-}
-
-/// Ajusta la profundidad de búsqueda según las celdas disponibles.
-/// Con pocas celdas (endgame) podemos buscar más profundo porque el
-/// árbol de juego es más pequeño. En opening reducimos para mantener
-/// tiempos de respuesta razonables.
-fn dynamic_depth(available: usize) -> u32 {
-    match available {
-        0..=6   => 7,
-        7..=15  => 5,
-        16..=30 => 4,
-        _       => 3,
-    }
-}
-
-// ──────────────────────────────────────────────
-// Minimax secuencial (niveles internos)
-// ──────────────────────────────────────────────
-
-/// Minimax con poda alfa-beta para los niveles internos del árbol.
-///
-/// - `maximizing=true`: turno del bot, busca maximizar la evaluación.
-/// - `maximizing=false`: turno del rival, busca minimizar la evaluación.
-/// - `alpha`: mejor valor garantizado para el maximizador hasta ahora.
-/// - `beta`: mejor valor garantizado para el minimizador hasta ahora.
-/// - Si beta <= alpha, podamos la rama (el oponente nunca permitirá llegar aquí).
-///
-/// `neighbors` y `sides` se pasan por referencia y se reutilizan en toda
-/// la recursión ya que no cambian durante la búsqueda.
-fn minimax(
-    game: &GameY,
-    depth: u32,
-    mut alpha: i32,
-    mut beta: i32,
-    maximizing: bool,
-    bot_player: PlayerId,
-    neighbors: &[Vec<u32>],
-    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
-) -> i32 {
-    // Reconstruimos la tabla de owners para este estado concreto del tablero
-    let owner = build_owner_table(game);
-    let total = owner.len();
-
-    // Condición de parada: profundidad agotada o juego terminado
-    if depth == 0 || game.check_game_over() {
-        return evaluate_position(game, bot_player, &owner, neighbors, sides);
-    }
-
-    let current = if maximizing { bot_player } else { opponent(bot_player) };
-
-    // Ordenamos movimientos para explorar primero los más prometedores,
-    // lo que genera más cortes alfa-beta y reduce el árbol explorado
-    let ordered = order_moves_with_tables(
-        game.available_cells(), bot_player, &owner, neighbors, sides, total,
-    );
-
-    if maximizing {
-        let mut best = i32::MIN + 1;
-        for cell in ordered {
-            let coords = Coordinates::from_index(cell, game.board_size());
-            let mut copy = game.clone();
-            if copy.add_move(Movement::Placement { player: current, coords }).is_err() { continue; }
-            let value = minimax(&copy, depth - 1, alpha, beta, false, bot_player, neighbors, sides);
-            best = best.max(value);
-            alpha = alpha.max(best);
-            if beta <= alpha { break; } // poda beta: el minimizador no permite esto
-        }
-        best
-    } else {
-        let mut best = i32::MAX;
-        for cell in ordered {
-            let coords = Coordinates::from_index(cell, game.board_size());
-            let mut copy = game.clone();
-            if copy.add_move(Movement::Placement { player: current, coords }).is_err() { continue; }
-            let value = minimax(&copy, depth - 1, alpha, beta, true, bot_player, neighbors, sides);
-            best = best.min(value);
-            beta = beta.min(best);
-            if beta <= alpha { break; } // poda alpha: el maximizador no permite esto
-        }
-        best
-    }
-}
-
-// ──────────────────────────────────────────────
-// Nivel raíz paralelo con Rayon
-// ──────────────────────────────────────────────
-
-/// Evalúa los movimientos del nivel raíz en paralelo usando Rayon.
-///
-/// La poda alfa-beta clásica es inherentemente secuencial (cada nodo
-/// necesita el resultado del anterior para actualizar alpha/beta).
-/// En el nivel raíz rompemos esa dependencia: evaluamos todos los hijos
-/// en paralelo y tomamos el máximo al final.
-///
-/// Compensación: perdemos algunos cortes alfa-beta en el nivel 0,
-/// pero ganamos todos los núcleos de la CPU, lo que es mucho más rentable.
-///
-/// El `AtomicI32` permite que los hilos compartan el mejor score visto
-/// hasta ahora para una poda temprana optimista: si un hilo ya encontró
-/// una victoria segura (score >= 9000), los demás pueden saltarse su trabajo.
-fn parallel_root(
-    board: &GameY,
-    depth: u32,
-    bot_player: PlayerId,
-    ordered: Vec<u32>,
-    neighbors: &[Vec<u32>],
-    sides: &(Vec<u32>, Vec<u32>, Vec<u32>),
-) -> Option<(i32, Coordinates)> {
-    let best_so_far = AtomicI32::new(i32::MIN + 1);
-
-    let results: Vec<Option<(i32, Coordinates)>> = ordered
-        .par_iter() // Rayon: cada iteración se ejecuta en un hilo distinto
-        .map(|&cell| {
-            // Poda temprana: si otro hilo ya encontró una victoria segura,
-            // no tiene sentido seguir evaluando más movimientos
-            if best_so_far.load(Ordering::Relaxed) >= 9_000 {
-                return None;
-            }
-
-            let coords = Coordinates::from_index(cell, board.board_size());
-            let mut copy = board.clone();
-            if copy.add_move(Movement::Placement { player: bot_player, coords }).is_err() {
-                return None;
-            }
-
-            // Llamada secuencial al minimax para los niveles internos
-            let score = minimax(
-                &copy, depth, i32::MIN + 1, i32::MAX,
-                false, bot_player, neighbors, sides,
-            );
-
-            // Actualizamos el mejor score global de forma atómica (sin mutex)
-            // usando compare_exchange_weak en un bucle CAS (Compare-And-Swap)
-            let mut prev = best_so_far.load(Ordering::Relaxed);
-            while score > prev {
-                match best_so_far.compare_exchange_weak(prev, score, Ordering::Relaxed, Ordering::Relaxed) {
-                    Ok(_) => break,
-                    Err(current) => prev = current, // otro hilo actualizó antes, reintentamos
+        while head < tail {
+            let cur = queue[head]; head += 1;
+            for &nb in tables.neighbors_of(cur) {
+                if owner[nb as usize] == Some(player) && !visited[nb as usize] {
+                    visited[nb as usize] = true;
+                    mask |= tables.side_mask_of(nb);
+                    if mask == 0b111 { return true; }
+                    queue[tail] = nb; tail += 1;
                 }
             }
+        }
+    } else {
+        let mut vis = vec![false; tables.total_cells];
+        let mut q   = VecDeque::new();
+        for &nb in tables.neighbors_of(mv) {
+            if owner[nb as usize] == Some(player) && !vis[nb as usize] {
+                vis[nb as usize] = true; mask |= tables.side_mask_of(nb);
+                if mask == 0b111 { return true; } q.push_back(nb);
+            }
+        }
+        while let Some(cur) = q.pop_front() {
+            for &nb in tables.neighbors_of(cur) {
+                if owner[nb as usize] == Some(player) && !vis[nb as usize] {
+                    vis[nb as usize] = true; mask |= tables.side_mask_of(nb);
+                    if mask == 0b111 { return true; } q.push_back(nb);
+                }
+            }
+        }
+    }
+    false
+}
 
-            Some((score, coords))
+fn opponent_side_count(
+    mv: u32, owner: &[Option<PlayerId>], opp: PlayerId, tables: &SharedTables,
+) -> u32 {
+    if owner[mv as usize].is_some() { return 0; }
+    let mut mask = tables.side_mask_of(mv);
+    let mut vis  = vec![false; tables.total_cells];
+    let mut q    = VecDeque::new();
+    for &nb in tables.neighbors_of(mv) {
+        if owner[nb as usize] == Some(opp) && !vis[nb as usize] {
+            vis[nb as usize] = true; mask |= tables.side_mask_of(nb);
+            if mask == 0b111 { return 3; } q.push_back(nb);
+        }
+    }
+    while let Some(cur) = q.pop_front() {
+        for &nb in tables.neighbors_of(cur) {
+            if owner[nb as usize] == Some(opp) && !vis[nb as usize] {
+                vis[nb as usize] = true; mask |= tables.side_mask_of(nb);
+                if mask == 0b111 { return 3; } q.push_back(nb);
+            }
+        }
+    }
+    mask.count_ones()
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// NEW: Find cells on opponent's threatening path.
+//
+// Strategy: for each empty cell (up to `limit` by centrality), simulate the
+// opponent placing there and measure the distance drop. Cells that reduce
+// opponent's distance the most are the most urgent to block.
+// We return (cell_idx, distance_drop) sorted descending.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+fn find_opponent_path_cells(
+    owner: &[Option<PlayerId>],
+    opp: PlayerId,
+    opp_d_base: u32,
+    tables: &SharedTables,
+    limit: usize,
+) -> Vec<(u32, u32)> {
+    // Iterate cells in centrality order (most dangerous first) up to `limit`
+    let mut results: Vec<(u32, u32)> = tables.center_order.iter()
+        .filter(|&&idx| owner[idx as usize].is_none())
+        .take(limit)
+        .filter_map(|&idx| {
+            let mut sim = owner.to_vec();
+            sim[idx as usize] = Some(opp);
+            let d = win_distance(&sim, opp, tables);
+            if d < opp_d_base { Some((idx, opp_d_base - d)) } else { None }
+        })
+        .collect();
+    results.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+    results
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Evaluation
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+fn evaluate_with_dist(
+    board: &GameY, player: PlayerId, cfg: &HardConfig,
+    tables: &SharedTables, my_dist: f32, opp_dist: f32,
+) -> f32 {
+    let owner = board.owner_table();
+
+    // Primary: win-distance differential
+    let mut score = (opp_dist - my_dist) * 22.0;
+
+    // Steeper urgency curves â€” opponent close is an emergency
+    if opp_dist <= 4.0 { score -= (5.0 - opp_dist) * 120.0; }
+    else if opp_dist <= 7.0 { score -= (8.0 - opp_dist) * 30.0; }
+    if my_dist <= 4.0 { score += (5.0 - my_dist) * 100.0; }
+
+    for idx in 0..tables.total_cells as u32 {
+        let Some(cp) = owner[idx as usize] else { continue };
+        let sign = if cp == player { 1.0f32 } else { -1.0 };
+        let c    = tables.centrality_of(idx);
+
+        // Quadratic centrality
+        score += sign * cfg.w_center * c * c * 4.5;
+
+        let mut connected = 0u32;
+        let mut opp_adj   = 0u32;
+        for &nb in tables.neighbors_of(idx) {
+            if owner[nb as usize] == Some(cp)            { connected += 1; }
+            else if owner[nb as usize].is_some()         { opp_adj   += 1; }
+        }
+
+        // Isolation penalty
+        if connected == 0 { score += sign * (-5.0); }
+        else               { score += sign * cfg.w_neighbor_own * connected as f32; }
+
+        // Pressure / threat â€” opponent adjacency is dangerous for us
+        if cp == player {
+            score -= cfg.w_neighbor_opp * 0.2 * opp_adj as f32;
+        }
+
+        // Virtual connections
+        if cp == player {
+            let mut bridges = 0u32;
+            for &nb in tables.neighbors_of(idx) {
+                if owner[nb as usize].is_none() {
+                    for &nb2 in tables.neighbors_of(nb) {
+                        if nb2 != idx && owner[nb2 as usize] == Some(player) { bridges += 1; }
+                    }
+                }
+            }
+            score += cfg.w_bridge * (bridges as f32 / 2.0);
+        }
+    }
+    score
+}
+
+fn evaluate(board: &GameY, player: PlayerId, cfg: &HardConfig, tables: &SharedTables) -> f32 {
+    let owner              = board.owner_table();
+    let (my_dist, opp_dist) = win_distances_parallel(owner, player, tables);
+    evaluate_with_dist(board, player, cfg, tables, my_dist as f32, opp_dist as f32)
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Move prior â€” now with explicit path-blocking bonus
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+fn move_prior(
+    mv: u32,
+    owner: &[Option<PlayerId>],
+    player: PlayerId,
+    tables: &SharedTables,
+    cfg: &HardConfig,
+    opp_path_bonus: f32,  // precomputed bonus: how much this cell blocks opp path
+) -> f32 {
+    let opponent   = other_player(player);
+    let centrality = tables.centrality_of(mv);
+
+    let mut score = centrality * centrality * cfg.w_center * 22.0;
+    if centrality > 0.5 { score += (centrality - 0.5) * cfg.w_center * 16.0; }
+
+    // Path-blocking bonus (precomputed from find_opponent_path_cells)
+    score += opp_path_bonus * cfg.w_block_path;
+
+    let mut own_nbrs = 0u32;
+    let mut opp_nbrs = 0u32;
+    let mut bridges  = 0u32;
+    for &nb in tables.neighbors_of(mv) {
+        match owner[nb as usize] {
+            Some(p) if p == player => own_nbrs += 1,
+            Some(_) => opp_nbrs += 1,
+            None => {
+                for &nb2 in tables.neighbors_of(nb) {
+                    if nb2 != mv && owner[nb2 as usize] == Some(player) { bridges += 1; }
+                }
+            }
+        }
+    }
+    score += cfg.w_neighbor_own * own_nbrs as f32;
+    score += cfg.w_bridge       * (bridges as f32 / 2.0);
+    // Reward cells that sit next to opponent pieces (they're likely on paths)
+    score += cfg.w_neighbor_opp * 0.6 * opp_nbrs as f32;
+
+    let mask = tables.side_mask_of(mv);
+    if mask != 0 && centrality < 0.3 { score -= 9.0 * (0.3 - centrality); }
+
+    let opp_sides = opponent_side_count(mv, owner, opponent, tables);
+    score += opp_sides as f32 * cfg.w_neighbor_opp * 5.0;
+    if opp_sides >= 2 { score += 300.0; }
+
+    score
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Candidate generation â€” with threat-frontier pass
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+fn generate_candidates(
+    board: &GameY, player: PlayerId,
+    tables: &SharedTables, cfg: &HardConfig,
+    // Precomputed path-block bonuses: cell â†’ bonus value (0 if not on path)
+    path_bonuses: &[f32],
+) -> Vec<(u32, f32)> {
+    let owner    = board.owner_table();
+    let opponent = other_player(player);
+    let total    = tables.total_cells;
+    let mut seen  = vec![false; total];
+    let mut cands: Vec<(u32, f32)> = Vec::with_capacity(cfg.candidate_limit * 2);
+
+    // Pass 1: immediate WIN
+    for &idx in board.available_cells() {
+        if is_winning_move_fast(idx, owner, player, tables) {
+            return vec![(idx, f32::MAX)];
+        }
+    }
+    // Pass 2: immediate BLOCK
+    let mut must_block: Vec<u32> = Vec::new();
+    for &idx in board.available_cells() {
+        if is_winning_move_fast(idx, owner, opponent, tables) { must_block.push(idx); }
+    }
+    if !must_block.is_empty() {
+        return must_block.into_iter().map(|idx| {
+            seen[idx as usize] = true;
+            (idx, move_prior(idx, owner, player, tables, cfg, path_bonuses[idx as usize]) + 1_000_000.0)
+        }).collect();
+    }
+    // Pass 3: block 2-side threats
+    for &idx in board.available_cells() {
+        if !seen[idx as usize] && opponent_side_count(idx, owner, opponent, tables) >= 2 {
+            cands.push((idx, move_prior(idx, owner, player, tables, cfg, path_bonuses[idx as usize]) + 500_000.0));
+            seen[idx as usize] = true;
+        }
+    }
+    // Pass 3.5 (NEW): threat-frontier â€” cells with high path-blocking bonus
+    // These are cells that, if the opponent takes them, most shorten their path.
+    // We must block them proactively even if they're not yet adjacent to opp pieces.
+    for &idx in board.available_cells() {
+        if seen[idx as usize] { continue; }
+        let bonus = path_bonuses[idx as usize];
+        if bonus >= 2.0 {  // blocks â‰¥2 steps from opponent's path
+            cands.push((idx, move_prior(idx, owner, player, tables, cfg, bonus) + bonus * 200.0));
+            seen[idx as usize] = true;
+        }
+    }
+    // Pass 4: top-centrality cells
+    for &idx in &tables.center_order {
+        if cands.len() >= cfg.candidate_limit { break; }
+        if owner[idx as usize].is_none() && !seen[idx as usize] {
+            cands.push((idx, move_prior(idx, owner, player, tables, cfg, path_bonuses[idx as usize])));
+            seen[idx as usize] = true;
+        }
+    }
+    // Pass 5: frontier fill
+    for idx in 0..total as u32 {
+        if cands.len() >= cfg.candidate_limit { break; }
+        if owner[idx as usize].is_some() {
+            for &nb in tables.neighbors_of(idx) {
+                if owner[nb as usize].is_none() && !seen[nb as usize] {
+                    cands.push((nb, move_prior(nb, owner, player, tables, cfg, path_bonuses[nb as usize])));
+                    seen[nb as usize] = true;
+                }
+            }
+        }
+    }
+
+    cands.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    cands.truncate(cfg.candidate_limit);
+    cands
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// MCTS â€” root-parallel
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+const PUCT_C: f64 = 1.2;
+
+#[derive(Debug)]
+struct MoveStats {
+    idx: u32, visits: u32, wins: u32, prior: f32,
+}
+impl MoveStats {
+    fn value(&self) -> f64 {
+        if self.visits == 0 { 0.5 } else { self.wins as f64 / self.visits as f64 }
+    }
+}
+
+fn select_puct(stats: &[(u32, u32)], priors: &[f32], total: u32) -> usize {
+    let ln_t = ((total + 1) as f64).ln();
+    let mut best = 0;
+    let mut bval = f64::NEG_INFINITY;
+    for (i, ((v, w), &p)) in stats.iter().zip(priors.iter()).enumerate() {
+        let q = if *v == 0 { 0.5 } else { *w as f64 / *v as f64 };
+        let u = PUCT_C * p as f64 * (ln_t / (*v as f64 + 1.0)).sqrt();
+        if q + u > bval { bval = q + u; best = i; }
+    }
+    best
+}
+
+fn rollout(
+    board: &mut GameY, mut cur: PlayerId, init: PlayerId,
+    tables: &SharedTables, _cfg: &HardConfig,
+) -> bool {
+    let bs = board.board_size();
+    for _ in 0..tables.total_cells {
+        if is_game_over(board) { break; }
+        let avail = board.available_cells();
+        if avail.is_empty() { break; }
+        let opp   = other_player(cur);
+        let owner = board.owner_table();
+        let mut chosen = None;
+
+        for &idx in avail {
+            if is_winning_move_fast(idx, owner, cur, tables) { chosen = Some(idx); break; }
+        }
+        if chosen.is_none() {
+            for &idx in avail {
+                if is_winning_move_fast(idx, owner, opp, tables) { chosen = Some(idx); break; }
+            }
+        }
+        if chosen.is_none() {
+            let step = (avail.len() / 10).max(1);
+            let mut best_score = f32::NEG_INFINITY;
+            for i in (0..avail.len()).step_by(step).take(10) {
+                let idx      = avail[i];
+                let own_nbrs = tables.neighbors_of(idx)
+                    .iter().filter(|&&nb| owner[nb as usize] == Some(cur)).count() as f32;
+                // Also consider opponent blocking in rollout
+                let opp_nbrs = tables.neighbors_of(idx)
+                    .iter().filter(|&&nb| owner[nb as usize] == Some(opp)).count() as f32;
+                let score = tables.centrality_of(idx) * 2.5 + own_nbrs * 0.6 + opp_nbrs * 0.4;
+                if score > best_score { best_score = score; chosen = Some(idx); }
+            }
+        }
+        let Some(mv) = chosen else { break };
+        let _ = board.add_move(Movement::Placement {
+            player: cur,
+            coords: Coordinates::from_index(mv, bs),
+        });
+        cur = other_player(cur);
+    }
+    get_winner(board) == Some(init)
+}
+
+fn run_mcts(
+    board: &GameY, player: PlayerId,
+    candidates: &[(u32, f32)],
+    tables: &Arc<SharedTables>,
+    cfg: &HardConfig,
+) -> Vec<MoveStats> {
+    if candidates.is_empty() { return Vec::new(); }
+
+    let deadline         = Instant::now() + Duration::from_millis(cfg.mcts_time_ms);
+    let iters_per_thread = (cfg.mcts_iterations / cfg.threads as u32).max(1);
+    let priors: Vec<f32> = candidates.iter().map(|(_, p)| *p).collect();
+
+    let thread_results: Vec<Vec<(u32, u32)>> = (0..cfg.threads)
+        .into_par_iter()
+        .map(|_| {
+            let t    = Arc::clone(tables);
+            let mut stats = vec![(0u32, 0u32); candidates.len()];
+            for _ in 0..iters_per_thread {
+                if Instant::now() >= deadline { break; }
+                let total: u32 = stats.iter().map(|(v, _)| v).sum();
+                let sel         = select_puct(&stats, &priors, total);
+                let (mi, _)     = candidates[sel];
+                let coords      = Coordinates::from_index(mi, board.board_size());
+                let mut sim     = board.clone();
+                let undo = match sim.apply_move_bot(player, coords) { Ok(u) => u, Err(_) => continue };
+                let won = if is_game_over(&sim) && get_winner(&sim) == Some(player) {
+                    true
+                } else {
+                    let mut r = sim.clone();
+                    rollout(&mut r, other_player(player), player, &t, cfg)
+                };
+                sim.unmake_move(undo);
+                stats[sel].0 += 1;
+                if won { stats[sel].1 += 1; }
+            }
+            stats
         })
         .collect();
 
-    // De todos los resultados paralelos, tomamos el movimiento con mayor score
-    results
-        .into_iter()
-        .flatten()
-        .max_by_key(|(score, _)| *score)
+    let mut combined = vec![(0u32, 0u32); candidates.len()];
+    for ts in thread_results {
+        for (i, (v, w)) in ts.iter().enumerate() {
+            combined[i].0 += v;
+            combined[i].1 += w;
+        }
+    }
+
+    let mut result: Vec<MoveStats> = candidates.iter().zip(combined.iter())
+        .map(|((idx, prior), (visits, wins))|
+            MoveStats { idx: *idx, visits: *visits, wins: *wins, prior: *prior })
+        .collect();
+    result.sort_unstable_by(|a, b| b.value().partial_cmp(&a.value()).unwrap());
+    result
 }
 
-// ──────────────────────────────────────────────
-// Bot
-// ──────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Negamax + Alpha-Beta + TT + killer moves
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-pub struct Hard;
+const INF_SCORE: i32 = 1_000_000;
+
+#[allow(clippy::too_many_arguments)]
+fn negamax(
+    board: &mut GameY, player: PlayerId,
+    depth: u32, ply: usize,
+    mut alpha: i32, beta: i32,
+    hash: u64,
+    cfg: &HardConfig, tables: &SharedTables,
+    tt: &TranspositionTable, zobrist: &ZobristTable,
+    killers: &mut KillerTable,
+) -> i32 {
+    if let Some((val, _)) = tt.probe(hash, depth as u8, alpha, beta) { return val; }
+    if is_game_over(board) { return -(INF_SCORE - 1); }
+    if depth == 0 {
+        let val = evaluate(board, player, cfg, tables) as i32;
+        tt.store(hash, 0, val, u32::MAX, 0);
+        return val;
+    }
+
+    // In tactical search we use empty path bonuses (no precomputed data available here)
+    let empty_bonuses = vec![0.0f32; tables.total_cells];
+    let mut cands = generate_candidates(board, player, tables, cfg, &empty_bonuses);
+    if cands.is_empty() { return evaluate(board, player, cfg, tables) as i32; }
+
+    for (mv, prior) in cands.iter_mut() {
+        if killers.is_killer(ply, *mv) { *prior += 800.0; }
+    }
+    cands.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+    let orig_alpha = alpha;
+    let mut best_val  = -INF_SCORE;
+    let mut best_move = u32::MAX;
+
+    for (mv, _) in &cands {
+        let coords    = Coordinates::from_index(*mv, board.board_size());
+        let undo      = match board.apply_move_bot(player, coords) { Ok(u) => u, Err(_) => continue };
+        let child_hash = hash ^ zobrist.hash_for(*mv, player);
+        let child_val  = if is_game_over(board) { INF_SCORE - 1 } else {
+            -negamax(board, other_player(player), depth - 1, ply + 1,
+                     -beta, -alpha, child_hash, cfg, tables, tt, zobrist, killers)
+        };
+        board.unmake_move(undo);
+
+        if child_val > best_val { best_val = child_val; best_move = *mv; }
+        if child_val > alpha {
+            alpha = child_val;
+            if alpha >= beta {
+                killers.store(ply, *mv);
+                tt.store(hash, depth as u8, best_val, best_move, 1);
+                return best_val;
+            }
+        }
+    }
+
+    let bound = if best_val <= orig_alpha { 2u8 } else { 0u8 };
+    tt.store(hash, depth as u8, best_val, best_move, bound);
+    best_val
+}
+
+fn tactical_score(
+    board: &GameY, player: PlayerId, mv: u32,
+    cfg: &HardConfig, tables: &SharedTables,
+    tt: &TranspositionTable, zobrist: &ZobristTable,
+) -> i32 {
+    let coords = Coordinates::from_index(mv, board.board_size());
+    let mut b  = board.clone();
+    let undo   = match b.apply_move_bot(player, coords) { Ok(u) => u, Err(_) => return i32::MIN / 2 };
+    if is_game_over(&b) { b.unmake_move(undo); return INF_SCORE - 1; }
+    let base_hash   = zobrist.hash_for(mv, player);
+    let mut killers = KillerTable::new();
+    let score = -negamax(
+        &mut b, other_player(player), cfg.tactical_depth - 1, 0,
+        -INF_SCORE, INF_SCORE, base_hash,
+        cfg, tables, tt, zobrist, &mut killers,
+    );
+    b.unmake_move(undo);
+    score
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Resource cache
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+struct Resources {
+    tables:  Arc<SharedTables>,
+    tt:      Arc<TranspositionTable>,
+    zobrist: Arc<ZobristTable>,
+}
+impl Resources {
+    fn build(board_size: u32) -> Self {
+        let tables = Arc::new(SharedTables::new(board_size));
+        let total  = tables.total_cells;
+        Self {
+            tables,
+            tt:      Arc::new(TranspositionTable::new(1 << 22)),
+            zobrist: Arc::new(ZobristTable::new(total)),
+        }
+    }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Public bot struct
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+pub struct Hard {
+    cfg:   HardConfig,
+    cache: Mutex<Option<(u32, Resources)>>,
+}
+
+impl Default for Hard {
+    fn default() -> Self { Self { cfg: HardConfig::default(), cache: Mutex::new(None) } }
+}
+
+impl Hard {
+    pub fn new(cfg: HardConfig) -> Self { Self { cfg, cache: Mutex::new(None) } }
+
+    fn get_resources(
+        &self, board_size: u32,
+    ) -> (Arc<SharedTables>, Arc<TranspositionTable>, Arc<ZobristTable>) {
+        let mut lock = self.cache.lock().unwrap();
+        if lock.as_ref().map(|(s, _)| *s) != Some(board_size) {
+            *lock = Some((board_size, Resources::build(board_size)));
+        }
+        let (_, res) = lock.as_ref().unwrap();
+        (Arc::clone(&res.tables), Arc::clone(&res.tt), Arc::clone(&res.zobrist))
+    }
+}
 
 impl YBot for Hard {
     fn name(&self) -> &str { "hard_bot" }
 
     fn choose_move(&self, board: &GameY) -> Option<Coordinates> {
-        let bot_player = board.next_player()?;
-        let size = board.board_size();
+        let player = board.next_player()?;
+        if board.available_cells().is_empty() { return None; }
 
-        // Precalculamos las estructuras que no cambian durante la búsqueda:
-        // - neighbors: vecinos de cada celda (depende solo del tamaño del tablero)
-        // - sides: índices de celdas en cada borde (idem)
-        // - owner: estado actual del tablero (snapshot inicial)
-        // Pasarlas por referencia a toda la recursión evita recalcularlas
-        let neighbors = build_neighbor_table(size);
-        let sides = side_cells(size);
-        let owner = build_owner_table(board);
-        let total = owner.len();
+        let board_size            = board.board_size();
+        let (tables, tt, zobrist) = self.get_resources(board_size);
+        let opponent              = other_player(player);
+        let owner                 = board.owner_table();
 
-        // Profundidad adaptativa según fase de la partida
-        let depth = dynamic_depth(board.available_cells().len());
-
-        // Ordenamos los movimientos raíz antes de lanzar los hilos
-        // para que Rayon distribuya primero los trabajos más prometedores
-        let ordered = order_moves_with_tables(
-            board.available_cells(), bot_player, &owner, &neighbors, &sides, total,
-        );
-
-        // Evaluación paralela del nivel raíz → elegimos el mejor movimiento
-        parallel_root(board, depth, bot_player, ordered, &neighbors, &sides)
-            .map(|(_, coords)| coords)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use crate::Coordinates;
-    use rand::Rng;
-
-    #[test]
-    fn test_index_roundtrip() {
-        let size = 5;
-        let total = (size * (size + 1)) / 2;
-
-        for i in 0..total {
-            let c = Coordinates::from_index(i, size);
-            let idx = c.to_index(size);
-            assert_eq!(i, idx, "Roundtrip failed at index {}", i);
-        }
-    }
-
-    #[test]
-    fn test_neighbors_validity() {
-        let size = 5;
-        let neighbors = build_neighbor_table(size);
-        let total = neighbors.len();
-
-        for (i, ns) in neighbors.iter().enumerate() {
-            for &n in ns {
-                assert!((n as usize) < total, "Neighbor out of bounds");
+        // â”€â”€ Step 1: immediate WIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        for &idx in board.available_cells() {
+            if is_winning_move_fast(idx, owner, player, &tables) {
+                return Some(Coordinates::from_index(idx, board_size));
             }
         }
-    }
-
-    #[test]
-    fn test_neighbors_max_6() {
-        let size = 6;
-        let neighbors = build_neighbor_table(size);
-
-        for ns in neighbors {
-            assert!(ns.len() <= 6, "Too many neighbors");
-        }
-    }
-
-    #[test]
-    fn test_side_cells_cover_board() {
-        let size = 5;
-        let (a, b, c) = side_cells(size);
-
-        assert!(!a.is_empty());
-        assert!(!b.is_empty());
-        assert!(!c.is_empty());
-
-        // Cada celda debe pertenecer al menos a un lado
-        let total = (size * (size + 1)) / 2;
-
-        let mut union = std::collections::HashSet::new();
-
-        for &x in &a { union.insert(x); }
-        for &x in &b { union.insert(x); }
-        for &x in &c { union.insert(x); }
-
-        // comprobar que SOLO las de borde están
-        for i in 0..total {
-            let coords = Coordinates::from_index(i, size);
-            let is_side = coords.x() == 0 || coords.y() == 0 || coords.z() == 0;
-
-            assert_eq!(
-                union.contains(&i),
-                is_side,
-                "Mismatch at cell {}",
-                i
-            );
-        }
-    }
-
-    #[test]
-    fn test_dijkstra_empty_board() {
-        let size = 4;
-        let neighbors = build_neighbor_table(size);
-        let owner = vec![None; neighbors.len()];
-        let (a, _, _) = side_cells(size);
-
-        let dist = dijkstra(&a, PlayerId::new(0), &owner, &neighbors, owner.len());
-
-        // Distancias deben ser finitas
-        assert!(dist.iter().any(|&d| d > 0));
-    }
-
-    #[test]
-    fn test_dijkstra_blocked() {
-        let size = 3;
-        let neighbors = build_neighbor_table(size);
-
-        // Todo ocupado por rival
-        let owner = vec![Some(PlayerId::new(1)); neighbors.len()];
-        let (a, _, _) = side_cells(size);
-
-        let dist = dijkstra(&a, PlayerId::new(0), &owner, &neighbors, owner.len());
-
-        assert!(dist.iter().all(|&d| d == u32::MAX));
-    }
-
-    #[test]
-    fn test_dijkstra_own_cells_zero_cost() {
-        let size = 3;
-        let neighbors = build_neighbor_table(size);
-
-        let mut owner = vec![None; neighbors.len()];
-        owner[0] = Some(PlayerId::new(0));
-
-        let dist = dijkstra(&[0], PlayerId::new(0), &owner, &neighbors, owner.len());
-
-        assert_eq!(dist[0], 0);
-    }
-
-    #[test]
-    fn test_connection_cost_win() {
-        let size = 3;
-        let neighbors = build_neighbor_table(size);
-        let sides = side_cells(size);
-
-        let mut owner = vec![None; neighbors.len()];
-
-        // Simular conexión trivial (dependerá de tu sistema exacto)
-        for i in 0..owner.len() {
-            owner[i] = Some(PlayerId::new(0));
+        {
+            let my_d_base = win_distance(owner, player, &tables);
+            if my_d_base <= 1 {
+                for &idx in board.available_cells() {
+                    let mut sim = owner.to_vec();
+                    sim[idx as usize] = Some(player);
+                    if win_distance(&sim, player, &tables) == 0 {
+                        return Some(Coordinates::from_index(idx, board_size));
+                    }
+                }
+            }
         }
 
-        let cost = connection_cost(PlayerId::new(0), &owner, &neighbors, &sides, owner.len());
-
-        assert_eq!(cost, 0);
-    }
-
-    #[test]
-    fn test_connection_cost_impossible() {
-        let size = 3;
-        let neighbors = build_neighbor_table(size);
-        let sides = side_cells(size);
-
-        let owner = vec![Some(PlayerId::new(1)); neighbors.len()];
-
-        let cost = connection_cost(PlayerId::new(0), &owner, &neighbors, &sides, owner.len());
-
-        assert_eq!(cost, 1000);
-    }
-
-    #[test]
-    fn test_evaluate_win() {
-        let mut game = GameY::new(2);
-        let player = PlayerId::new(0);
-
-        let moves = [
-            Coordinates::new(1, 1, 0),
-            Coordinates::new(0, 1, 1),
-            Coordinates::new(1, 0, 1),
-        ];
-
-        for coords in moves {
-            game.add_move(Movement::Placement { player, coords }).unwrap();
+        // â”€â”€ Step 2: immediate BLOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        for &idx in board.available_cells() {
+            if is_winning_move_fast(idx, owner, opponent, &tables) {
+                return Some(Coordinates::from_index(idx, board_size));
+            }
+        }
+        {
+            let opp_d_base = win_distance(owner, opponent, &tables);
+            if opp_d_base <= 2 {
+                for &idx in board.available_cells() {
+                    let mut sim = owner.to_vec();
+                    sim[idx as usize] = Some(opponent);
+                    if win_distance(&sim, opponent, &tables) == 0 {
+                        return Some(Coordinates::from_index(idx, board_size));
+                    }
+                }
+            }
         }
 
-        // Ahora sí debería ser victoria
-        assert!(game.check_game_over(), "El estado debería ser ganador");
+        // â”€â”€ Step 2.5: Threat scan (ALWAYS active) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Previously gated at opp_d <= 6 â€” now always runs but with a cell limit
+        // so it doesn't blow the time budget.
+        {
+            let opp_d_now = win_distance(owner, opponent, &tables);
+            let my_d_now  = win_distance(owner, player,   &tables);
 
-        let owner = build_owner_table(&game);
-        let neighbors = build_neighbor_table(2);
-        let sides = side_cells(2);
+            // Adaptive scan limit: deeper scan when threat is close
+            let scan_limit = if opp_d_now <= 4 { 60 }
+                             else if opp_d_now <= 7 { 40 }
+                             else { 25 };
 
-        let score = evaluate_position(&game, player, &owner, &neighbors, &sides);
+            let mut forced_block:      Option<u32> = None;
+            let mut urgent_block:      Option<u32> = None;
+            let mut best_threat_mv:    Option<u32> = None;
+            let mut best_threat_score: i32         = i32::MIN;
 
-        assert!(
-            score >= 10000,
-            "Score no indica victoria: {}",
-            score
-        );
-    }
+            // Scan in centrality order so we check the most dangerous cells first
+            for &idx in tables.center_order.iter()
+                .filter(|&&i| owner[i as usize].is_none())
+                .take(scan_limit)
+            {
+                let mut sim_opp = owner.to_vec();
+                sim_opp[idx as usize] = Some(opponent);
+                let opp_d_if_opp = win_distance(&sim_opp, opponent, &tables);
 
-    #[test]
-    fn test_evaluation_prefers_blocking() {
-        let size = 4;
-        let neighbors = build_neighbor_table(size);
-        let sides = side_cells(size);
+                if opp_d_if_opp == 0 { forced_block = Some(idx); break; }
+                if opp_d_if_opp == 1 && urgent_block.is_none() { urgent_block = Some(idx); }
 
-        let mut owner = vec![None; neighbors.len()];
+                let mut sim_us = owner.to_vec();
+                sim_us[idx as usize] = Some(player);
+                let opp_d_if_us = win_distance(&sim_us, opponent, &tables);
+                let my_d_if_us  = win_distance(&sim_us, player,   &tables);
 
-        // Rival casi gana
-        owner[0] = Some(PlayerId::new(1));
+                let block_gain   = opp_d_if_us as i32 - opp_d_now as i32;
+                let advance_gain = my_d_now as i32 - my_d_if_us as i32;
+                // Weight blocking more heavily when opponent is close
+                let block_weight = match opp_d_now {
+                    0..=3 => 5,
+                    4..=6 => 3,
+                    _     => 2,
+                };
+                let score = block_gain * block_weight + advance_gain;
 
-        let score = evaluate_position(
-            &GameY::new(size),
-            PlayerId::new(0),
-            &owner,
-            &neighbors,
-            &sides,
-        );
-
-        // No comprobamos valor exacto, solo que no sea neutro
-        assert!(score != 0);
-    }
-
-    #[test]
-    fn test_move_ordering_stability() {
-        let size = 4;
-        let neighbors = build_neighbor_table(size);
-        let sides = side_cells(size);
-
-        let owner = vec![None; neighbors.len()];
-        let cells: Vec<u32> = (0..neighbors.len() as u32).collect();
-
-        let ordered = order_moves_with_tables(
-            &cells,
-            PlayerId::new(0),
-            &owner,
-            &neighbors,
-            &sides,
-            neighbors.len(),
-        );
-
-        assert_eq!(ordered.len(), cells.len());
-    }
-
-    #[test]
-    fn test_minimax_depth_zero() {
-        let game = GameY::new(3);
-        let neighbors = build_neighbor_table(3);
-        let sides = side_cells(3);
-
-        let score = minimax(
-            &game,
-            0,
-            i32::MIN,
-            i32::MAX,
-            true,
-            PlayerId::new(0),
-            &neighbors,
-            &sides,
-        );
-
-        let owner = build_owner_table(&game);
-        let eval = evaluate_position(&game, PlayerId::new(0), &owner, &neighbors, &sides);
-
-        assert_eq!(score, eval);
-    }
-
-    #[test]
-    fn test_parallel_root_returns_move() {
-        let game = GameY::new(3);
-        let neighbors = build_neighbor_table(3);
-        let sides = side_cells(3);
-
-        let owner = build_owner_table(&game);
-        let ordered = game.available_cells().to_vec();
-
-        let result = parallel_root(
-            &game,
-            2,
-            PlayerId::new(0),
-            ordered,
-            &neighbors,
-            &sides,
-        );
-
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_bot_plays_valid_move() {
-        let game = GameY::new(4);
-        let bot = Hard;
-
-        let mv = bot.choose_move(&game);
-
-        assert!(mv.is_some());
-
-        let coords = mv.unwrap();
-
-        assert!(game.available_cells().contains(&coords.to_index(4)));
-    }
-
-    #[test]
-    fn test_random_states_do_not_panic() {
-        let size: u32 = 5;
-
-        for _ in 0..100 {
-            let mut game: GameY = GameY::new(size);
-
-            let mut rng = rand::rng();
-
-            for _ in 0..10 {
-                if let Some(p) = game.next_player() {
-                    let cells: &Vec<u32> = game.available_cells();
-                    if cells.is_empty() { break; }
-
-                    let idx: u32 = cells[rng.random_range(0..cells.len())];
-                    let coords: Coordinates = Coordinates::from_index(idx, size);
-
-                    let _ = game.add_move(Movement::Placement { player: p, coords });
+                if score > best_threat_score {
+                    best_threat_score = score;
+                    best_threat_mv    = Some(idx);
                 }
             }
 
-            let bot: Hard = Hard;
-            let _ = bot.choose_move(&game); // NO debe panic
+            if let Some(idx) = forced_block {
+                return Some(Coordinates::from_index(idx, board_size));
+            }
+            if let Some(idx) = urgent_block {
+                return Some(Coordinates::from_index(idx, board_size));
+            }
+            // Act on strategic blocks when opponent is threatening or we're behind
+            if best_threat_score > 1 && (opp_d_now < my_d_now || opp_d_now <= 8) {
+                if let Some(idx) = best_threat_mv {
+                    return Some(Coordinates::from_index(idx, board_size));
+                }
+            }
         }
-    }
 
-    #[test]
-    fn test_connection_cost_monotonicity_multiple() {
-        let size = 4;
-        let neighbors = build_neighbor_table(size);
-        let sides = side_cells(size);
+        // â”€â”€ Step 3: precompute distances + opponent path bonuses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let (my_dist, opp_dist) = win_distances_parallel(owner, player, &tables);
+        let opp_d_base = win_distance(owner, opponent, &tables);
 
-        let player = PlayerId::new(0);
-
-        for idx in 0..neighbors.len() {
-            let mut owner = vec![None; neighbors.len()];
-
-            let cost_before = connection_cost(
-                player,
-                &owner,
-                &neighbors,
-                &sides,
-                owner.len(),
-            );
-
-            owner[idx] = Some(player);
-
-            let cost_after = connection_cost(
-                player,
-                &owner,
-                &neighbors,
-                &sides,
-                owner.len(),
-            );
-
-            assert!(
-                cost_after <= cost_before,
-                "Coste aumentó en idx {}: before={}, after={}",
-                idx,
-                cost_before,
-                cost_after
-            );
+        // Build per-cell path-blocking bonus array (used throughout remaining steps)
+        let path_cells = find_opponent_path_cells(
+            owner, opponent, opp_d_base, &tables, self.cfg.threat_scan_limit,
+        );
+        let mut path_bonuses = vec![0.0f32; tables.total_cells];
+        for (idx, drop) in &path_cells {
+            path_bonuses[*idx as usize] = *drop as f32;
         }
-    }
 
+        // â”€â”€ Step 4: early game shortcut â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let pieces_placed: usize = (0..tables.total_cells)
+            .filter(|&i| board.owner_table()[i].is_some()).count();
+        if pieces_placed < 3 {
+            if let Some(&best) = tables.center_order.iter()
+                .find(|&&idx| board.owner_table()[idx as usize].is_none())
+            {
+                return Some(Coordinates::from_index(best, board_size));
+            }
+        }
+
+        // â”€â”€ Step 5: generate + re-rank candidates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let mut candidates = generate_candidates(board, player, &tables, &self.cfg, &path_bonuses);
+        if candidates.is_empty() { return None; }
+        if candidates.len() == 1 {
+            return Some(Coordinates::from_index(candidates[0].0, board_size));
+        }
+
+        // Re-rank by win-distance delta (top candidates only, for speed)
+        {
+            let opp          = other_player(player);
+            let my_d_base    = win_distance(owner, player, &tables);
+            let rerank_limit = self.cfg.candidate_limit.min(candidates.len());
+            for (idx, prior) in candidates[..rerank_limit].iter_mut() {
+                let mut sim = owner.to_vec();
+                sim[*idx as usize] = Some(player);
+                let my_d_new  = win_distance(&sim, player, &tables);
+                let opp_d_new = win_distance(&sim, opp,    &tables);
+                let delta = (my_d_base as f32 - my_d_new as f32)  * 16.0
+                          + (opp_d_new as f32 - opp_d_base as f32) * 24.0; // blocking weighted more
+                *prior += delta;
+            }
+            candidates.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        }
+
+        // â”€â”€ Step 6: MCTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let mcts_stats = run_mcts(board, player, &candidates, &tables, &self.cfg);
+
+        // â”€â”€ Step 7: tactical refinement on top-K â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let top_k    = self.cfg.top_k_tactical.min(mcts_stats.len());
+
+        // Boost tactical weight when opponent is close (tactics find blocks better)
+        let tac_weight = if opp_dist <= 5 {
+            (1.0 - self.cfg.mcts_weight + 0.20_f64).min(0.70)
+        } else {
+            1.0 - self.cfg.mcts_weight
+        };
+        let mcts_w = 1.0 - tac_weight;
+
+        let best_idx = mcts_stats[..top_k].iter()
+            .map(|s| {
+                let mcts_val = s.value();
+                let tac_raw  = if self.cfg.tactical_depth > 0 {
+                    tactical_score(board, player, s.idx, &self.cfg, &tables, &tt, &zobrist)
+                } else { 0 };
+                let tac_val = (tac_raw as f64 + INF_SCORE as f64) / (2.0 * INF_SCORE as f64);
+
+                let mut sim = owner.to_vec();
+                sim[s.idx as usize] = Some(player);
+                let my_d_after  = win_distance(&sim, player,             &tables) as f64;
+                let opp_d_after = win_distance(&sim, other_player(player), &tables) as f64;
+                // Blocking bonus: how much does this move push opponent away?
+                let block_delta = (opp_d_after - opp_dist as f64) * 0.25;
+                let adv_delta   = (my_dist as f64 - my_d_after)   * 0.14;
+                let dist_bonus  = if opp_dist > 0 {
+                    (opp_dist as f64 / (my_dist as f64 + 1.0)).min(3.0)
+                } else { 1.0 };
+                // Path-blocking bonus
+                let pb = path_bonuses[s.idx as usize] as f64 / 10.0;
+
+                let blended = mcts_w    * mcts_val
+                    + tac_weight        * tac_val
+                    + 0.05              * dist_bonus
+                    + (block_delta + adv_delta).clamp(-0.35, 0.35)
+                    + 0.03 * pb;
+                (s.idx, blended)
+            })
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+            .map(|(idx, _)| idx)?;
+
+        Some(Coordinates::from_index(best_idx, board_size))
+    }
 }

@@ -5,17 +5,21 @@ use std::collections::HashMap;
 use std::fmt::Write;
 use std::path::Path;
 
+
 pub type Result<T> = std::result::Result<T, crate::GameYError>;
+
 
 #[derive(Debug, Clone)]
 pub struct GameY {
     board_size: u32,
     board_map: HashMap<Coordinates, (SetIdx, PlayerId)>,
+    owner_table: Vec<Option<PlayerId>>,
     status: GameStatus,
     history: Vec<Movement>,
     sets: Vec<PlayerSet>,
     available_cells: Vec<u32>,
 }
+
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cell {
@@ -23,20 +27,42 @@ pub enum Cell {
     Occupied(PlayerId),
 }
 
+
+#[derive(Debug, Clone)]
+struct UnionChange {
+    root_i: SetIdx,
+    root_j: SetIdx,
+    root_j_before: PlayerSet,
+}
+
+
+#[derive(Debug, Clone)]
+pub struct UndoMove {
+    coords: Coordinates,
+    player: PlayerId,
+    prev_status: GameStatus,
+    inserted_set_idx: SetIdx,
+    union_changes: Vec<UnionChange>,
+}
+
+
 impl GameY {
     pub fn board_map(&self) -> impl Iterator<Item = (&Coordinates, &(SetIdx, PlayerId))> {
         self.board_map.iter()
     }
 
+
     pub fn history(&self) -> impl Iterator<Item = &Movement> {
         self.history.iter()
     }
+
 
     pub fn new(board_size: u32) -> Self {
         let total_cells = (board_size * (board_size + 1)) / 2;
         Self {
             board_size,
             board_map: HashMap::new(),
+            owner_table: vec![None; total_cells as usize],
             history: Vec::new(),
             sets: Vec::new(),
             status: GameStatus::Ongoing {
@@ -46,9 +72,11 @@ impl GameY {
         }
     }
 
+
     pub fn status(&self) -> &GameStatus {
         &self.status
     }
+
 
     pub fn check_game_over(&self) -> bool {
         match self.status {
@@ -57,18 +85,26 @@ impl GameY {
         }
     }
 
+
     pub fn available_cells(&self) -> &Vec<u32> {
         &self.available_cells
     }
 
-    /// Returns true if the given coordinates are already occupied by any player.
+
+    pub fn owner_table(&self) -> &[Option<PlayerId>] {
+        &self.owner_table
+    }
+
+
     pub fn is_occupied(&self, coords: &Coordinates) -> bool {
         self.board_map.contains_key(coords)
     }
 
+
     pub fn total_cells(&self) -> u32 {
         (self.board_size * (self.board_size + 1)) / 2
     }
+
 
     pub fn check_player_turn(&self, movement: &Movement) -> Result<()> {
         if let GameStatus::Ongoing { next_player } = self.status {
@@ -86,6 +122,7 @@ impl GameY {
         Ok(())
     }
 
+
     pub fn next_player(&self) -> Option<PlayerId> {
         if let GameStatus::Ongoing { next_player } = self.status {
             Some(next_player)
@@ -93,6 +130,7 @@ impl GameY {
             None
         }
     }
+
 
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let filename = path.as_ref().display().to_string();
@@ -105,6 +143,7 @@ impl GameY {
         GameY::try_from(yen)
     }
 
+
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let yen: YEN = self.into();
         let json_content =
@@ -116,6 +155,7 @@ impl GameY {
         })?;
         Ok(())
     }
+
 
     pub fn add_move(&mut self, movement: Movement) -> Result<()> {
         match &movement {
@@ -130,6 +170,7 @@ impl GameY {
         Ok(())
     }
 
+
     fn handle_placement(&mut self, player: PlayerId, coords: Coordinates) -> Result<()> {
         self.validate_placement(player, coords)?;
         let set_idx = self.register_piece(player, coords);
@@ -137,6 +178,7 @@ impl GameY {
         self.update_status_after_placement(player, won);
         Ok(())
     }
+
 
     fn connect_neighbors_and_check_win(
         &mut self,
@@ -157,6 +199,7 @@ impl GameY {
         won
     }
 
+
     fn update_status_after_placement(&mut self, player: PlayerId, won: bool) {
         if self.check_game_over() {
             tracing::info!("Game was already over. Move ignored for status update.");
@@ -169,6 +212,7 @@ impl GameY {
             };
         }
     }
+
 
     fn handle_action(&mut self, player: PlayerId, action: &GameAction) {
         match action {
@@ -185,6 +229,7 @@ impl GameY {
         }
     }
 
+
     fn validate_placement(&self, player: PlayerId, coords: Coordinates) -> Result<()> {
         if self.check_game_over() {
             tracing::info!("Game is already over. Move at {} could be ignored", coords);
@@ -198,6 +243,7 @@ impl GameY {
         Ok(())
     }
 
+
     fn register_piece(&mut self, player: PlayerId, coords: Coordinates) -> usize {
         let cell_idx = coords.to_index(self.board_size);
         self.available_cells.retain(|&x| x != cell_idx);
@@ -210,12 +256,15 @@ impl GameY {
         };
         self.sets.push(new_set);
         self.board_map.insert(coords, (set_idx, player));
+        self.owner_table[cell_idx as usize] = Some(player);
         set_idx
     }
+
 
     pub fn board_size(&self) -> u32 {
         self.board_size
     }
+
 
     fn get_neighbors(&self, coords: &Coordinates) -> Vec<Coordinates> {
         let mut neighbors = Vec::new();
@@ -236,6 +285,7 @@ impl GameY {
         }
         neighbors
     }
+
 
     pub fn render(&self, options: &RenderOptions) -> String {
         let mut result = String::new();
@@ -259,6 +309,7 @@ impl GameY {
         result
     }
 
+
     fn get_indent_multiplier(&self, options: &RenderOptions) -> u32 {
         match (options.show_3d_coords, options.show_idx) {
             (true, true) => 8,
@@ -267,6 +318,7 @@ impl GameY {
             (false, false) => 2,
         }
     }
+
 
     fn format_cell(&self, coords: Coordinates, options: &RenderOptions, width: usize) -> String {
         let player = self.board_map.get(&coords).map(|(_, p)| *p);
@@ -293,6 +345,7 @@ impl GameY {
         symbol
     }
 
+
     fn find(&mut self, i: SetIdx) -> SetIdx {
         if self.sets[i].parent == i {
             i
@@ -301,6 +354,7 @@ impl GameY {
             self.sets[i].parent
         }
     }
+
 
     fn union(&mut self, i: SetIdx, j: SetIdx) -> bool {
         let root_i = self.find(i);
@@ -316,14 +370,130 @@ impl GameY {
         }
         false
     }
+
+
+    // ──────────────────────────────────────────────
+    // API exclusiva del bot hard
+    // ──────────────────────────────────────────────
+
+
+    /// Non-compressing root finder for use in bot search (apply_move_bot / unmake_move).
+    ///
+    /// The standard `find` applies path compression, which mutates parent pointers on
+    /// nodes not part of the current move. Those mutations are NOT recorded in UnionChange
+    /// and therefore cannot be reverted by unmake_move, corrupting the Union-Find state
+    /// during deep search. This version avoids the problem by walking without modifying.
+    pub(crate) fn find_root_no_compress(&self, mut i: SetIdx) -> SetIdx {
+        while self.sets[i].parent != i {
+            i = self.sets[i].parent;
+        }
+        i
+    }
+
+
+    pub fn apply_move_bot(&mut self, player: PlayerId, coords: Coordinates) -> Result<UndoMove> {
+        if self.board_map.contains_key(&coords) {
+            return Err(GameYError::Occupied { coordinates: coords, player });
+        }
+
+
+        let prev_status = self.status.clone();
+        let cell_idx = coords.to_index(self.board_size);
+
+
+        if let Some(pos) = self.available_cells.iter().position(|&x| x == cell_idx) {
+            self.available_cells.swap_remove(pos);
+        }
+
+
+        let set_idx = self.sets.len();
+        self.sets.push(PlayerSet {
+            parent: set_idx,
+            touches_side_a: coords.touches_side_a(),
+            touches_side_b: coords.touches_side_b(),
+            touches_side_c: coords.touches_side_c(),
+        });
+        self.board_map.insert(coords, (set_idx, player));
+        self.owner_table[cell_idx as usize] = Some(player);
+
+
+        let mut won = self.sets[set_idx].is_winning_configuration();
+        let mut union_changes = Vec::new();
+
+
+        for neighbor in self.get_neighbors(&coords) {
+            let (nb_idx, nb_player) = match self.board_map.get(&neighbor) {
+                Some(&(idx, p)) => (idx, p),
+                None => continue,
+            };
+
+
+            if nb_player == player {
+                // Use find_root_no_compress so that path compression does not
+                // mutate parent pointers outside the recorded UnionChange entries.
+                // This guarantees that unmake_move fully restores the Union-Find state.
+                let root_i = self.find_root_no_compress(set_idx);
+                let root_j = self.find_root_no_compress(nb_idx);
+                if root_i != root_j {
+                    let root_j_before = self.sets[root_j].clone();
+                    self.sets[root_i].parent = root_j;
+                    self.sets[root_j].touches_side_a |= self.sets[root_i].touches_side_a;
+                    self.sets[root_j].touches_side_b |= self.sets[root_i].touches_side_b;
+                    self.sets[root_j].touches_side_c |= self.sets[root_i].touches_side_c;
+                    if self.sets[root_j].touches_side_a
+                        && self.sets[root_j].touches_side_b
+                        && self.sets[root_j].touches_side_c
+                    {
+                        won = true;
+                    }
+                    union_changes.push(UnionChange { root_i, root_j, root_j_before });
+                }
+            }
+        }
+
+
+        self.update_status_after_placement(player, won);
+
+
+        Ok(UndoMove {
+            coords,
+            player,
+            prev_status,
+            inserted_set_idx: set_idx,
+            union_changes,
+        })
+    }
+
+
+    pub fn unmake_move(&mut self, undo: UndoMove) {
+        self.status = undo.prev_status;
+        let cell_idx = undo.coords.to_index(self.board_size);
+
+
+        self.board_map.remove(&undo.coords);
+        self.owner_table[cell_idx as usize] = None;
+        self.available_cells.push(cell_idx);
+
+
+        for change in undo.union_changes.into_iter().rev() {
+            self.sets[change.root_i].parent = change.root_i;
+            self.sets[change.root_j] = change.root_j_before;
+        }
+
+
+        self.sets.truncate(undo.inserted_set_idx);
+    }
 }
+
 
 fn indent(str: &mut String, level: u32) {
     str.push_str(&" ".repeat(level as usize));
 }
 
+
 impl TryFrom<YEN> for GameY {
     type Error = GameYError;
+
 
     fn try_from(game: YEN) -> Result<Self> {
         let mut ygame = GameY::new(game.size());
@@ -376,6 +546,7 @@ impl TryFrom<YEN> for GameY {
     }
 }
 
+
 impl From<&GameY> for YEN {
     fn from(game: &GameY) -> Self {
         let size = game.board_size;
@@ -402,6 +573,7 @@ impl From<&GameY> for YEN {
     }
 }
 
+
 fn other_player(player: PlayerId) -> PlayerId {
     if player.id() == 0 {
         PlayerId::new(1)
@@ -409,6 +581,7 @@ fn other_player(player: PlayerId) -> PlayerId {
         PlayerId::new(0)
     }
 }
+
 
 fn apply_player_color(symbol: String, player: Option<PlayerId>) -> String {
     match player {
@@ -418,22 +591,26 @@ fn apply_player_color(symbol: String, player: Option<PlayerId>) -> String {
     }
 }
 
+
 #[derive(Debug, Clone)]
 pub enum GameStatus {
     Ongoing { next_player: PlayerId },
     Finished { winner: PlayerId },
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::collections::HashSet;
+
 
     #[test]
     fn test_other_player() {
         assert_eq!(other_player(PlayerId::new(0)), PlayerId::new(1));
         assert_eq!(other_player(PlayerId::new(1)), PlayerId::new(0));
     }
+
 
     #[test]
     fn test_game_initialization() {
@@ -448,11 +625,13 @@ mod tests {
         }
     }
 
+
     #[test]
     fn test_is_occupied_empty_board() {
         let game = GameY::new(5);
         assert!(!game.is_occupied(&Coordinates::new(2, 1, 1)));
     }
+
 
     #[test]
     fn test_is_occupied_after_move() {
@@ -466,11 +645,47 @@ mod tests {
         assert!(game.is_occupied(&coords));
     }
 
+
+    #[test]
+    fn test_owner_table_sync() {
+        let mut game = GameY::new(3);
+        let coords = Coordinates::new(1, 1, 0);
+        let idx = coords.to_index(3) as usize;
+        assert_eq!(game.owner_table()[idx], None);
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords,
+        })
+        .unwrap();
+        assert_eq!(game.owner_table()[idx], Some(PlayerId::new(0)));
+    }
+
+
+    #[test]
+    fn test_apply_bot_unmake_roundtrip() {
+        let mut game = GameY::new(4);
+        let coords = Coordinates::new(2, 1, 0);
+        let available_before = game.available_cells().len();
+        let owner_before = game.owner_table().to_vec();
+
+
+        let undo = game.apply_move_bot(PlayerId::new(0), coords).unwrap();
+        assert!(game.is_occupied(&coords));
+
+
+        game.unmake_move(undo);
+        assert!(!game.is_occupied(&coords));
+        assert_eq!(game.available_cells().len(), available_before);
+        assert_eq!(game.owner_table(), owner_before.as_slice());
+    }
+
+
     fn assert_neighbors_match(actual: Vec<Coordinates>, expected: Vec<Coordinates>) {
         let actual_set: HashSet<_> = actual.into_iter().collect();
         let expected_set: HashSet<_> = expected.into_iter().collect();
         assert_eq!(actual_set, expected_set);
     }
+
 
     #[test]
     fn test_interior_cell_has_six_neighbors() {
@@ -489,6 +704,7 @@ mod tests {
         assert_neighbors_match(neighbors, expected);
     }
 
+
     #[test]
     fn test_corner_cell_has_two_neighbors() {
         let board = GameY::new(5);
@@ -498,6 +714,7 @@ mod tests {
         assert_eq!(neighbors.len(), 2);
         assert_neighbors_match(neighbors, expected);
     }
+
 
     #[test]
     fn test_edge_cell_has_four_neighbors() {
@@ -513,6 +730,7 @@ mod tests {
         assert_eq!(neighbors.len(), 4);
         assert_neighbors_match(neighbors, expected);
     }
+
 
     #[test]
     fn test_winning_condition() {
@@ -533,6 +751,7 @@ mod tests {
         }
     }
 
+
     #[test]
     fn test_yen_conversion() {
         let mut game = GameY::new(3);
@@ -551,6 +770,7 @@ mod tests {
         assert_eq!(yen.layout(), yen_loaded.layout());
     }
 
+
     #[test]
     fn test_load_yen_end2() {
         let yen_str = r#"{"size": 2,"turn": 0,"players": ["B","R"],"layout": "B/BB"}"#;
@@ -561,6 +781,7 @@ mod tests {
             _ => panic!("Game should be finished with a winner"),
         }
     }
+
 
     #[test]
     fn test_load_yen_end3() {
@@ -573,6 +794,7 @@ mod tests {
         }
     }
 
+
     #[test]
     fn test_load_yen_single_full() {
         let yen_str = r#"{"size": 1,"turn": 0,"players": ["B","R"],"layout": "B"}"#;
@@ -583,6 +805,7 @@ mod tests {
             other => panic!("Game should be finished with a winner. Found {:?}", other),
         }
     }
+
 
     #[test]
     fn test_load_yen_single_empty() {

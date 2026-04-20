@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 /// It includes context about which API version and bot were involved.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ErrorResponse {
+    /// A stable error code for localization and machine handling.
+    pub code: String,
     /// The API version that was requested, if available.
     pub api_version: Option<String>,
     /// The bot ID that was requested, if available.
@@ -16,14 +18,16 @@ pub struct ErrorResponse {
 }
 
 impl ErrorResponse {
-    /// Creates a new error response with the given message and optional context.
+    /// Creates a new error response with the given code and message.
     ///
     /// # Arguments
+    /// * `code` - A stable error code suitable for localization
     /// * `message` - A description of the error
     /// * `api_version` - The API version from the request, if known
     /// * `bot_id` - The bot ID from the request, if known
-    pub fn error(message: &str, api_version: Option<String>, bot_id: Option<String>) -> Self {
+    pub fn error(code: &str, message: &str, api_version: Option<String>, bot_id: Option<String>) -> Self {
         Self {
+            code: code.to_string(),
             bot_id,
             api_version,
             message: message.to_string(),
@@ -44,10 +48,12 @@ mod tests {
     #[test]
     fn test_error_with_all_fields() {
         let err = ErrorResponse::error(
+            "UNKNOWN_ERROR",
             "Something went wrong",
             Some("v1".to_string()),
             Some("random".to_string()),
         );
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "Something went wrong");
         assert_eq!(err.api_version, Some("v1".to_string()));
         assert_eq!(err.bot_id, Some("random".to_string()));
@@ -55,7 +61,8 @@ mod tests {
 
     #[test]
     fn test_error_with_no_context() {
-        let err = ErrorResponse::error("Generic error", None, None);
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Generic error", None, None);
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "Generic error");
         assert_eq!(err.api_version, None);
         assert_eq!(err.bot_id, None);
@@ -63,7 +70,8 @@ mod tests {
 
     #[test]
     fn test_error_with_partial_context() {
-        let err = ErrorResponse::error("Version error", Some("v2".to_string()), None);
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Version error", Some("v2".to_string()), None);
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "Version error");
         assert_eq!(err.api_version, Some("v2".to_string()));
         assert_eq!(err.bot_id, None);
@@ -71,8 +79,9 @@ mod tests {
 
     #[test]
     fn test_serialize() {
-        let err = ErrorResponse::error("Test error", Some("v1".to_string()), Some("bot1".to_string()));
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Test error", Some("v1".to_string()), Some("bot1".to_string()));
         let json = serde_json::to_string(&err).unwrap();
+        assert!(json.contains("\"code\":\"UNKNOWN_ERROR\""));
         assert!(json.contains("\"message\":\"Test error\""));
         assert!(json.contains("\"api_version\":\"v1\""));
         assert!(json.contains("\"bot_id\":\"bot1\""));
@@ -80,8 +89,9 @@ mod tests {
 
     #[test]
     fn test_deserialize() {
-        let json = r#"{"api_version":"v1","bot_id":"random","message":"error msg"}"#;
+        let json = r#"{"code":"UNKNOWN_ERROR","api_version":"v1","bot_id":"random","message":"error msg"}"#;
         let err: ErrorResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "error msg");
         assert_eq!(err.api_version, Some("v1".to_string()));
         assert_eq!(err.bot_id, Some("random".to_string()));
@@ -89,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_clone() {
-        let err = ErrorResponse::error("Clone test", Some("v1".to_string()), None);
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Clone test", Some("v1".to_string()), None);
         let cloned = err.clone();
         assert_eq!(err, cloned);
     }

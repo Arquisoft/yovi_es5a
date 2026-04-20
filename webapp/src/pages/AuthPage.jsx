@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { login, register } from "../services/authApi";
 import { useSessionStore } from "../store/sessionStore";
+import LanguageSelector from "../components/LanguageSelector";
 import "./AuthPage.css";
 
 
@@ -120,6 +121,9 @@ export default function AuthPage() {
   return (
     <section className="authPage">
       <article className="authCard">
+        <div className="authLanguageWrapper">
+          <LanguageSelector />
+        </div>
         <header className="authHeader">
           <h1 className="authTitle">{t("auth.title")}</h1>
           <p className="authSubtitle">{t("auth.subtitle")}</p>
@@ -154,7 +158,7 @@ export default function AuthPage() {
         </div>
 
         {activeTab === "login" ? (
-          <form className="authForm" onSubmit={handleLoginSubmit}>
+          <form className="authForm" onSubmit={handleLoginSubmit} noValidate>
             <label htmlFor="identifier">{t("auth.login.identifier")}</label>
             <input
               id="identifier"
@@ -178,7 +182,7 @@ export default function AuthPage() {
             </button>
           </form>
         ) : (
-          <form className="authForm" onSubmit={handleRegisterSubmit}>
+          <form className="authForm" onSubmit={handleRegisterSubmit} noValidate>
             <label htmlFor="registerEmail">{t("auth.register.email")}</label>
             <input
               id="registerEmail"

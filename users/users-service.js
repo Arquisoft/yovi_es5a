@@ -38,6 +38,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Funciones auxiliares para enviar errores de forma consistente
 function sendError(res, status, code, text, key = "error") {
   return res.status(status).json({ [key]: text, code });
 }
@@ -294,7 +295,6 @@ app.get('/users/:username/centered-leaderboard', async (req, res) => {
     });
     return res.json(response);
   } catch (err) {
-    console.error('Error al obtener leaderboard centrado:', err.message);
     return sendErrorFromException(res, err, 'message');
   }
 });

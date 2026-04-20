@@ -1,4 +1,5 @@
 import i18n from "../i18n";
+import { getBackendErrorMessage } from "./apiErrorHelper";
 
 const GAMEY_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_GAMEY_URL) ||
@@ -48,7 +49,9 @@ export async function validateTwoPlayerMove({ board, selectedCell }) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || i18n.t("game.error.serverValidationFailed"));
+    throw new Error(
+      getBackendErrorMessage(data, "game.error.serverValidationFailed")
+    );
   }
 
   return {
@@ -76,7 +79,7 @@ export async function requestBotMove({ board, difficulty = "Facil" }) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || i18n.t("game.error.serverBotMoveFailed"));
+    throw new Error(getBackendErrorMessage(data, "game.error.serverBotMoveFailed"));
   }
 
   if (!data?.coords) {

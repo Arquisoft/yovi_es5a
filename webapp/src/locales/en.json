@@ -4,7 +4,10 @@
     "logout": "Log out",
     "logoutAria": "Log out",
     "viewLeaderboard": "Leaderboard",
-    "language": "Language"
+    "language": "Language",
+    "error": {
+      "databaseError": "Database error"
+    }
   },
   "auth": {
     "title": "Sign in",
@@ -33,6 +36,7 @@
       "missingUsername": "Please enter a username or email",
       "missingPassword": "Please enter a password",
       "missingEmail": "Please enter your email",
+      "invalidEmail": "Please enter a valid email address",
       "emailAlreadyRegistered": "Email is already registered",
       "missingLoginData": "Please enter username and password",
       "userNotFound": "User not found",
@@ -124,6 +128,13 @@
       "couldNotApplyBotMove": "Could not apply bot move",
       "serverValidationFailed": "Unable to validate the move on the server.",
       "serverBotMoveFailed": "Unable to retrieve the bot move.",
+      "invalidYenFormat": "Invalid YEN format.",
+      "gameAlreadyOver": "The game is already over.",
+      "botNotFound": "The selected bot was not found.",
+      "invalidBotMove": "The bot selected an invalid move.",
+      "unsupportedApiVersion": "Unsupported API version.",
+      "invalidPositionJson": "Invalid position JSON.",
+      "serverMoveFailed": "Unable to perform the move on the server.",
       "botCoordsMissing": "Bot response did not include coordinates."
     },
     "winMessage": "Winner: {{playerName}}",
@@ -149,7 +160,15 @@
     "error": {
       "scoreCalculationFailed": "Unable to calculate the score on users.",
       "invalidScoreResponse": "Users response did not include a valid score.",
-      "invalidFinishedMatchPayload": "Finished match payload is invalid"
+      "invalidFinishedMatchPayload": "Finished match payload is invalid",
+      "databaseError": "Database error",
+      "missingGameParameters": "Missing game parameters",
+      "invalidGamePlayers": "Players must be different",
+      "invalidWinner": "Invalid winner",
+      "tokenMismatchPlayerName": "Token does not match the player name",
+      "noBotForDifficulty": "No bot exists for the selected difficulty",
+      "unsupportedGameMode": "Unsupported game mode",
+      "invalidDifficulty": "Invalid difficulty for 1vsbot"
     }
   },
   "profile": {

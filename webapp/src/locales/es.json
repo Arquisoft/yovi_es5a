@@ -4,7 +4,10 @@
     "logout": "Cerrar sesión",
     "logoutAria": "Cerrar sesión",
     "viewLeaderboard": "Puntuaciones",
-    "language": "Idioma"
+    "language": "Idioma",
+    "error": {
+      "databaseError": "Error de base de datos"
+    }
   },
   "auth": {
     "title": "Acceder",
@@ -33,6 +36,7 @@
       "missingUsername": "Introduce un nombre de usuario o correo",
       "missingPassword": "Introduce una contraseña",
       "missingEmail": "Introduce un correo electrónico",
+      "invalidEmail": "Introduce una dirección de correo válida",
       "emailAlreadyRegistered": "El correo electrónico ya está registrado",
       "missingLoginData": "Introduce usuario y contraseña",
       "userNotFound": "Usuario no encontrado",
@@ -123,6 +127,13 @@
       "couldNotApplyBotMove": "No se pudo aplicar la jugada del bot",
       "serverValidationFailed": "No se pudo validar el movimiento en el servidor.",
       "serverBotMoveFailed": "No se pudo obtener el movimiento del bot.",
+      "invalidYenFormat": "Formato YEN inválido.",
+      "gameAlreadyOver": "La partida ya ha terminado.",
+      "botNotFound": "No se encontró el bot seleccionado.",
+      "invalidBotMove": "El bot seleccionó un movimiento inválido.",
+      "unsupportedApiVersion": "Versión de API no soportada.",
+      "invalidPositionJson": "JSON de posición inválido.",
+      "serverMoveFailed": "No se pudo realizar la jugada en el servidor.",
       "botCoordsMissing": "La respuesta del bot no incluye coordenadas."
     },
     "winMessage": "Ganador: {{playerName}}",
@@ -148,7 +159,15 @@
     "error": {
       "scoreCalculationFailed": "No se pudo calcular la puntuación en users.",
       "invalidScoreResponse": "La respuesta de users no incluye una puntuación válida.",
-      "invalidFinishedMatchPayload": "El payload de la partida terminada no es válido"
+      "invalidFinishedMatchPayload": "El payload de la partida terminada no es válido",
+      "databaseError": "Error de base de datos",
+      "missingGameParameters": "Faltan parámetros de la partida",
+      "invalidGamePlayers": "Los jugadores deben ser diferentes",
+      "invalidWinner": "Ganador no válido",
+      "tokenMismatchPlayerName": "El token no coincide con el nombre del jugador",
+      "noBotForDifficulty": "No existe un bot para esa dificultad",
+      "unsupportedGameMode": "Modo de juego no soportado",
+      "invalidDifficulty": "Dificultad inválida para 1vsbot"
     }
   },
   "profile": {

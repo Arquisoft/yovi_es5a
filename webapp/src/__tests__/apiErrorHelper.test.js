@@ -8,6 +8,8 @@ describe("apiErrorHelper", () => {
       .toBe(i18n.t("auth.error.accessTokenRequired"));
     expect(getBackendErrorMessage({ code: "INVALID_FINISHED_MATCH_PAYLOAD" }, "users.error.scoreCalculationFailed"))
       .toBe(i18n.t("users.error.invalidFinishedMatchPayload"));
+    expect(getBackendErrorMessage({ code: "DATABASE_ERROR" }, "leaderboard.error.loadFailed"))
+      .toBe(i18n.t("app.error.databaseError"));
   });
 
   it("falls back to raw message when the code is unknown", () => {

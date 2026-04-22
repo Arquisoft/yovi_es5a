@@ -27,7 +27,8 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
-      const normalizedPlayerName = String(user?.username || "").trim();
+      const normalizedPlayerName = String(user?.username || "test").trim();
+      
       if (!normalizedPlayerName) {
         throw new Error("No hay sesión activa. Inicia sesión de nuevo.");
       }
@@ -36,12 +37,12 @@ export default function StartGameForm() {
         throw new Error("Debes indicar el nombre del invitado.");
       }
 
-      // 1. Validar que hay token
+     // 1. Validar que hay token
       if (!accessToken) {
         clearSession();
         throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
       }
-
+        
       const resp = await fetch(createUrl("/auth/check"), {
         method: "GET",
         headers: {
@@ -54,12 +55,12 @@ export default function StartGameForm() {
       clearSession();
       throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
     }
-
+ 
 
 
       setGameConfig({
         gameMode,
-        player1Name: normalizedPlayerName,
+        player1Name: normalizedPlayerName ,
         player2Name: gameMode === "1vs1" ? guestName : "Bot",
         difficulty,
         boardSize,

@@ -80,7 +80,7 @@ function App() {
       <Route
         path="/"
         element={(
-          <RequireAuth>
+         <RequireAuth>
             <HomePage />
           </RequireAuth>
         )}

@@ -14,9 +14,11 @@ pub use play::PlayResponse;
 pub use version::*;
 
 use crate::{GameYError, Medium, Hard, RandomBot, YBotRegistry, state::AppState};
+use axum_prometheus::PrometheusMetricLayer;
 
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
+
 
 fn cors_layer() -> CorsLayer {
     CorsLayer::new()
@@ -24,6 +26,7 @@ fn cors_layer() -> CorsLayer {
         .allow_methods([Method::GET, Method::POST])
         .allow_headers(Any)
 }
+
 
 /// Router para la API de bots existente (choose).
 pub fn create_router(state: AppState) -> axum::Router {
@@ -37,9 +40,15 @@ pub fn create_router(state: AppState) -> axum::Router {
         .layer(cors_layer())
 }
 
-/// Router para la nueva API de play (puerto separado).
+
+/// Router para la nueva API de play (puerto separado) con métricas Prometheus.
 pub fn create_play_router(state: AppState) -> axum::Router {
+    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+
     axum::Router::new()
+        .route("/metrics", axum::routing::get(move || async move {
+            metric_handle.render()
+        }))
         .route("/status", axum::routing::get(status))
         .route(
             "/{api_version}/play/{bot_id}",
@@ -51,17 +60,20 @@ pub fn create_play_router(state: AppState) -> axum::Router {
         )
         .with_state(state)
         .layer(cors_layer())
+        .layer(prometheus_layer)
 }
+
 
 /// Crea el estado por defecto con el registro de bots estándar.
 pub fn create_default_state() -> AppState {
     let bots = YBotRegistry::new()
         .with_bot(Arc::new(RandomBot))
         .with_bot(Arc::new(Medium))
-        .with_bot(Arc::new(Hard));
+        .with_bot(Arc::new(Hard::default()));
 
     AppState::new(bots)
 }
+
 
 /// Levanta el servidor de bots existente (choose).
 pub async fn run_bot_server(port: u16) -> Result<(), GameYError> {
@@ -85,6 +97,7 @@ pub async fn run_bot_server(port: u16) -> Result<(), GameYError> {
     Ok(())
 }
 
+
 /// Levanta el servidor de la nueva API de play en el puerto indicado.
 pub async fn run_play_server(port: u16) -> Result<(), GameYError> {
     let state = create_default_state();
@@ -106,6 +119,7 @@ pub async fn run_play_server(port: u16) -> Result<(), GameYError> {
 
     Ok(())
 }
+
 
 pub async fn status() -> impl IntoResponse {
     "OK"

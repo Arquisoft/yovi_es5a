@@ -89,6 +89,7 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, sug
               key={cell.id}
               id={`cell-${cell.q}-${cell.r}`}
               data-testid={`cell-${cell.q}-${cell.r}`}
+              data-state={cell.state ?? 'empty'}
               style={{
                 position: 'absolute',
                 left: screenX - HEX_SIZE,

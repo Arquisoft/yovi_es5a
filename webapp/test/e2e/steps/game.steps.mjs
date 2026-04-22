@@ -227,6 +227,18 @@ When('I play a game against the medium bot', async function () {
   await playToWin(page, size)
 })
 
+When('I play a game against the hard bot', async function () {
+  const page = this.page
+  if (!page) throw new Error('Page not initialized')
+  await page.waitForSelector('#gameMode', { timeout: 10000 })
+  await page.selectOption('#gameMode', '1vsbot');
+  await page.fill('#boardSize', `${size}`);
+  await page.selectOption('#difficulty', 'Dificil');
+  await page.click('.startButton')
+  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
+  await playToWin(page, size)
+})
+
 Then('I should see the victory menu', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')

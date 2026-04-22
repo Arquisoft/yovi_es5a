@@ -194,7 +194,7 @@ When('I play a game against the local player', async function () {
     { q: 2, r: 1 },  // J1
     { q: 0, r: 5 },  // J2 - libre
     { q: 1, r: 1 },  // J1
-    { q: 0, r: 6 },  // J2 - libre  ⚠️ verifica que esta celda existe en size=6
+    { q: 0, r: 6 },  // J2 - libre - verifica que esta celda existe en size=6
     { q: 0, r: 1 },  // J1 - esquina inferior → GANA
   ];
 
@@ -221,7 +221,10 @@ When('I play a game against the medium bot', async function () {
   await page.waitForSelector('#gameMode', { timeout: 10000 })
   await page.selectOption('#gameMode', '1vsbot');
   await page.fill('#boardSize', `${size}`);
+  await page.selectOption('#difficulty', 'Media');
   await page.click('.startButton')
+  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
+  await playToWin(page, size)
 })
 
 Then('I should see the victory menu', async function () {

@@ -29,10 +29,8 @@ function hexPoints(size) {
 export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, suggestionId, playerColors }) {
   const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
-
   const STAGE_WIDTH = 800;
   const STAGE_HEIGHT = 600;
-
   const pixels = cells.map((c) => axialToPixel(c.q, c.r, HEX_SIZE, size));
   const xs = pixels.map((p) => p.x);
   const ys = pixels.map((p) => p.y);
@@ -40,46 +38,74 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, sug
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
-
   const boardCenterX = (minX + maxX) / 2;
   const boardCenterY = (minY + maxY) / 2;
   const groupX = STAGE_WIDTH / 2 - boardCenterX;
   const groupY = STAGE_HEIGHT / 2 - boardCenterY;
 
   return (
-    <Stage width={STAGE_WIDTH} height={STAGE_HEIGHT}>
-      <Layer>
-        <Group x={groupX} y={groupY}>
-          {cells.map((cell) => {
-            const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
+    // Contenedor relativo para superponer el overlay
+    <div style={{ position: 'relative', width: STAGE_WIDTH, height: STAGE_HEIGHT }}>
 
-            let fill = playerColors?.empty ?? "#ccc";
-            if (cell.state === "player1") fill = playerColors?.player1 ?? "#e63946";
-            if (cell.state === "player2") fill = playerColors?.player2 ?? "#1d4ed8";
-            // Sugerencia solo si la celda está vacía
-            if (cell.id === suggestionId && cell.state == null) fill = playerColors?.suggestion ?? "#f5c518";
-            // selectedId tiene siempre prioridad visual
-            if (cell.id === selectedId) fill = playerColors?.selected ?? "#2ecc71";
+      {/* Canvas Konva original — sin cambios */}
+      <Stage width={STAGE_WIDTH} height={STAGE_HEIGHT}>
+        <Layer>
+          <Group x={groupX} y={groupY}>
+            {cells.map((cell) => {
+              const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
+              let fill = playerColors?.empty ?? "#ccc";
+              if (cell.state === "player1") fill = playerColors?.player1 ?? "#e63946";
+              if (cell.state === "player2") fill = playerColors?.player2 ?? "#1d4ed8";
+              if (cell.id === suggestionId && cell.state == null) fill = playerColors?.suggestion ?? "#f5c518";
+              if (cell.id === selectedId) fill = playerColors?.selected ?? "#2ecc71";
+              const isSuggestion = cell.id === suggestionId && cell.state == null;
+              return (
+                <Line
+                  key={cell.id}
+                  points={hex}
+                  x={x}
+                  y={y}
+                  closed
+                  stroke="black"
+                  strokeWidth={isSuggestion ? 4 : 2}
+                  fill={fill}
+                  onClick={() => onCellClick && onCellClick(cell.id)}
+                  onTap={() => onCellClick && onCellClick(cell.id)}
+                />
+              );
+            })}
+          </Group>
+        </Layer>
+      </Stage>
 
-            const isSuggestion = cell.id === suggestionId && cell.state == null;
+      {/* Overlay HTML transparente con divs clicables por celda */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: STAGE_WIDTH, height: STAGE_HEIGHT, pointerEvents: 'none' }}>
+        {cells.map((cell) => {
+          const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
+          const screenX = groupX + x;
+          const screenY = groupY + y;
+          return (
+            <div
+              key={cell.id}
+              id={`cell-${cell.q}-${cell.r}`}
+              data-testid={`cell-${cell.q}-${cell.r}`}
+              style={{
+                position: 'absolute',
+                left: screenX - HEX_SIZE,
+                top: screenY - HEX_SIZE,
+                width: HEX_SIZE * 2,
+                height: HEX_SIZE * 2,
+                pointerEvents: 'all', // solo este div captura clicks
+                cursor: 'pointer',
+                // En producción puedes quitar el background:
+                // background: 'rgba(255,0,0,0.1)',
+              }}
+              onClick={() => onCellClick && onCellClick(cell.id)}
+            />
+          );
+        })}
+      </div>
 
-            return (
-              <Line
-                key={cell.id}
-                points={hex}
-                x={x}
-                y={y}
-                closed
-                stroke="black"
-                strokeWidth={isSuggestion ? 4 : 2}
-                fill={fill}
-                onClick={() => onCellClick && onCellClick(cell.id)}
-                onTap={() => onCellClick && onCellClick(cell.id)}
-              />
-            );
-          })}
-        </Group>
-      </Layer>
-    </Stage>
+    </div>
   );
 });

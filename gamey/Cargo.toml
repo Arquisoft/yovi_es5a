@@ -25,6 +25,7 @@ path = "src/lib.rs"
 [dependencies]
 hyper = { version = "0.14", features = ["full"] }
 anyhow = "1.0"
+urlencoding = "2"
 axum-prometheus = "0.7"
 axum = { version = "0.8", features = ["macros"] }
 clap = { version = "4.0", features = ["derive"] }

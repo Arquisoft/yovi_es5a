@@ -52,7 +52,7 @@ describe("StartGameForm", () => {
     expect(screen.getByLabelText(/modo/i)).toHaveValue("1vs1");
 
     expect(screen.getByLabelText(/jugador autenticado/i)).toHaveValue("Alice");
-    expect(screen.getByLabelText(/nombre invitado/i)).toBeRequired();
+    expect(screen.getByLabelText(/nombre del invitado/i)).toBeRequired();
 
     expect(screen.queryByLabelText(/dificultad/i)).toBeNull();
   });
@@ -71,12 +71,12 @@ describe("StartGameForm", () => {
     const user = userEvent.setup();
     render(<StartGameForm />);
 
-    await user.type(screen.getByLabelText(/nombre invitado/i), "Bob");
+    await user.type(screen.getByLabelText(/nombre del invitado/i), "Bob");
 
-    await user.clear(screen.getByLabelText(/tamaño tablero/i));
-    await user.type(screen.getByLabelText(/tamaño tablero/i), "10");
+    await user.clear(screen.getByLabelText(/tamaño del tablero/i));
+    await user.type(screen.getByLabelText(/tamaño del tablero/i), "10");
 
-    await user.click(screen.getByRole("button", { name: /empezar partida/i }));
+    await user.click(screen.getByRole("button", { name: /iniciar partida/i }));
 
     // Verificar que el fetch se hizo a la URL correcta con el token
     expect(global.fetch).toHaveBeenCalledWith(
@@ -108,7 +108,7 @@ describe("StartGameForm", () => {
     await user.selectOptions(screen.getByLabelText(/modo/i), "1vsbot");
     await user.selectOptions(screen.getByLabelText(/dificultad/i), "Media");
 
-    await user.click(screen.getByRole("button", { name: /empezar partida/i }));
+    await user.click(screen.getByRole("button", { name: /iniciar partida/i }));
 
     expect(setGameConfig).toHaveBeenCalledTimes(1);
     expect(setGameConfig).toHaveBeenCalledWith({
@@ -134,10 +134,11 @@ describe("StartGameForm", () => {
     const user = userEvent.setup();
     render(<StartGameForm />);
 
-    await user.type(screen.getByLabelText(/nombre invitado/i), "Bob");
-    await user.click(screen.getByRole("button", { name: /empezar partida/i }));
+    await user.type(screen.getByLabelText(/nombre del invitado/i), "Bob");
+    await user.click(screen.getByRole("button", { name: /iniciar partida/i }));
 
-    expect(await screen.findByText(/no hay sesión activa/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no estás autenticado/i))
+      .toBeInTheDocument();
     expect(setGameConfig).not.toHaveBeenCalled();
     expect(startGameFromConfig).not.toHaveBeenCalled();
   });
@@ -148,10 +149,10 @@ describe("StartGameForm", () => {
     const user = userEvent.setup();
     render(<StartGameForm />);
 
-    await user.type(screen.getByLabelText(/nombre invitado/i), "Bob");
-    await user.click(screen.getByRole("button", { name: /empezar partida/i }));
+    await user.type(screen.getByLabelText(/nombre del invitado/i), "Bob");
+    await user.click(screen.getByRole("button", { name: /iniciar partida/i }));
 
-    expect(await screen.findByText(/tu sesión ha expirado/i)).toBeInTheDocument();
+    expect(await screen.findByText(/la sesión ha caducado/i)).toBeInTheDocument();
     expect(clearSession).toHaveBeenCalledTimes(1);
     expect(setGameConfig).not.toHaveBeenCalled();
   });

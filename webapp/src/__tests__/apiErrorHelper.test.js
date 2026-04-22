@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import { getBackendErrorMessage } from "../services/apiErrorHelper";
 import i18n from "../i18n";
 

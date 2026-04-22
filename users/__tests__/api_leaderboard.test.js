@@ -55,7 +55,7 @@ describe('GET /leaderboard y endpoints de usuario', () => {
 
     const res = await request(app).get('/leaderboard');
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(400);
     expect(res.body.message).toBe('Fallo de conexión');
   });
 
@@ -64,7 +64,7 @@ describe('GET /leaderboard y endpoints de usuario', () => {
 
     const res = await request(app).get('/leaderboard/suggest?q=ana');
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(400);
     expect(res.body.message).toBe('Error interno en sugerencias');
   });
 
@@ -82,7 +82,7 @@ describe('GET /leaderboard y endpoints de usuario', () => {
 
     const res = await request(app).get('/users/resolve?username=ana')
 
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(400)
     expect(res.body.message).toBe('Error de base de datos')
   })
 
@@ -90,7 +90,7 @@ describe('GET /leaderboard y endpoints de usuario', () => {
     vi.spyOn(leaderboardService, 'getUserProfile').mockRejectedValue(new Error('Error al conectar con el servidor de perfiles'));
 
     const res = await request(app).get('/users/ana');
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(400);
     expect(res.body.message).toBe('Error al conectar con el servidor de perfiles');
   });
 

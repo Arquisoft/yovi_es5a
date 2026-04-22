@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
 
 describe("gamePlayApi", () => {

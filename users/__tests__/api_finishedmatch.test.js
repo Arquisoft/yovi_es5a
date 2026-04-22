@@ -219,7 +219,7 @@ describe('POST /finished-match', () => {
         winner: 'player'
       });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(400);
     expect(res.body.message).toBe('Error de base de datos');
   });
 

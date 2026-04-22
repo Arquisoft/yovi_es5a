@@ -10,11 +10,13 @@ use crate::{
 };
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
 };
 use serde::{Deserialize, Serialize};
 
+
 const DEFAULT_BOT: &str = "hard_bot";
+
 
 /// Path parameters for the play endpoint.
 /// `bot_id` is optional — if omitted, hard_bot (maximum difficulty) will be used.
@@ -24,6 +26,15 @@ pub struct PlayParams {
     #[serde(default)]
     bot_id: Option<String>,
 }
+
+
+/// Query parameters for the play endpoint.
+/// `position` carries the full YEN payload as a URL-encoded JSON string.
+#[derive(Deserialize)]
+pub struct PlayQuery {
+    position: String,
+}
+
 
 /// Response returned by the play endpoint.
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -36,16 +47,18 @@ pub struct PlayResponse {
     pub position: YEN,
 }
 
-/// POST /{api_version}/play/{bot_id}  (bot_id optional)
+
+/// GET /{api_version}/play/{bot_id}?position=<url-encoded-json>  (bot_id optional)
 ///
-/// Receives the current board position in YEN notation as the request body,
-/// lets the specified bot (or hard_bot by default) choose a move, applies it,
-/// and returns the resulting position together with the chosen coordinates.
+/// Receives the current board position in YEN notation as a JSON-encoded
+/// query parameter `position`, lets the specified bot (or hard_bot by default)
+/// choose a move, applies it, and returns the resulting position together
+/// with the chosen coordinates.
 #[axum::debug_handler]
 pub async fn play(
     State(state): State<AppState>,
     Path(params): Path<PlayParams>,
-    Json(yen): Json<YEN>,
+    Query(query): Query<PlayQuery>,
 ) -> Result<Json<PlayResponse>, Json<ErrorResponse>> {
     check_api_version(&params.api_version)?;
 
@@ -53,6 +66,18 @@ pub async fn play(
     let bot_id = match &params.bot_id {
         Some(id) => id.clone(),
         None => DEFAULT_BOT.to_string(),
+    };
+
+    // Deserialize YEN from the `position` query parameter.
+    let yen: YEN = match serde_json::from_str(&query.position) {
+        Ok(y) => y,
+        Err(err) => {
+            return Err(Json(ErrorResponse::error(
+                &format!("Invalid JSON in `position` parameter: {}", err),
+                Some(params.api_version),
+                Some(bot_id),
+            )));
+        }
     };
 
     let turn = yen.turn();
@@ -139,11 +164,19 @@ mod tests {
 
     use crate::{YBot, YBotRegistry};
     use super::*;
+    use axum::extract::Query;
     use std::sync::Mutex;
     use std::sync::Arc;
 
+
     fn sample_yen() -> YEN {
         YEN::new(3, 0, vec!['B', 'R'], ".../.../...".to_string())
+    }
+
+    fn yen_to_query(yen: &YEN) -> PlayQuery {
+        PlayQuery {
+            position: serde_json::to_string(yen).unwrap(),
+        }
     }
 
     #[test]
@@ -218,12 +251,12 @@ mod tests {
         }
     }
 
-   fn valid_yen() -> YEN {
+    fn valid_yen() -> YEN {
         YEN::new(
             3,
             0,
             vec!['R', 'B'],
-            "./.B/.RB".to_string()
+            "./.B/.RB".to_string(),
         )
     }
 
@@ -252,7 +285,6 @@ mod tests {
 
         fn choose_move(&self, _board: &GameY) -> Option<Coordinates> {
             let mut moves = self.moves.lock().unwrap();
-
             if moves.is_empty() {
                 None
             } else {
@@ -263,13 +295,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_bot_not_found() {
-        let registry = YBotRegistry::new(); // vacío
+        let registry = YBotRegistry::new();
         let state = build_state_with_registry(registry);
 
         let result = play(
             State(state),
             Path(valid_params(Some("ghost"))),
-            Json(valid_yen()),
+            Query(yen_to_query(&valid_yen())),
         )
         .await;
 
@@ -284,7 +316,7 @@ mod tests {
         let result = play(
             State(state),
             Path(valid_params(None)),
-            Json(finished_yen()),
+            Query(yen_to_query(&finished_yen())),
         )
         .await;
 
@@ -294,16 +326,15 @@ mod tests {
     #[tokio::test]
     async fn test_bot_without_moves() {
         let registry = YBotRegistry::new().with_bot(Arc::new(TestBot::new(
-            "hard_bot",                 // nombre del bot
-            vec![None],                 // movimientos que quieres simular
+            "hard_bot",
+            vec![None],
         )));
-
         let state = build_state_with_registry(registry);
 
         let result = play(
             State(state),
             Path(valid_params(None)),
-            Json(valid_yen()),
+            Query(yen_to_query(&valid_yen())),
         )
         .await;
 
@@ -312,10 +343,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_bot_skips_occupied_move() {
-        let valid = Coordinates::new(0, 0, 0); // coordenada libre en valid_yen()
-
-        // Primer movimiento del bot: ocupado en el tablero
-        let occupied = Coordinates::new(1, 1, 0); // B en la fila 1
+        let valid = Coordinates::new(0, 0, 0);
+        let occupied = Coordinates::new(1, 1, 0);
 
         let bot = TestBot::new(
             "hard_bot",
@@ -328,39 +357,31 @@ mod tests {
         let result = play(
             State(state),
             Path(valid_params(None)),
-            Json(valid_yen()),
+            Query(yen_to_query(&valid_yen())),
         )
         .await;
 
         assert!(result.is_ok());
 
         let Json(res) = result.unwrap();
-        assert_eq!(res.coords, valid); // ahora sí debería elegir el segundo movimiento
+        assert_eq!(res.coords, valid);
         assert_eq!(res.bot_id, "hard_bot");
     }
 
     #[tokio::test]
     async fn test_successful_play() {
         let coords = Coordinates::new(1, 1, 1);
-
-        // Creamos el bot con un movimiento válido
         let bot = TestBot::new("hard_bot", vec![Some(coords.clone())]);
-
-        // Registramos el bot en el registry
         let registry = YBotRegistry::new().with_bot(Arc::new(bot));
-
-        // Creamos el estado con el registry
         let state = AppState::new(registry);
 
-        // Llamamos al handler
         let result = play(
             State(state),
             Path(valid_params(None)),
-            Json(valid_yen()),
+            Query(yen_to_query(&valid_yen())),
         )
         .await;
 
-        // Comprobaciones
         assert!(result.is_ok());
 
         let Json(res) = result.unwrap();
@@ -373,16 +394,15 @@ mod tests {
         let registry = YBotRegistry::new();
         let state = build_state_with_registry(registry);
 
-        let invalid = YEN::new(3, 0, vec!['B', 'R'], "invalid".to_string());
-
         let result = play(
             State(state),
             Path(valid_params(None)),
-            Json(invalid),
+            Query(PlayQuery {
+                position: "esto no es json válido".to_string(),
+            }),
         )
         .await;
 
         assert!(result.is_err());
     }
-    
 }

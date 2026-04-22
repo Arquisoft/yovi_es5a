@@ -4,17 +4,13 @@ import { login, register } from "../services/authApi";
 import { useSessionStore } from "../store/sessionStore";
 import "./AuthPage.css";
 
-
 function isEmail(value) {
   const str = String(value || "").trim();
 
-  // Pre-check: corta el input antes de que el regex lo procese
   if (str.length > 320) return false;
 
-  // Límites explícitos en los cuantificadores eliminan la vulnerabilidad de DOS
   return /^[^\s@]{1,64}@[^\s@]{1,253}\.[^\s@]{2,63}$/.test(str);
 }
-
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -66,6 +62,7 @@ export default function AuthPage() {
         accessTokenExpiresIn: response.accessTokenExpiresIn,
         refreshTokenExpiresIn: response.refreshTokenExpiresIn,
       });
+
       navigate("/");
     } catch (err) {
       setError(err.message || "No se pudo iniciar sesión.");
@@ -106,6 +103,7 @@ export default function AuthPage() {
         password: registerPassword,
         confirmPassword: registerPasswordRepeat,
       });
+
       setActiveTab("login");
       setSuccessMessage("Registro enviado. Ya puedes iniciar sesión.");
     } catch (err) {
@@ -136,6 +134,7 @@ export default function AuthPage() {
           >
             Iniciar sesión
           </button>
+
           <button
             data-testid="tab-register"
             type="button"
@@ -219,7 +218,9 @@ export default function AuthPage() {
         )}
 
         {error ? <p className="errorMessage">{error}</p> : null}
-        {successMessage ? <p className="successMessage">{successMessage}</p> : null}
+        {successMessage ? (
+          <p className="successMessage">{successMessage}</p>
+        ) : null}
       </article>
     </section>
   );

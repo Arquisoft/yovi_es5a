@@ -35,8 +35,8 @@ export async function login({ identifier, password }) {
   return requestJson("/auth/login", { identifier, password });
 }
 
-export async function register({ username, password, confirmPassword }) {
-  return requestJson("/auth/register", { username, password, confirmPassword });
+export async function register({ email, username, password, confirmPassword }) {
+  return requestJson("/auth/register", { email, username, password, confirmPassword });
 }
 
 export async function refreshToken({ refreshToken }) {

@@ -95,19 +95,26 @@ function validateFinishedMatchPayload(matchSummary) {
 }
 
 app.post('/createuser', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
   try {
     if (!username) {
       return res.status(400).json({ error: 'Faltan el usuario' });
+    }
+    if (!email) {
+      return res.status(400).json({ error: 'Faltan el correo electrónico' });
     }
     if (!password) {
       return res.status(400).json({ error: 'Faltan la contraseña' });
     }
 
+    if (await userService.resolveUserByExactEmail(email)) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
+
     // bcrypt ya está importado al inicio del módulo
     // 10 rondas de hashing para proteger contra fuerza bruta
     const hashedPassword = await bcrypt.hash(password, 10);
-    await userService.createUser(username, hashedPassword);
+    await userService.createUser(username, email, hashedPassword);
     res.status(200).json({ message: 'Usuario creado correctamente' });
   } catch (err) {
     console.error('Error:', err.message);
@@ -135,7 +142,7 @@ app.post('/auth/login', async (req, res) => {
 
     const tokens = tokenService.issueTokenPair({ userId: user.id, username: user.username });
     res.status(200).json({
-      user: { id: user.id, username: user.username },
+      user: { id: user.id, username: user.username, email: user.email },
       ...tokens,
     });
   } catch (err) {
@@ -159,18 +166,21 @@ app.post('/auth/refresh', async (req, res) => {
 });
 
 app.post('/auth/register', async (req, res) => {
-  const { username, password, confirmPassword } = req.body;
+  const { email, username, password, confirmPassword } = req.body;
   try {
-    if (!username || !password || !confirmPassword) {
+    if (!email || !username || !password || !confirmPassword) {
       return res.status(400).json({ error: 'Faltan datos' });
     }
     if (password !== confirmPassword) {
       return res.status(400).json({ error: 'Las contraseñas no coinciden' });
     }
+    if (await userService.resolveUserByExactEmail(email)) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
 
     // Hashear la contraseña antes de guardarla en la base de datos
     const hashedPassword = await bcrypt.hash(password, 10);
-    await userService.createUser(username, hashedPassword);
+    await userService.createUser(username, email, hashedPassword);
     res.status(200).json({ message: 'Registro correcto' });
   } catch (err) {
     console.error('Error:', err.message);

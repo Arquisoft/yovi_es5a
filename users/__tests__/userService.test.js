@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { getUserByUsername, resolveUserByExactUsername, userRepo } = require('../services/userService')
+const { getUserByUsername, resolveUserByExactUsername, resolveUserByExactEmail, userRepo } = require('../services/userService')
 
-describe('getUserByUsername y resolveUserByExactUsername', () => {
+describe('getUserByUsername, resolveUserByExactUsername y resolveUserByExactEmail', () => {
 
   beforeEach(() => {
     userRepo.getConnection = vi.fn().mockResolvedValue({ id: 'fake-connection' });
     
     userRepo.getUsersFromDB = vi.fn();
     userRepo.findUserByUsernameExact = vi.fn();
+    userRepo.findUserByEmailExact = vi.fn();
   });
 
   describe('getUserByUsername', () => {
@@ -50,4 +51,20 @@ describe('getUserByUsername y resolveUserByExactUsername', () => {
     });
   });
 
+  describe('resolveUserByExactEmail', () => {
+    it('debe normalizar el email y llamar al repositorio', async () => {
+      const mockUser = { email: 'test@test.com', id: 5 };
+      userRepo.findUserByEmailExact.mockResolvedValue(mockUser);
+
+      const user = await resolveUserByExactEmail('  TEST@TEST.COM  ');
+
+      expect(user).toEqual(mockUser);
+      expect(userRepo.findUserByEmailExact).toHaveBeenCalledWith('TEST@TEST.COM');
+    });
+
+    it('debe devolver null si el email es inválido o vacío', async () => {
+      const user = await resolveUserByExactEmail('');
+      expect(user).toBeNull();
+    });
+  });
 });

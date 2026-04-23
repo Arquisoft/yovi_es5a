@@ -19,13 +19,14 @@ describe('createUser', () => {
   it('crea usuario correctamente', async () => {
     userRepo.insertUser.mockResolvedValue(7)
 
-    const msg = await createUser('Pablo', 'hash123')
+    const msg = await createUser('Pablo')
 
     expect(msg).toBe('Hello Pablo! Welcome to the course! User created with ID: 7')
 
     expect(userRepo.insertUser).toHaveBeenCalledWith(
       'Pablo',
-      'hash123',
+      undefined,
+      undefined,
       { id: 'fake-connection' }
     );
   })
@@ -33,7 +34,7 @@ describe('createUser', () => {
   it('error en DB → error controlado', async () => {
     userRepo.insertUser.mockRejectedValue(new Error('DB fail'))
 
-    await expect(createUser('Pablo', 'hash123')).rejects.toThrow('Database error: DB fail')
+    await expect(createUser('Pablo')).rejects.toThrow('Database error: DB fail')
   })
 
 })

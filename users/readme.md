@@ -21,9 +21,3 @@ $env:DB_HOST="127.0.0.1"; $env:DB_USER="root"; $env:DB_PASSWORD="rootpassword"; 
 ```powershell
 npm start
 ```
-
-#Adicional
-Si es necesario borrar la bd y sus volumenes, para por ejemplo usar un nuevo init
-```powershell
-docker compose down -v
-```

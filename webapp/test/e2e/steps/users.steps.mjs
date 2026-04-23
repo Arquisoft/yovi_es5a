@@ -8,9 +8,11 @@ Given('The users page is open', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
   await page.goto(`http://localhost:5173`)
+  const email = `test3+${browserName}@example.com`
   const username = `test3+${browserName}`
   const password = "PrUeBa"
   await register({ 
+    email: email, 
     username: username, 
     password: password, 
     confirmPassword: password })

@@ -6,17 +6,13 @@ import { useSessionStore } from "../store/sessionStore";
 import LanguageSelector from "../components/LanguageSelector";
 import "./AuthPage.css";
 
-
 function isEmail(value) {
   const str = String(value || "").trim();
 
-  // Pre-check: corta el input antes de que el regex lo procese
   if (str.length > 320) return false;
 
-  // Límites explícitos en los cuantificadores eliminan la vulnerabilidad de DOS
   return /^[^\s@]{1,64}@[^\s@]{1,253}\.[^\s@]{2,63}$/.test(str);
 }
-
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -69,6 +65,7 @@ export default function AuthPage() {
         accessTokenExpiresIn: response.accessTokenExpiresIn,
         refreshTokenExpiresIn: response.refreshTokenExpiresIn,
       });
+
       navigate("/");
     } catch (err) {
       setError(err.message || t("auth.error.loginFailed"));
@@ -109,6 +106,7 @@ export default function AuthPage() {
         password: registerPassword,
         confirmPassword: registerPasswordRepeat,
       });
+
       setActiveTab("login");
       setSuccessMessage(t("auth.success.registrationSent"));
     } catch (err) {
@@ -142,6 +140,7 @@ export default function AuthPage() {
           >
             {t("auth.tab.login")}
           </button>
+
           <button
             data-testid="tab-register"
             type="button"
@@ -225,7 +224,9 @@ export default function AuthPage() {
         )}
 
         {error ? <p className="errorMessage">{error}</p> : null}
-        {successMessage ? <p className="successMessage">{successMessage}</p> : null}
+        {successMessage ? (
+          <p className="successMessage">{successMessage}</p>
+        ) : null}
       </article>
     </section>
   );

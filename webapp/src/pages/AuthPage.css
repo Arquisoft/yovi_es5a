@@ -101,7 +101,6 @@
   transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
-/* ── Placeholder igual que el subtítulo ── */
 .authForm input::placeholder {
   color: #64748b;
   -webkit-text-fill-color: #64748b;
@@ -120,7 +119,6 @@
   -webkit-text-fill-color: #94a3b8;
 }
 
-/* Autofill del navegador */
 .authForm input:-webkit-autofill,
 .authForm input:-webkit-autofill:hover,
 .authForm input:-webkit-autofill:focus,
@@ -162,23 +160,26 @@
   cursor: wait;
 }
 
-.authError {
+.authCard .errorMessage {
   margin-top: 1rem;
   padding: 0.65rem 0.75rem;
   border-radius: 0.6rem;
   background: #fef2f2;
   border: 1px solid #fecaca;
-  color: #b91c1c;
+  color: #b91c1c !important;
+  -webkit-text-fill-color: #b91c1c !important;
   font-weight: 600;
   font-size: 0.85rem;
 }
-.authSuccess {
+
+.authCard .successMessage {
   margin-top: 1rem;
   padding: 0.65rem 0.75rem;
   border-radius: 0.6rem;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  color: #15803d;
+  color: #15803d !important;
+  -webkit-text-fill-color: #15803d !important;
   font-weight: 600;
   font-size: 0.85rem;
 }

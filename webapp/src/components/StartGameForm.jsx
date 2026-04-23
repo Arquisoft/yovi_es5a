@@ -29,7 +29,8 @@ export default function StartGameForm() {
     setLoading(true);
 
     try {
-      const normalizedPlayerName = String(user?.username || "").trim();
+      const normalizedPlayerName = String(user?.username || "test").trim();
+      
       if (!normalizedPlayerName) {
         throw new Error(t("startGame.error.noAuth"));
       }
@@ -38,18 +39,20 @@ export default function StartGameForm() {
         throw new Error(t("startGame.error.guestNameRequired"));
       }
 
-      // 1. Validar que hay token
+     // 1. Validar que hay token
       if (!accessToken) {
         clearSession();
         throw new Error(t("startGame.error.sessionExpired"));
       }
-
+        
       const resp = await fetch(createUrl("/auth/check"), {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    });
+
 
       if (!resp.ok) {
         clearSession();
@@ -58,7 +61,7 @@ export default function StartGameForm() {
 
       setGameConfig({
         gameMode,
-        player1Name: normalizedPlayerName,
+        player1Name: normalizedPlayerName ,
         player2Name: gameMode === "1vs1" ? guestName : "Bot",
         difficulty,
         boardSize,

@@ -8,7 +8,6 @@ import { boardToYen, parseCellId, barycentricToCell } from "../parsers/yenParser
 import { requestBotMove, validateTwoPlayerMove } from "../services/gamePlayApi";
 import "./GameBoard.css";
 
-
 export default function GameBoard() {
   const cells = useBoardStore((state) => state.cells);
   const size = useBoardStore((state) => state.size);
@@ -26,12 +25,12 @@ export default function GameBoard() {
   const elapsedSeconds = useBoardStore((state) => state.elapsedSeconds);
 
   const [selectedId, setSelectedId] = React.useState(null);
+  const [lastBotMoveId, setLastBotMoveId] = React.useState(null);
   const [isSubmittingTurn, setIsSubmittingTurn] = React.useState(false);
   const [showValidating, setShowValidating] = React.useState(false);
   const [turnError, setTurnError] = React.useState("");
   const [gameOver, setGameOver] = React.useState(null);
   const [isFetchingSuggestion, setIsFetchingSuggestion] = React.useState(false);
-  // Ahora guarda el cellId "q,r" en lugar de texto display
   const [suggestionId, setSuggestionId] = React.useState(null);
 
   const PLAYER_COLORS = React.useMemo(
@@ -54,33 +53,34 @@ export default function GameBoard() {
     return () => clearTimeout(timer);
   }, [isSubmittingTurn]);
 
-  // Limpia la sugerencia al cambiar de turno
   React.useEffect(() => {
     setSuggestionId(null);
   }, [turnNumber]);
 
   const handleSuggestion = React.useCallback(async () => {
     if (isFetchingSuggestion || isSubmittingTurn || gameOver) return;
+
     setSuggestionId(null);
     setIsFetchingSuggestion(true);
+
     try {
       const board = boardToYen({ size, turnNumber, cells });
       const botResult = await requestBotMove({ board, difficulty });
       const botCoords = botResult?.coords;
+
       if (
         !botCoords ||
         typeof botCoords.x !== "number" ||
         typeof botCoords.y !== "number" ||
         typeof botCoords.z !== "number"
       ) {
-        // Sin sugerencia válida — no pintamos ninguna celda
         return;
       }
+
       const cell = barycentricToCell(botCoords, size);
-      // Guardamos el id de la celda para que KonvaRenderer la pinte de amarillo
       setSuggestionId(`${cell.q},${cell.r}`);
     } catch {
-      // Error silencioso — no pintamos nada
+      // Error silencioso
     } finally {
       setIsFetchingSuggestion(false);
     }
@@ -89,35 +89,42 @@ export default function GameBoard() {
   const handleCellClick = React.useCallback(
     async (id) => {
       if (isSubmittingTurn || gameOver) return;
+
       setSelectedId(id);
       setTurnError("");
 
-      // ── Modo 1vs1 ────────────────────────────────────────────────────────
       if (gameMode === "1vs1") {
         const selectedCell = parseCellId(id);
         if (!selectedCell) {
           setTurnError(t("game.error.invalidCell"));
           return;
         }
+
         setIsSubmittingTurn(true);
+
         try {
           const board = boardToYen({ size, turnNumber, cells });
           const result = await validateTwoPlayerMove({ board, selectedCell });
+
           if (!result.isValidMove) {
             setTurnError(result.message || t("game.error.invalidMoveTurnNotChange"));
             setSelectedId(null);
             return;
           }
+
           const moved = setCellOwner(id, currentPlayer);
           if (!moved) {
             setTurnError(t("game.error.couldNotConfirmMove"));
             return;
           }
+
           setSelectedId(null);
+
           if (result.hasWon) {
             const winnerName =
               currentPlayer === "player1" ? players.player1Name : players.player2Name;
             const winner = currentPlayer === "player1" ? "player" : "guest";
+
             setGameOver({
               message: t("game.winMessage", { playerName: winnerName }),
               matchSummary: {
@@ -133,6 +140,7 @@ export default function GameBoard() {
             });
             return;
           }
+
           nextTurn();
         } catch (error) {
           setTurnError(
@@ -141,38 +149,46 @@ export default function GameBoard() {
         } finally {
           setIsSubmittingTurn(false);
         }
+
         return;
       }
 
-      // ── Modo sin configurar ───────────────────────────────────────────────
       if (gameMode !== "1vsbot") {
         const moved = playTurn(id);
         if (moved) setSelectedId(null);
         return;
       }
 
-      // ── Modo 1vsBot ──────────────────────────────────────────────────────
       const selectedCell = parseCellId(id);
       if (!selectedCell) {
         setTurnError(t("game.error.invalidCell"));
         return;
       }
+
       setIsSubmittingTurn(true);
+
       try {
         const boardBeforeMove = boardToYen({ size, turnNumber, cells });
-        const result = await validateTwoPlayerMove({ board: boardBeforeMove, selectedCell });
+        const result = await validateTwoPlayerMove({
+          board: boardBeforeMove,
+          selectedCell,
+        });
+
         if (!result.isValidMove) {
           setTurnError(result.message || t("game.error.invalidMove"));
           setSelectedId(null);
           return;
         }
+
         const playerMoved = setCellOwner(id, "player1");
         if (!playerMoved) {
           setTurnError(t("game.error.couldNotConfirmPlayerMove"));
           setSelectedId(null);
           return;
         }
+
         setSelectedId(null);
+
         if (result.hasWon) {
           setGameOver({
             message: t("game.winMessage", { playerName: players.player1Name }),
@@ -198,7 +214,11 @@ export default function GameBoard() {
           cells: useBoardStore.getState().cells,
         });
 
-        const botResult = await requestBotMove({ board: boardAfterPlayerMove, difficulty });
+        const botResult = await requestBotMove({
+          board: boardAfterPlayerMove,
+          difficulty,
+        });
+
         const botCoords = botResult?.coords;
         if (
           !botCoords ||
@@ -212,11 +232,14 @@ export default function GameBoard() {
 
         const botCell = barycentricToCell(botCoords, size);
         const botCellId = `${botCell.q},${botCell.r}`;
+
         const botMoved = setCellOwner(botCellId, "player2");
         if (!botMoved) {
           setTurnError(t("game.error.couldNotApplyBotMove"));
           return;
         }
+
+        setLastBotMoveId(botCellId);
 
         if (botResult.hasWon) {
           setGameOver({
@@ -269,13 +292,10 @@ export default function GameBoard() {
 
   return (
     <div className="gameBoard">
-
-      {/* Dificultad — solo en modo bot */}
       {gameMode === "1vsbot" && difficulty ? (
         <p className="dificultad">{t("game.difficulty", { difficulty })}</p>
       ) : null}
 
-      {/* Header con badges de jugadores */}
       <Header
         currentPlayer={currentPlayer}
         turnNumber={turnNumber}
@@ -284,7 +304,6 @@ export default function GameBoard() {
         playerTwoName={players.player2Name}
       />
 
-      {/* Tablero + botón de sugerencia lateral */}
       <div className="boardWithSidebar">
         <div className="boardWithSidebar__board">
           <KonvaRenderer
@@ -292,6 +311,7 @@ export default function GameBoard() {
             size={size}
             selectedId={selectedId}
             suggestionId={suggestionId}
+            lastBotMoveId={lastBotMoveId}
             onCellClick={handleCellClick}
             playerColors={PLAYER_COLORS}
           />
@@ -317,18 +337,18 @@ export default function GameBoard() {
         ) : null}
       </div>
 
-      {/* Estado / error — espacio fijo para evitar layout shift */}
       <div className="boardStatusArea">
         <p
           className={`boardStatusText ${
             showValidating || turnError ? "isVisible" : ""
           } ${turnError && !showValidating ? "isError" : ""}`}
         >
-          {showValidating ? t("game.validating") : turnError || "\u00A0"}
+        {showValidating ? "Cargando..." : turnError || "\u00A0"}
+
         </p>
       </div>
 
       {gameOver ? <VictoryMenu {...gameOver} /> : null}
     </div>
-  ); 
+  );
 }

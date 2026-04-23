@@ -71,7 +71,7 @@ describe("App global actions", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("link", { name: /clasificación/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ir a puntuaciones/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ayuda/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /cerrar sesión/i })).not.toBeInTheDocument();
   });
@@ -104,7 +104,7 @@ describe("App global actions", () => {
       </MemoryRouter>
     );
 
-    await user.click(screen.getByRole("link", { name: /clasificación/i }));
+    await user.click(screen.getByRole("link", { name: /ir a puntuaciones/i }));
 
     expect(screen.getByText("Leaderboard Page")).toBeInTheDocument();
   });

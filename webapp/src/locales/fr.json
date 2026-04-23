@@ -4,10 +4,35 @@
     "logout": "Se déconnecter",
     "logoutAria": "Déconnexion",
     "viewLeaderboard": "Classement",
+    "viewLeaderboardAria": "Aller au classement",
     "language": "Langue",
     "error": {
       "databaseError": "Erreur de base de données"
     }
+  },
+  "help": {
+    "button": "Aide",
+    "openAria": "Ouvrir l'aide",
+    "modalTitle": "Guide rapide de YOVI",
+    "closeAria": "Fermer l'aide",
+    "rulesTitle": "Règles (expliquées pour les débutants)",
+    "rulesDescription": "Y est un jeu pour deux joueurs. Vous pouvez jouer localement contre un ami ou contre l'un de nos bots. À chaque tour, un joueur place une pièce sur une case vide du plateau triangulaire. L'objectif est de connecter vos pièces afin qu'elles forment une chaîne touchant les trois bords du plateau ; le premier joueur qui y parvient remporte la partie.",
+    "howToPlayTitle": "Comment jouer — étapes de base",
+    "howToPlay": {
+      "step1": "Les joueurs jouent à tour de rôle ; le joueur A commence.",
+      "step2": "À votre tour, placez une pièce sur une case vide en cliquant avec la souris.",
+      "step3": "Vous ne pouvez pas placer une pièce sur une case déjà occupée.",
+      "step4": "Si vous ne savez pas quel coup jouer, vous pouvez toujours utiliser le bouton de suggestion.",
+      "step5": "Après avoir placé une pièce, le tour passe à l'autre joueur ou au bot.",
+      "step6": "Le moteur de jeu valide les coups et détecte automatiquement la victoire."
+    },
+    "boardSizeTitle": "Taille du plateau et stratégie",
+    "boardSizeDescription": "La taille du plateau change la nature du jeu : sur les petits plateaux, le jeu est surtout tactique (chaque coup a un grand impact), tandis que sur les grands plateaux, la partie devient plus stratégique, avec une planification à long terme et le contrôle des zones.",
+    "tipsTitle": "Conseils rapides",
+    "tip1": "Privilégiez la création de connexions continues plutôt que des pièces isolées.",
+    "tip2": "Bloquez les routes qui permettent à votre adversaire de relier plusieurs côtés.",
+    "tip3": "Contrôler le centre tôt offre généralement plus d'options de connexion.",
+    "finalParagraph": "Profitez de la partie et essayez différentes tailles de plateau pour varier votre stratégie !"
   },
   "auth": {
     "title": "Connexion",

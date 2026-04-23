@@ -4,10 +4,35 @@
     "logout": "Cerrar sesión",
     "logoutAria": "Cerrar sesión",
     "viewLeaderboard": "Puntuaciones",
+    "viewLeaderboardAria": "Ir a puntuaciones",
     "language": "Idioma",
     "error": {
       "databaseError": "Error de base de datos"
     }
+  },
+  "help": {
+    "button": "Ayuda",
+    "openAria": "Abrir ayuda",
+    "modalTitle": "Guía rápida de YOVI",
+    "closeAria": "Cerrar ayuda",
+    "rulesTitle": "Reglas (explicadas para principiantes)",
+    "rulesDescription": "Y es un juego para dos jugadores. Puedes jugar en local contra un amigo o contra uno de nuestros bots. Cada turno, un jugador coloca una ficha en una casilla vacía del tablero triangular. El objetivo es conectar tus fichas de manera que formen una cadena que toque las tres aristas del tablero; el primer jugador que lo consiga gana la partida.",
+    "howToPlayTitle": "Cómo jugar — pasos básicos",
+    "howToPlay": {
+      "step1": "Los jugadores juegan por turnos alternos; el jugador A comienza.",
+      "step2": "En tu turno coloca una ficha en cualquier casilla vacía, haciendo click con el ratón.",
+      "step3": "No puedes colocar una ficha en una casilla ya ocupada.",
+      "step4": "Si tienes duda de qué movimiento hacer, siempre puedes utilizar el botón de sugerencia.",
+      "step5": "Tras colocar una ficha el turno pasa al otro jugador o al bot.",
+      "step6": "El motor de juego valida las jugadas y detecta automáticamente la victoria."
+    },
+    "boardSizeTitle": "Tamaño del tablero y estrategia",
+    "boardSizeDescription": "El tamaño del tablero cambia la naturaleza del juego: en tableros pequeños el juego es principalmente táctico (cada movimiento tiene gran impacto), mientras que en tableros grandes la partida se vuelve más estratégica, con planificación a largo plazo y control de zonas.",
+    "tipsTitle": "Consejos rápidos",
+    "tip1": "Prioriza crear conexiones continuas en vez de fichas aisladas.",
+    "tip2": "Bloquea rutas que permitan a tu rival conectar varios lados.",
+    "tip3": "Dominar el centro al principio suele ofrecer más opciones de conexión.",
+    "finalParagraph": "¡Disfruta la partida y prueba diferentes tamaños de tablero para variar la estrategia!"
   },
   "auth": {
     "title": "Acceder",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useSessionStore } from "../store/sessionStore";
@@ -11,6 +11,33 @@ export default function GlobalActionsBar() {
   const refreshToken = useSessionStore((state) => state.refreshToken);
   const clearSession = useSessionStore((state) => state.clearSession);
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      // ignore when user types in inputs or uses modifiers
+      const tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : null;
+      const isFormElement = tag === "input" || tag === "textarea" || tag === "select" || e.target?.isContentEditable;
+      if (isFormElement) return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+      if (e.key === "h" || e.key === "H") {
+        setIsHelpOpen(true);
+      }
+
+      if (e.key === "F1") {
+        // try prevent browser help and open our modal
+        try {
+          e.preventDefault();
+        } catch (err) {
+          // ignore
+        }
+        setIsHelpOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const handleLogout = async () => {
     try {

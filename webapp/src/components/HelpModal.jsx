@@ -1,17 +1,38 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 export default function HelpModal({ isOpen, onClose }) {
   if (!isOpen) {
     return null;
   }
 
+  const closeButtonRef = useRef(null);
+
   const handleBackdropKey = (e) => {
     const key = e.key;
-    if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Escape') {
+    if (key === "Enter" || key === " " || key === "Spacebar") {
       e.preventDefault();
       onClose();
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // Focus close button when modal opens
+    const t = setTimeout(() => closeButtonRef.current?.focus(), 0);
+
+    const onKey = (ev) => {
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isOpen, onClose]);
 
   return (
     <div
@@ -31,7 +52,13 @@ export default function HelpModal({ isOpen, onClose }) {
       >
         <header className="helpModalHeader">
           <h2 id="helpModalTitle">Guía rápida de YOVI</h2>
-          <button type="button" className="helpCloseButton" onClick={onClose} aria-label="Cerrar ayuda">
+          <button
+            type="button"
+            ref={closeButtonRef}
+            className="helpCloseButton"
+            onClick={onClose}
+            aria-label="Cerrar ayuda"
+          >
             ×
           </button>
         </header>

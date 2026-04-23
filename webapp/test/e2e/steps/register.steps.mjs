@@ -8,13 +8,11 @@ Given('The register page is open', async function () {
   await page.getByTestId("tab-register").click();
 })
 
-When('I enter a specific email and username, {string} as the password and submit', async function (password) {
+When('I enter a specific username, {string} as the password and submit the register form', async function (password) {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
   const browserName = process.env.BROWSER || 'chromium'
-  const email = `test+${browserName}@example.com`
   const username = `test+${browserName}`
-  await page.fill('#registerEmail', email)
   await page.fill('#registerUsername', username)
   await page.fill('#registerPassword', password)
   await page.fill('#registerPasswordRepeat', password)

@@ -120,7 +120,7 @@ describe("authApi", () => {
   describe("register", () => {
     it("hace POST a /auth/register", async () => {
       mockFetchOk({ id: 1 });
-      await register({ email: "a@b.com", username: "ana", password: "123456", confirmPassword: "123456" });
+      await register({ username: "ana", password: "123456", confirmPassword: "123456" });
 
       const [url, options] = global.fetch.mock.calls[0];
       expect(url).toContain("/auth/register");
@@ -129,11 +129,10 @@ describe("authApi", () => {
 
     it("serializa todos los campos en el body", async () => {
       mockFetchOk({ id: 1 });
-      await register({ email: "a@b.com", username: "ana", password: "pass", confirmPassword: "pass" });
+      await register({ username: "ana", password: "pass", confirmPassword: "pass" });
 
       const body = JSON.parse(global.fetch.mock.calls[0][1].body);
       expect(body).toEqual({
-        email: "a@b.com",
         username: "ana",
         password: "pass",
         confirmPassword: "pass",
@@ -143,36 +142,36 @@ describe("authApi", () => {
     it("devuelve los datos del servidor en caso de éxito", async () => {
       mockFetchOk({ id: 42, username: "ana" });
       const result = await register({
-        email: "a@b.com", username: "ana", password: "pass", confirmPassword: "pass",
+        username: "ana", password: "pass", confirmPassword: "pass",
       });
       expect(result).toEqual({ id: 42, username: "ana" });
     });
 
     it("lanza Error con message cuando ok=false", async () => {
-      mockFetchError({ message: "email inválido" });
+      mockFetchError({ message: "username inválido" });
       await expect(
-        register({ email: "x", username: "ana", password: "123456", confirmPassword: "123456" })
-      ).rejects.toThrow(/email inválido/i);
+        register({ username: "ana", password: "123456", confirmPassword: "123456" })
+      ).rejects.toThrow(/username inválido/i);
     });
 
     it("lanza Error con error cuando no hay message", async () => {
       mockFetchError({ error: "Conflict" });
       await expect(
-        register({ email: "x", username: "ana", password: "123456", confirmPassword: "123456" })
+        register({ username: "ana", password: "123456", confirmPassword: "123456" })
       ).rejects.toThrow(/conflict/i);
     });
 
     it("lanza mensaje genérico si no hay message ni error", async () => {
       mockFetchError({});
       await expect(
-        register({ email: "x", username: "ana", password: "123456", confirmPassword: "123456" })
+        register({ username: "ana", password: "123456", confirmPassword: "123456" })
       ).rejects.toThrow(/error de autenticación/i);
     });
 
     it("lanza mensaje genérico si response.json() falla", async () => {
       mockFetchJsonThrows();
       await expect(
-        register({ email: "x", username: "ana", password: "123456", confirmPassword: "123456" })
+        register({ username: "ana", password: "123456", confirmPassword: "123456" })
       ).rejects.toThrow(/error de autenticación/i);
     });
   });
@@ -274,7 +273,7 @@ describe("authApi", () => {
       await login({ identifier: "ana", password: "123" });
 
       mockFetchOk({ id: 1 });
-      await register({ email: "b@c.com", username: "bob", password: "pass", confirmPassword: "pass" });
+      await register({ username: "bob", password: "pass", confirmPassword: "pass" });
 
       expect(global.fetch).toHaveBeenCalledTimes(2);
       expect(global.fetch.mock.calls[0][0]).toContain("/auth/login");

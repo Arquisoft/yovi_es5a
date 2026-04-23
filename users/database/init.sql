@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 alter table users
-  add column email varchar(255) not null unique,
   add column password varchar(255) not null;
 
 CREATE TABLE IF NOT EXISTS bots (

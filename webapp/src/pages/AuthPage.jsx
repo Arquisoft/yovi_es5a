@@ -4,14 +4,6 @@ import { login, register } from "../services/authApi";
 import { useSessionStore } from "../store/sessionStore";
 import "./AuthPage.css";
 
-function isEmail(value) {
-  const str = String(value || "").trim();
-
-  if (str.length > 320) return false;
-
-  return /^[^\s@]{1,64}@[^\s@]{1,253}\.[^\s@]{2,63}$/.test(str);
-}
-
 export default function AuthPage() {
   const navigate = useNavigate();
   const setSession = useSessionStore((state) => state.setSession);
@@ -24,7 +16,6 @@ export default function AuthPage() {
   const [loginIdentifier, setLoginIdentifier] = React.useState("");
   const [loginPassword, setLoginPassword] = React.useState("");
 
-  const [registerEmail, setRegisterEmail] = React.useState("");
   const [registerUsername, setRegisterUsername] = React.useState("");
   const [registerPassword, setRegisterPassword] = React.useState("");
   const [registerPasswordRepeat, setRegisterPasswordRepeat] = React.useState("");
@@ -75,11 +66,6 @@ export default function AuthPage() {
     event.preventDefault();
     clearMessages();
 
-    if (!isEmail(registerEmail)) {
-      setError("Debes indicar un correo electrónico válido.");
-      return;
-    }
-
     if (!registerUsername.trim()) {
       setError("Debes indicar el nombre de usuario.");
       return;
@@ -98,7 +84,6 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await register({
-        email: registerEmail.trim(),
         username: registerUsername.trim(),
         password: registerPassword,
         confirmPassword: registerPasswordRepeat,
@@ -176,15 +161,6 @@ export default function AuthPage() {
           </form>
         ) : (
           <form className="authForm" onSubmit={handleRegisterSubmit}>
-            <label htmlFor="registerEmail">Correo electrónico</label>
-            <input
-              id="registerEmail"
-              type="email"
-              value={registerEmail}
-              onChange={(event) => setRegisterEmail(event.target.value)}
-              autoComplete="email"
-            />
-
             <label htmlFor="registerUsername">Nombre de usuario</label>
             <input
               id="registerUsername"

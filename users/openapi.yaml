@@ -27,9 +27,6 @@ components:
         username:
           type: string
           example: "player1"
-        email:
-          type: string
-          example: "player1@email.com"
 
     AuthResponse:
       type: object
@@ -45,11 +42,8 @@ components:
 
     RegisterRequest:
       type: object
-      required: [email, username, password, confirmPassword]
+      required: [username, password, confirmPassword]
       properties:
-        email:
-          type: string
-          example: "test@email.com"
         username:
           type: string
           example: "testuser"

@@ -38,7 +38,7 @@ describe("AuthPage", () => {
 
   // ── Login: validación de campos vacíos ────────────────────────────────────
   // El componente valida primero el identifier; el mensaje real es
-  // "Debes indicar un usuario." (no menciona correo electrónico).
+  // "Debes indicar un usuario.".
 
   it("muestra validación de login cuando falta el usuario", async () => {
     const user = userEvent.setup();
@@ -68,7 +68,6 @@ describe("AuthPage", () => {
     );
 
     await user.click(screen.getByRole("tab", { name: /registro/i }));
-    await user.type(screen.getByLabelText(/correo electrónico/i), "ana@example.com");
     await user.type(screen.getByLabelText(/nombre de usuario/i), "ana");
     await user.type(screen.getByLabelText(/^contraseña$/i), "123456");
     await user.type(screen.getByLabelText(/repite la contraseña/i), "654321");
@@ -86,7 +85,7 @@ describe("AuthPage", () => {
     const user = userEvent.setup();
 
     login.mockResolvedValue({
-      user: { id: 1, username: "ana", email: "ana@example.com" },
+      user: { id: 1, username: "ana" },
       accessToken: "access",
       refreshToken: "refresh",
       accessTokenExpiresIn: 900,
@@ -142,7 +141,6 @@ describe("AuthPage", () => {
     );
 
     await user.click(screen.getByRole("tab", { name: /registro/i }));
-    await user.type(screen.getByLabelText(/correo electrónico/i), "ana@example.com");
     await user.type(screen.getByLabelText(/nombre de usuario/i), "ana");
     await user.type(screen.getByLabelText(/^contraseña$/i), "123456");
     await user.type(screen.getByLabelText(/repite la contraseña/i), "123456");

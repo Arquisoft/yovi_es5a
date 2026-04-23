@@ -2,13 +2,13 @@ const UserRepository = require('../repositories/userRepository');
 
 const userRepo = new UserRepository();
 
-async function createUser(username, email, password) {
+async function createUser(username, password) {
   if (!username) {
     throw new Error('Username is required');
   }
   try {
     const connection = await userRepo.getConnection();
-    const userId = await userRepo.insertUser(username, email, password, connection);
+    const userId = await userRepo.insertUser(username, password, connection);
     return `Hello ${username}! Welcome to the course! User created with ID: ${userId}`;
   } catch (err) {
     throw new Error('Database error: ' + err.message);
@@ -29,18 +29,9 @@ async function resolveUserByExactUsername(username) {
   return userRepo.findUserByUsernameExact(normalized);
 }
 
-async function resolveUserByExactEmail(email) {
-  const normalized = String(email || '').trim();
-  if(!normalized) {
-    return null;
-  }
-  return userRepo.findUserByEmailExact(normalized);
-}
-
 module.exports = { 
   userRepo,
   createUser,
   resolveUserByExactUsername,
-  resolveUserByExactEmail,
   getUserByUsername
 };

@@ -21,7 +21,6 @@ vi.mock('../gameDb', () => ({
 
 vi.mock('../userDb', () => ({
   findUserByUsernameExact: vi.fn().mockResolvedValue({ id: 10 }),
-  findUserByEmailExact: vi.fn().mockResolvedValue({ id: 10 }),
   insertUser: vi.fn().mockResolvedValue(77),
   getUsersFromDB: vi.fn().mockResolvedValue([]),
 }))

@@ -7,11 +7,9 @@ Given('The authentication page is open', async function () {
   if (!page) throw new Error('Page not initialized')
   await page.goto('http://localhost:5173')
   const browserName = process.env.BROWSER || 'chromium'
-  const email = `test2+${browserName}@example.com`
   const username = `test2+${browserName}`
   const password = "PrUeBa"
   await register({ 
-    email: email, 
     username: username, 
     password: password, 
     confirmPassword: password })

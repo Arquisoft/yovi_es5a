@@ -5,8 +5,23 @@ export default function HelpModal({ isOpen, onClose }) {
     return null;
   }
 
+  const handleBackdropKey = (e) => {
+    const key = e.key;
+    if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Escape') {
+      e.preventDefault();
+      onClose();
+    }
+  };
+
   return (
-    <div className="helpModalBackdrop" onClick={onClose} role="presentation">
+    <div
+      className="helpModalBackdrop"
+      onClick={onClose}
+      role="button"
+      aria-label="Cerrar ayuda"
+      tabIndex={0}
+      onKeyDown={handleBackdropKey}
+    >
       <section
         className="helpModal"
         role="dialog"

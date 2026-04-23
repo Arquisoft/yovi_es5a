@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
@@ -89,7 +89,8 @@ describe("App global actions", () => {
 
     expect(screen.getByRole("dialog", { name: /guía rápida de yovi/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /cerrar ayuda/i }));
+    const dialog = screen.getByRole("dialog", { name: /guía rápida de yovi/i });
+    await user.click(within(dialog).getByRole("button", { name: /cerrar ayuda/i }));
 
     expect(screen.queryByRole("dialog", { name: /guía rápida de yovi/i })).not.toBeInTheDocument();
   });

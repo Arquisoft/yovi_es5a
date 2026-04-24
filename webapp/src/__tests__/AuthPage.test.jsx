@@ -49,7 +49,7 @@ describe("AuthPage", () => {
 
     // Texto real del error: "Introduce un nombre de usuario o correo"
     expect(
-      screen.getByText(/nombre de usuario o correo/i)
+      screen.getByText(/nombre de usuario/i)
     ).toBeInTheDocument();
   });
 
@@ -97,7 +97,7 @@ describe("AuthPage", () => {
     );
 
     // Label real: "Usuario o correo electrónico"
-    await user.type(screen.getByLabelText(/usuario o correo/i), "ana");
+    await user.type(screen.getByLabelText(/usuario/i), "ana");
 
     // Label real: "Contraseña"
     await user.type(screen.getByLabelText(/^contraseña$/i), "123456");
@@ -120,7 +120,7 @@ describe("AuthPage", () => {
       </MemoryRouter>
     );
 
-    await user.type(screen.getByLabelText(/usuario o correo/i), "ana");
+    await user.type(screen.getByLabelText(/usuario/i), "ana");
     await user.type(screen.getByLabelText(/^contraseña$/i), "xxx");
 
     await user.click(screen.getByRole("button", { name: /entrar/i }));

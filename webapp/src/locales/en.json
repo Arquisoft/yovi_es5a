@@ -43,8 +43,8 @@
       "register": "Register"
     },
     "login": {
-      "identifier": "Username or email",
-      "identifierPlaceholder": "Enter your username or email",
+      "identifier": "Username",
+      "identifierPlaceholder": "Enter your username",
       "password": "Password",
       "loading": "Signing in...",
       "submit": "Sign in"
@@ -58,7 +58,7 @@
       "submit": "Create account"
     },
     "error": {
-      "missingUsername": "Please enter a username or email",
+      "missingUsername": "Please enter a username",
       "missingPassword": "Please enter a password",
       "missingEmail": "Please enter your email",
       "invalidEmail": "Please enter a valid email address",

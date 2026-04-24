@@ -43,8 +43,8 @@
       "register": "S'inscrire"
     },
     "login": {
-      "identifier": "Nom d'utilisateur ou e-mail",
-      "identifierPlaceholder": "Entrez votre nom d'utilisateur ou e-mail",
+      "identifier": "Nom d'utilisateur",
+      "identifierPlaceholder": "Entrez votre nom d'utilisateur",
       "password": "Mot de passe",
       "loading": "Connexion en cours...",
       "submit": "Entrer"
@@ -58,7 +58,7 @@
       "submit": "Créer un compte"
     },
     "error": {
-      "missingUsername": "Entrez un nom d'utilisateur ou un e-mail",
+      "missingUsername": "Entrez un nom d'utilisateur",
       "missingPassword": "Entrez un mot de passe",
       "missingEmail": "Entrez votre e-mail",
       "invalidEmail": "Entrez une adresse e-mail valide",

@@ -43,8 +43,8 @@
       "register": "Registrarse"
     },
     "login": {
-      "identifier": "Usuario o correo electrónico",
-      "identifierPlaceholder": "Introduce tu usuario o correo",
+      "identifier": "Usuario",
+      "identifierPlaceholder": "Introduce tu usuario",
       "password": "Contraseña",
       "loading": "Iniciando sesión...",
       "submit": "Entrar"
@@ -58,7 +58,7 @@
       "submit": "Crear cuenta"
     },
     "error": {
-      "missingUsername": "Introduce un nombre de usuario o correo",
+      "missingUsername": "Introduce un nombre de usuario",
       "missingPassword": "Introduce una contraseña",
       "missingEmail": "Introduce un correo electrónico",
       "invalidEmail": "Introduce una dirección de correo válida",

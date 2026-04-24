@@ -71,7 +71,7 @@ export default function GlobalActionsBar() {
             type="button"
             className="topActionButton logoutButton"
             onClick={handleLogout}
-            aria-label="Cerrar sesión"
+            aria-label={t("app.logoutAria")}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -79,7 +79,7 @@ export default function GlobalActionsBar() {
               <polyline points="16 17 21 12 16 7"/>
               <line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-            Salir
+            {t("app.logout")}
           </button>
         ) : null}
       </div>

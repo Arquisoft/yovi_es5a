@@ -41,20 +41,20 @@ impl Default for HardConfig {
         let threads = std::thread::available_parallelism()
             .map(|n| n.get()).unwrap_or(4).min(8);
         Self {
-            mcts_iterations:   18_000,
+            mcts_iterations:   20_000,
             mcts_time_ms:      4_500,
-            top_k_tactical:    7,
-            tactical_depth:    5,
-            candidate_limit:   24,
+            top_k_tactical:    10,
+            tactical_depth:    6,
+            candidate_limit:   32,
             threads,
-            mcts_weight:       0.45,  // lean more on tactics (better at blocking)
+            mcts_weight:       0.28,  // lean more on tactics (better at blocking)
             w_center:          14.0,
             w_side_touch:      1.5,
-            w_neighbor_own:    2.5,
-            w_neighbor_opp:    12.0,  // increased: punish opponent connectivity hard
-            w_bridge:          7.0,
-            w_block_path:      30.0,  // new: reward cutting opponent's path
-            threat_scan_limit: 30,    // scan top-30 cells by centrality in threat pass
+            w_neighbor_own:    3.0,
+            w_neighbor_opp:    14.0,  // increased: punish opponent connectivity hard
+            w_bridge:          8.0,
+            w_block_path:      44.0,  // new: reward cutting opponent's path
+            threat_scan_limit: 56,    // scan top-30 cells by centrality in threat pass
         }
     }
 }
@@ -394,6 +394,141 @@ fn opponent_side_count(
     mask.count_ones()
 }
 
+
+#[inline]
+fn opponent_band_pressure(
+    mv: u32, owner: &[Option<PlayerId>], opp: PlayerId, tables: &SharedTables,
+) -> u32 {
+    if owner[mv as usize].is_some() { return 0; }
+    let mut pressure = 0u32;
+    for &nb in tables.neighbors_of(mv) {
+        if owner[nb as usize] == Some(opp) {
+            pressure += 2;
+            for &nb2 in tables.neighbors_of(nb) {
+                if nb2 != mv && owner[nb2 as usize] == Some(opp) {
+                    pressure += 1;
+                }
+            }
+        }
+    }
+    pressure
+}
+
+fn component_metrics(owner: &[Option<PlayerId>], who: PlayerId, tables: &SharedTables) -> (u32, u32, u32, u32) {
+    let mut vis = vec![false; tables.total_cells];
+    let mut best_sides = 0u32;
+    let mut best_size  = 0u32;
+    let mut best_frontier = 0u32;
+    let mut total_components = 0u32;
+
+    for idx in 0..tables.total_cells as u32 {
+        if owner[idx as usize] != Some(who) || vis[idx as usize] { continue; }
+        total_components += 1;
+        let mut q = VecDeque::new();
+        q.push_back(idx);
+        vis[idx as usize] = true;
+        let mut size = 0u32;
+        let mut sides = 0u8;
+        let mut frontier = 0u32;
+
+        while let Some(cur) = q.pop_front() {
+            size += 1;
+            sides |= tables.side_mask_of(cur);
+            for &nb in tables.neighbors_of(cur) {
+                match owner[nb as usize] {
+                    Some(p) if p == who => {
+                        if !vis[nb as usize] { vis[nb as usize] = true; q.push_back(nb); }
+                    }
+                    None => frontier += 1,
+                    _ => {}
+                }
+            }
+        }
+
+        let side_count = sides.count_ones();
+        if side_count > best_sides
+            || (side_count == best_sides && size > best_size)
+            || (side_count == best_sides && size == best_size && frontier > best_frontier)
+        {
+            best_sides = side_count;
+            best_size = size;
+            best_frontier = frontier;
+        }
+    }
+
+    (best_sides, best_size, best_frontier, total_components)
+}
+
+fn component_cut_pressure(
+    mv: u32, owner: &[Option<PlayerId>], opp: PlayerId, tables: &SharedTables,
+) -> u32 {
+    if owner[mv as usize].is_some() { return 0; }
+    let mut vis = vec![false; tables.total_cells];
+    let mut score = 0u32;
+    for &nb in tables.neighbors_of(mv) {
+        if owner[nb as usize] != Some(opp) || vis[nb as usize] { continue; }
+        let mut q = VecDeque::new();
+        q.push_back(nb);
+        vis[nb as usize] = true;
+        let mut size = 0u32;
+        let mut sides = 0u8;
+        while let Some(cur) = q.pop_front() {
+            size += 1;
+            sides |= tables.side_mask_of(cur);
+            for &nb2 in tables.neighbors_of(cur) {
+                if owner[nb2 as usize] == Some(opp) && !vis[nb2 as usize] {
+                    vis[nb2 as usize] = true;
+                    q.push_back(nb2);
+                }
+            }
+        }
+        score += size * (1 + sides.count_ones());
+    }
+    score
+}
+
+fn side_extension_pressure(
+    mv: u32, owner: &[Option<PlayerId>], opp: PlayerId, tables: &SharedTables,
+) -> u32 {
+    if owner[mv as usize].is_some() { return 0; }
+    let mut masks: Vec<u8> = Vec::new();
+    for &nb in tables.neighbors_of(mv) {
+        if owner[nb as usize] != Some(opp) { continue; }
+        let mut vis = vec![false; tables.total_cells];
+        let mut q = VecDeque::new();
+        q.push_back(nb);
+        vis[nb as usize] = true;
+        let mut mask = 0u8;
+        while let Some(cur) = q.pop_front() {
+            mask |= tables.side_mask_of(cur);
+            for &nb2 in tables.neighbors_of(cur) {
+                if owner[nb2 as usize] == Some(opp) && !vis[nb2 as usize] {
+                    vis[nb2 as usize] = true;
+                    q.push_back(nb2);
+                }
+            }
+        }
+        masks.push(mask);
+    }
+    let mut best = 0u32;
+    for m in masks {
+        let merged = m | tables.side_mask_of(mv);
+        best = best.max(merged.count_ones());
+    }
+    best
+}
+
+
+#[inline]
+fn structural_pressure(
+    mv: u32, owner: &[Option<PlayerId>], opp: PlayerId, tables: &SharedTables,
+) -> f32 {
+    let band = opponent_band_pressure(mv, owner, opp, tables) as f32;
+    let cut  = component_cut_pressure(mv, owner, opp, tables) as f32;
+    let ext  = side_extension_pressure(mv, owner, opp, tables) as f32;
+    band * 1.0 + cut * 0.55 + ext * 4.5
+}
+
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // NEW: Find cells on opponent's threatening path.
 //
@@ -434,51 +569,62 @@ fn evaluate_with_dist(
     tables: &SharedTables, my_dist: f32, opp_dist: f32,
 ) -> f32 {
     let owner = board.owner_table();
+    let opponent = other_player(player);
 
-    // Primary: win-distance differential
-    let mut score = (opp_dist - my_dist) * 22.0;
+    let mut score = (opp_dist - my_dist) * 25.0;
 
-    // Steeper urgency curves â€” opponent close is an emergency
-    if opp_dist <= 4.0 { score -= (5.0 - opp_dist) * 120.0; }
-    else if opp_dist <= 7.0 { score -= (8.0 - opp_dist) * 30.0; }
-    if my_dist <= 4.0 { score += (5.0 - my_dist) * 100.0; }
+    if opp_dist <= 4.0 { score -= (5.0 - opp_dist) * 140.0; }
+    else if opp_dist <= 7.0 { score -= (8.0 - opp_dist) * 42.0; }
+    if my_dist <= 4.0 { score += (5.0 - my_dist) * 115.0; }
+
+    let (my_best_sides, my_best_size, my_best_frontier, my_components) = component_metrics(owner, player, tables);
+    let (opp_best_sides, opp_best_size, opp_best_frontier, opp_components) = component_metrics(owner, opponent, tables);
+
+    score += my_best_sides as f32 * 90.0;
+    score -= opp_best_sides as f32 * 125.0;
+    score += my_best_size as f32 * 4.0;
+    score -= opp_best_size as f32 * 8.0;
+    score += my_best_frontier as f32 * 1.1;
+    score -= opp_best_frontier as f32 * 2.1;
+    score += (opp_components as f32 - my_components as f32) * 8.0;
+
+    if opp_best_sides >= 2 {
+        score -= 150.0 + opp_best_size as f32 * 6.0;
+        if opp_best_frontier >= 4 { score -= 80.0; }
+    }
+    if my_best_sides >= 2 {
+        score += 105.0 + my_best_size as f32 * 3.5;
+    }
 
     for idx in 0..tables.total_cells as u32 {
         let Some(cp) = owner[idx as usize] else { continue };
         let sign = if cp == player { 1.0f32 } else { -1.0 };
         let c    = tables.centrality_of(idx);
-
-        // Quadratic centrality
-        score += sign * cfg.w_center * c * c * 4.5;
+        score += sign * cfg.w_center * c * c * 3.8;
 
         let mut connected = 0u32;
         let mut opp_adj   = 0u32;
         for &nb in tables.neighbors_of(idx) {
-            if owner[nb as usize] == Some(cp)            { connected += 1; }
-            else if owner[nb as usize].is_some()         { opp_adj   += 1; }
+            if owner[nb as usize] == Some(cp) { connected += 1; }
+            else if owner[nb as usize].is_some() { opp_adj += 1; }
         }
 
-        // Isolation penalty
         if connected == 0 { score += sign * (-5.0); }
-        else               { score += sign * cfg.w_neighbor_own * connected as f32; }
+        else { score += sign * cfg.w_neighbor_own * connected as f32; }
 
-        // Pressure / threat â€” opponent adjacency is dangerous for us
-        if cp == player {
-            score -= cfg.w_neighbor_opp * 0.2 * opp_adj as f32;
-        }
+        if cp == player { score -= cfg.w_neighbor_opp * 0.22 * opp_adj as f32; }
+        else { score -= cfg.w_neighbor_opp * 0.08 * connected as f32; }
 
-        // Virtual connections
-        if cp == player {
-            let mut bridges = 0u32;
-            for &nb in tables.neighbors_of(idx) {
-                if owner[nb as usize].is_none() {
-                    for &nb2 in tables.neighbors_of(nb) {
-                        if nb2 != idx && owner[nb2 as usize] == Some(player) { bridges += 1; }
-                    }
+        let mut bridges = 0u32;
+        for &nb in tables.neighbors_of(idx) {
+            if owner[nb as usize].is_none() {
+                for &nb2 in tables.neighbors_of(nb) {
+                    if nb2 != idx && owner[nb2 as usize] == Some(cp) { bridges += 1; }
                 }
             }
-            score += cfg.w_bridge * (bridges as f32 / 2.0);
         }
+        if cp == player { score += cfg.w_bridge * (bridges as f32 / 2.0); }
+        else { score -= (cfg.w_bridge + 1.0) * (bridges as f32 / 2.0); }
     }
     score
 }
@@ -534,7 +680,12 @@ fn move_prior(
 
     let opp_sides = opponent_side_count(mv, owner, opponent, tables);
     score += opp_sides as f32 * cfg.w_neighbor_opp * 5.0;
-    if opp_sides >= 2 { score += 300.0; }
+    if opp_sides >= 2 { score += 320.0; }
+
+    let structural = structural_pressure(mv, owner, opponent, tables);
+    score += structural * 10.0;
+    if structural >= 18.0 { score += 220.0; }
+    if structural >= 28.0 { score += 180.0; }
 
     score
 }
@@ -666,16 +817,21 @@ fn rollout(
             }
         }
         if chosen.is_none() {
-            let step = (avail.len() / 10).max(1);
+            let step = (avail.len() / 14).max(1);
             let mut best_score = f32::NEG_INFINITY;
-            for i in (0..avail.len()).step_by(step).take(10) {
+            for i in (0..avail.len()).step_by(step).take(14) {
                 let idx      = avail[i];
                 let own_nbrs = tables.neighbors_of(idx)
                     .iter().filter(|&&nb| owner[nb as usize] == Some(cur)).count() as f32;
-                // Also consider opponent blocking in rollout
                 let opp_nbrs = tables.neighbors_of(idx)
                     .iter().filter(|&&nb| owner[nb as usize] == Some(opp)).count() as f32;
-                let score = tables.centrality_of(idx) * 2.5 + own_nbrs * 0.6 + opp_nbrs * 0.4;
+                let opp_sides = opponent_side_count(idx, owner, opp, tables) as f32;
+                let structural = structural_pressure(idx, owner, opp, tables);
+                let score = tables.centrality_of(idx) * 1.6
+                    + own_nbrs * 0.9
+                    + opp_nbrs * 1.0
+                    + opp_sides * 2.0
+                    + structural * 0.8;
                 if score > best_score { best_score = score; chosen = Some(idx); }
             }
         }
@@ -768,9 +924,13 @@ fn negamax(
         return val;
     }
 
-    // In tactical search we use empty path bonuses (no precomputed data available here)
-    let empty_bonuses = vec![0.0f32; tables.total_cells];
-    let mut cands = generate_candidates(board, player, tables, cfg, &empty_bonuses);
+    let owner = board.owner_table();
+    let opp = other_player(player);
+    let opp_d_base = win_distance(owner, opp, tables);
+    let path_cells = find_opponent_path_cells(owner, opp, opp_d_base, tables, cfg.threat_scan_limit.min(tables.total_cells));
+    let mut path_bonuses = vec![0.0f32; tables.total_cells];
+    for (idx, drop) in path_cells { path_bonuses[idx as usize] = drop as f32; }
+    let mut cands = generate_candidates(board, player, tables, cfg, &path_bonuses);
     if cands.is_empty() { return evaluate(board, player, cfg, tables) as i32; }
 
     for (mv, prior) in cands.iter_mut() {
@@ -984,7 +1144,7 @@ impl YBot for Hard {
                 return Some(Coordinates::from_index(idx, board_size));
             }
             // Act on strategic blocks when opponent is threatening or we're behind
-            if best_threat_score > 1 && (opp_d_now < my_d_now || opp_d_now <= 8) {
+            if best_threat_score > 1 && (opp_d_now <= my_d_now + 1 || opp_d_now <= 8) {
                 if let Some(idx) = best_threat_mv {
                     return Some(Coordinates::from_index(idx, board_size));
                 }
@@ -1007,7 +1167,7 @@ impl YBot for Hard {
         // â”€â”€ Step 4: early game shortcut â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         let pieces_placed: usize = (0..tables.total_cells)
             .filter(|&i| board.owner_table()[i].is_some()).count();
-        if pieces_placed < 3 {
+        if pieces_placed < 2 {
             if let Some(&best) = tables.center_order.iter()
                 .find(|&&idx| board.owner_table()[idx as usize].is_none())
             {
@@ -1046,7 +1206,7 @@ impl YBot for Hard {
         let top_k    = self.cfg.top_k_tactical.min(mcts_stats.len());
 
         // Boost tactical weight when opponent is close (tactics find blocks better)
-        let tac_weight = if opp_dist <= 5 {
+        let tac_weight = if opp_dist <= 6 {
             (1.0 - self.cfg.mcts_weight + 0.20_f64).min(0.70)
         } else {
             1.0 - self.cfg.mcts_weight

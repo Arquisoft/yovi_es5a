@@ -8,17 +8,15 @@ async function playToWin(page, size) {
   const occupiedByUs = new Set();
   let isFirstMove = true;
 
-  // --- DEFINICIÓN DE BORDES (Según tus datos) ---
+  // --- DEFINICIÓN DE BORDES ---
   const bordes = {
     izquierdo: ["0,1", "1,1", "2,1", "3,1", "4,1", "5,0"],
     derecho: ["0,6", "1,5", "2,4", "3,3", "4,2", "5,0"],
     base: ["0,1", "0,2", "0,3", "0,4", "0,5", "0,6"]
   };
 
-  // --- LÓGICA DE VECINDAD (Basada en tus ejemplos) ---
+  // --- LÓGICA DE VECINDAD ---
   function getNeighbors(q, r) {
-    // Aplicando el patrón que describiste para (1,3) y (3,2)
-    // El patrón detectado es: (q-1, r), (q-1, r+1), (q, r+1), (q, r-1), (q+1, r-1), (q+1, r)
     return [
       { q: q - 1, r: r },
       { q: q - 1, r: r + 1 },
@@ -49,7 +47,6 @@ async function playToWin(page, size) {
   }
 
   async function readBoardState() {
-    // Obtenemos todas las celdas y su estado de una sola vez
     const cells = await page.$$eval('[data-testid^="cell-"]', elements => {
       return elements.map(el => ({
         id: el.getAttribute('data-testid'),
@@ -72,7 +69,6 @@ async function playToWin(page, size) {
     const dist = {};
     const queue = [];
 
-    // Inicializar distancias
     for (const key in board) {
       if (targetEdgeKeys.includes(key)) {
         if (board[key] === 'us') {
@@ -89,7 +85,6 @@ async function playToWin(page, size) {
       }
     }
 
-    // Dijkstra / BFS pesado
     let head = 0;
     while (head < queue.length) {
       const currentKey = queue[head++];
@@ -114,12 +109,13 @@ async function playToWin(page, size) {
   // --- BUCLE PRINCIPAL ---
   while (!(await page.locator('div.victoryCard').isVisible())) {
     
-    // 1. PRIMER MOVIMIENTO OBLIGATORIO (1,3)
     if (isFirstMove) {
       const success = await tryClick(1, 3);
       if (success) {
         occupiedByUs.add("1,3");
         isFirstMove = false;
+        // CORRECCIÓN: Darle al bot un momento para hacer su movimiento antes de reiniciar el bucle
+        await page.waitForTimeout(1000);
         continue;
       }
       isFirstMove = false;
@@ -127,7 +123,6 @@ async function playToWin(page, size) {
 
     const board = await readBoardState();
     
-    // 2. CALCULAR DISTANCIAS A CADA LADO
     const dIzq = calculateDistances(board, bordes.izquierdo);
     const dDer = calculateDistances(board, bordes.derecho);
     const dBase = calculateDistances(board, bordes.base);
@@ -135,11 +130,12 @@ async function playToWin(page, size) {
     let bestMove = null;
     let minScore = Infinity;
 
-    // 3. ENCONTRAR LA MEJOR CASILLA (La que conecta mejor los 3 lados)
     for (const key in board) {
       if (board[key] !== 'empty') continue;
 
-      const score = (dIzq[key] || 99) + (dDer[key] || 99) + (dBase[key] || 99);
+      // CORRECCIÓN: Usar el operador de fusión nula (??) en lugar del OR lógico (||)
+      // Esto evita que una distancia válida de '0' se evalúe como falsa y se convierta en '99'
+      const score = (dIzq[key] ?? 99) + (dDer[key] ?? 99) + (dBase[key] ?? 99);
       
       if (score < minScore) {
         minScore = score;
@@ -151,14 +147,17 @@ async function playToWin(page, size) {
       const [q, r] = bestMove.split(',').map(Number);
       if (await tryClick(q, r)) {
         occupiedByUs.add(bestMove);
+        // CORRECCIÓN: Esperar a que el bot tome su turno para evitar condiciones de carrera
+        await page.waitForTimeout(1000); 
       }
     } else {
-      // Fallback: clic en cualquier lugar si el camino está bloqueado
       const firstEmpty = Object.keys(board).find(k => board[k] === 'empty');
       if (firstEmpty) {
         const [q, r] = firstEmpty.split(',').map(Number);
-        await tryClick(q, r);
-        occupiedByUs.add(firstEmpty);
+        if (await tryClick(q, r)) {
+            occupiedByUs.add(firstEmpty);
+            await page.waitForTimeout(1000);
+        }
       } else break;
     }
   }
@@ -191,28 +190,6 @@ When('I play a game against the local player', async function () {
 
   await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
 
-  const debugInfo = await page.evaluate(() => {
-    const firstCell = document.querySelector('[data-testid^="cell-"]');
-    return {
-      testid: firstCell?.getAttribute('data-testid'),
-      state: firstCell?.getAttribute('data-state'),
-      allStates: [...document.querySelectorAll('[data-testid^="cell-"]')]
-        .slice(0, 5)
-        .map(el => ({ id: el.getAttribute('data-testid'), state: el.getAttribute('data-state') }))
-    };
-  });
-  console.log('DEBUG CELLS:', JSON.stringify(debugInfo));
-  
-  const targetDebug = await page.evaluate(([tq, tr]) => {
-    const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
-    return {
-      exists: el != null,
-      state: el?.getAttribute('data-state'),
-      allAttributes: el ? [...el.attributes].map(a => ({ name: a.name, value: a.value })) : []
-    };
-  }, [5, 0]);
-  console.log('DEBUG TARGET CELL:', JSON.stringify(targetDebug));
-
   const moves = [
     { q: 5, r: 0 },  // J1 - punta
     { q: 0, r: 2 },  // J2 - libre
@@ -223,7 +200,7 @@ When('I play a game against the local player', async function () {
     { q: 2, r: 1 },  // J1
     { q: 0, r: 5 },  // J2 - libre
     { q: 1, r: 1 },  // J1
-    { q: 0, r: 6 },  // J2 - libre - verifica que esta celda existe en size=6
+    { q: 0, r: 6 },  // J2 - libre
     { q: 0, r: 1 },  // J1 - esquina inferior → GANA
   ];
 
@@ -231,13 +208,16 @@ When('I play a game against the local player', async function () {
     await page.waitForFunction(
       ([tq, tr]) => {
         const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
-        return el != null && !el.getAttribute('data-state');
+        // CORRECCIÓN: Comprobar correctamente el estado vacío. Si devuelve la cadena "empty", es truthy.
+        const state = el ? el.getAttribute('data-state') : null;
+        return el != null && (state === 'empty' || !state);
       },
       [q, r],
       { timeout: 10000 }
     );
     const cell = page.locator(`[data-testid="cell-${q}-${r}"]`);
     await cell.click({ force: true });
+    
     await page.waitForFunction(
       ([tq, tr]) => {
         const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);

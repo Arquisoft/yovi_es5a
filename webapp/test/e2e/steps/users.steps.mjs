@@ -24,10 +24,7 @@ Given('The users page is open', async function () {
 
   // Esperar a que el botón esté visible Y luego esperar navegación completa
   await page.waitForSelector('a.primaryLinkButton', { timeout: 10000 })
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'networkidle', timeout: 10000 }),
-    page.click('a.primaryLinkButton')
-  ])
+  await page.click('a.primaryLinkButton')
 })
 
 When('I select a specific user', async function () {
@@ -36,10 +33,7 @@ When('I select a specific user', async function () {
 
   await page.waitForSelector('div.tableWrap', { timeout: 10000 })
   
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'networkidle', timeout: 10000 }),
-    page.getByRole('link', { name: `test3+${browserName}` }).click()
-  ])
+  await page.getByRole('link', { name: `test3+${browserName}` }).click()
 })
 
 Then('I should see his game historial and global score', async function () {

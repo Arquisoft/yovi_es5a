@@ -160,7 +160,7 @@ async function playToWin(page, size) {
 Given('I register the user {string} and the start game form page is open', async function (user) {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.goto(`http://localhost/`)
+  await page.goto(`http://localhost:5173`)
   const email = `test4+${user}+${browserName}@example.com`
   const username = `test4+${user}+${browserName}`
   const password = "PrUeBa"
@@ -199,8 +199,13 @@ When('I play a game against the local player', async function () {
   ];
 
   for (const { q, r } of moves) {
-    await page.click(`[data-testid="cell-${q}-${r}"]`);
-    await page.waitForTimeout(300);
+    const cell = page.locator(`[data-testid="cell-${q}-${r}"]`);
+    // 1. Esperamos a que la celda esté visible en el DOM de Firefox
+    await cell.waitFor({ state: 'visible' });
+    // 2. Forzamos el click por si los bordes del SVG/div se solapan
+    await cell.click({ force: true });
+    // 3. Aumentamos el margen de renderizado a 600ms (igual que en tu función bot)
+    await page.waitForTimeout(600);
   }
 })
 

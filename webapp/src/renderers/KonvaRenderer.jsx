@@ -26,7 +26,14 @@ function hexPoints(size) {
   return points;
 }
 
-export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, suggestionId, playerColors }) {
+export default memo(function KonvaRenderer({
+  cells,
+  onCellClick,
+  selectedId,
+  suggestionId,
+  lastBotMoveId,
+  playerColors,
+}) {
   const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
   const STAGE_WIDTH = 800;
@@ -43,22 +50,32 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, sug
   const groupX = STAGE_WIDTH / 2 - boardCenterX;
   const groupY = STAGE_HEIGHT / 2 - boardCenterY;
 
-  return (
-    // Contenedor relativo para superponer el overlay
-    <div style={{ position: 'relative', width: STAGE_WIDTH, height: STAGE_HEIGHT }}>
+  const orderedCells = [...cells].sort((a, b) => {
+    if (a.id === lastBotMoveId) return 1;
+    if (b.id === lastBotMoveId) return -1;
+    return 0;
+  });
 
-      {/* Canvas Konva original — sin cambios */}
+  return (
+    <div style={{ position: 'relative', width: STAGE_WIDTH, height: STAGE_HEIGHT }}>
       <Stage width={STAGE_WIDTH} height={STAGE_HEIGHT}>
         <Layer>
           <Group x={groupX} y={groupY}>
             {cells.map((cell) => {
               const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
+
               let fill = playerColors?.empty ?? "#ccc";
               if (cell.state === "player1") fill = playerColors?.player1 ?? "#e63946";
               if (cell.state === "player2") fill = playerColors?.player2 ?? "#1d4ed8";
-              if (cell.id === suggestionId && cell.state == null) fill = playerColors?.suggestion ?? "#f5c518";
-              if (cell.id === selectedId) fill = playerColors?.selected ?? "#2ecc71";
-              const isSuggestion = cell.id === suggestionId && cell.state == null;
+              if (cell.id === suggestionId && cell.state == null) {
+                fill = playerColors?.suggestion ?? "#f5c518";
+              }
+              if (cell.id === selectedId) {
+                fill = playerColors?.selected ?? "#2ecc71";
+              }
+
+              const isLastBotMove = cell.id === lastBotMoveId;
+
               return (
                 <Line
                   key={cell.id}
@@ -66,9 +83,11 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, sug
                   x={x}
                   y={y}
                   closed
-                  stroke="black"
-                  strokeWidth={isSuggestion ? 4 : 2}
                   fill={fill}
+                  stroke={isLastBotMove ? "#000000" : "#1f1f1f"}
+                  strokeWidth={isLastBotMove ? 5 : 2}
+                  lineJoin="round"
+                  perfectDrawEnabled
                   onClick={() => onCellClick && onCellClick(cell.id)}
                   onTap={() => onCellClick && onCellClick(cell.id)}
                 />
@@ -78,7 +97,6 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, sug
         </Layer>
       </Stage>
 
-      {/* Overlay HTML transparente con divs clicables por celda */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: STAGE_WIDTH, height: STAGE_HEIGHT, pointerEvents: 'none' }}>
         {cells.map((cell) => {
           const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
@@ -106,7 +124,6 @@ export default memo(function KonvaRenderer({ cells, onCellClick, selectedId, sug
           );
         })}
       </div>
-
     </div>
   );
 });

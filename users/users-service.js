@@ -17,8 +17,13 @@ const { authenticateAccessToken } = require('./middleware/authMiddleware');
 
 const metricsMiddleware = promBundle({
   includeMethod: true,
-  promRegistry: new promClient.Registry(),
+  includePath: true,         // label con la ruta (/leaderboard, /auth/login, etc.)
+  includeStatusCode: true,   // label con el código HTTP (200, 400, 500...)
+  promClient: {
+    collectDefaultMetrics: {}  // activa CPU, RAM, event loop automáticamente
+  }
 });
+
 app.use(metricsMiddleware);
 
 try {

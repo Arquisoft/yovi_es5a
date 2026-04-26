@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
 import KonvaRenderer from "../renderers/KonvaRenderer";
 
@@ -17,8 +18,8 @@ vi.mock("react-konva", () => ({
     <div
       data-testid="hex-cell"
       data-fill={props.fill}
+      data-stroke={props.stroke}
       data-stroke-width={String(props.strokeWidth)}
-      // onTap ignorado intencionalmente para evitar dobles llamadas
       onClick={props.onClick}
     />
   ),
@@ -36,17 +37,25 @@ describe("KonvaRenderer", () => {
     player1: "#ff0000",
     player2: "#0000ff",
     selected: "#00ff00",
+    suggestion: "#ffff00",
   };
 
-  it("renderiza un Stage, Layer y un Group centrado", () => {
-    render(
+  function renderRenderer(extraProps = {}) {
+    return render(
       <KonvaRenderer
         cells={baseCells}
         onCellClick={() => {}}
         selectedId={null}
+        suggestionId={undefined}
+        lastBotMoveId={undefined}
         playerColors={playerColors}
+        {...extraProps}
       />
     );
+  }
+
+  it("renderiza Stage, Layer y Group centrado", () => {
+    renderRenderer();
 
     expect(screen.getByTestId("stage")).toBeInTheDocument();
     expect(screen.getByTestId("layer")).toBeInTheDocument();
@@ -54,41 +63,19 @@ describe("KonvaRenderer", () => {
   });
 
   it("renderiza una Line por cada celda", () => {
-    render(
-      <KonvaRenderer
-        cells={baseCells}
-        onCellClick={() => {}}
-        selectedId={null}
-        playerColors={playerColors}
-      />
-    );
+    renderRenderer();
 
     const hexes = screen.getAllByTestId("hex-cell");
     expect(hexes).toHaveLength(baseCells.length);
   });
 
   it("aplica el color correcto según el estado de la celda y la selección", () => {
-    const selectedId = "1,0";
-
-    render(
-      <KonvaRenderer
-        cells={baseCells}
-        onCellClick={() => {}}
-        selectedId={selectedId}
-        playerColors={playerColors}
-      />
-    );
+    renderRenderer({ selectedId: "1,0" });
 
     const hexes = screen.getAllByTestId("hex-cell");
+    const fills = hexes.map((el) => el.getAttribute("data-fill"));
 
-    // baseCells[0] -> state null, no seleccionada => empty
-    expect(hexes[0]).toHaveAttribute("data-fill", "#eee");
-
-    // baseCells[1] -> player1 y seleccionada => selected tiene prioridad
-    expect(hexes[1]).toHaveAttribute("data-fill", "#00ff00");
-
-    // baseCells[2] -> player2, no seleccionada
-    expect(hexes[2]).toHaveAttribute("data-fill", "#0000ff");
+    expect(fills).toEqual(["#eee", "#00ff00", "#0000ff"]);
   });
 
   it("usa colores por defecto cuando no se pasan playerColors", () => {
@@ -97,67 +84,78 @@ describe("KonvaRenderer", () => {
         cells={baseCells}
         onCellClick={() => {}}
         selectedId={null}
+        suggestionId={undefined}
+        lastBotMoveId={undefined}
       />
     );
 
     const hexes = screen.getAllByTestId("hex-cell");
+    const fills = hexes.map((el) => el.getAttribute("data-fill"));
 
-    // empty por defecto
-    expect(hexes[0]).toHaveAttribute("data-fill", "#ccc");
-    // player1 por defecto
-    expect(hexes[1]).toHaveAttribute("data-fill", "#e63946");
-    // player2 por defecto
-    expect(hexes[2]).toHaveAttribute("data-fill", "#1d4ed8");
+    expect(fills).toEqual(["#ccc", "#e63946", "#1d4ed8"]);
   });
 
-  it("strokeWidth es 4 para celda sugerida (vacía) y 2 para el resto", () => {
-    // El componente usa isSuggestion (suggestionId + state null) para strokeWidth,
-    // no selectedId. Testeamos la lógica real del componente.
-    const suggestionId = "2,0"; // baseCells[0] -> state null => es sugerencia válida
+  it("usa color de sugerencia cuando suggestionId apunta a celda vacía", () => {
+    renderRenderer({ suggestionId: "2,0" });
 
-    render(
-      <KonvaRenderer
-        cells={baseCells}
-        onCellClick={() => {}}
-        selectedId={null}
-        suggestionId={suggestionId}
-        playerColors={playerColors}
-      />
-    );
+    const hexes = screen.getAllByTestId("hex-cell");
+    const fills = hexes.map((el) => el.getAttribute("data-fill"));
+
+    expect(fills).toEqual(["#ffff00", "#ff0000", "#0000ff"]);
+  });
+
+  it("no aplica color de sugerencia si suggestionId apunta a celda ocupada", () => {
+    renderRenderer({ suggestionId: "1,0" });
+
+    const hexes = screen.getAllByTestId("hex-cell");
+    const fills = hexes.map((el) => el.getAttribute("data-fill"));
+
+    expect(fills).toEqual(["#eee", "#ff0000", "#0000ff"]);
+  });
+
+  it("usa stroke especial y grosor 5 para la última jugada del bot", () => {
+    renderRenderer({ lastBotMoveId: "1,1" });
 
     const hexes = screen.getAllByTestId("hex-cell");
 
-    // sugerida => strokeWidth 4
-    expect(hexes[0]).toHaveAttribute("data-stroke-width", "4");
-    // resto => strokeWidth 2
-    expect(hexes[1]).toHaveAttribute("data-stroke-width", "2");
-    expect(hexes[2]).toHaveAttribute("data-stroke-width", "2");
+    const highlighted = hexes.filter(
+      (el) =>
+        el.getAttribute("data-stroke") === "#000000" &&
+        el.getAttribute("data-stroke-width") === "5"
+    );
+
+    const normal = hexes.filter(
+      (el) =>
+        el.getAttribute("data-stroke") === "#1f1f1f" &&
+        el.getAttribute("data-stroke-width") === "2"
+    );
+
+    expect(highlighted).toHaveLength(1);
+    expect(normal).toHaveLength(2);
   });
 
-  it("strokeWidth es 2 si suggestionId apunta a celda ocupada (no aplica sugerencia)", () => {
-    // baseCells[1] tiene state "player1", no es vacía => isSuggestion = false
-    const suggestionId = "1,0";
-
-    render(
-      <KonvaRenderer
-        cells={baseCells}
-        onCellClick={() => {}}
-        selectedId={null}
-        suggestionId={suggestionId}
-        playerColors={playerColors}
-      />
-    );
+  it("si selectedId coincide con lastBotMoveId, mantiene fill de selected y stroke de lastBotMove", () => {
+    renderRenderer({ lastBotMoveId: "1,0", selectedId: "1,0" });
 
     const hexes = screen.getAllByTestId("hex-cell");
 
-    expect(hexes[0]).toHaveAttribute("data-stroke-width", "2");
-    expect(hexes[1]).toHaveAttribute("data-stroke-width", "2");
-    expect(hexes[2]).toHaveAttribute("data-stroke-width", "2");
+    const selectedLastBotMoveCell = hexes.find(
+      (el) =>
+        el.getAttribute("data-fill") === "#00ff00" &&
+        el.getAttribute("data-stroke") === "#000000" &&
+        el.getAttribute("data-stroke-width") === "5"
+    );
+
+    expect(selectedLastBotMoveCell).toBeDefined();
+
+    const fills = hexes.map((el) => el.getAttribute("data-fill"));
+    expect(fills).toContain("#eee");
+    expect(fills).toContain("#00ff00");
+    expect(fills).toContain("#0000ff");
   });
 
-  it("llama a onCellClick con el id de la celda al hacer click", async () => {
+  it("llama a onCellClick con el id correcto al hacer click", async () => {
     const user = userEvent.setup();
-    // Capturamos los ids a través del closure del onClick
     const clickedIds = [];
 
     render(
@@ -165,6 +163,8 @@ describe("KonvaRenderer", () => {
         cells={baseCells}
         onCellClick={(id) => clickedIds.push(id)}
         selectedId={null}
+        suggestionId={undefined}
+        lastBotMoveId={undefined}
         playerColors={playerColors}
       />
     );
@@ -172,7 +172,6 @@ describe("KonvaRenderer", () => {
     const hexes = screen.getAllByTestId("hex-cell");
     await user.click(hexes[1]);
 
-    expect(clickedIds).toHaveLength(1);
-    expect(clickedIds[0]).toBe("1,0");
+    expect(clickedIds).toEqual(["1,0"]);
   });
 });

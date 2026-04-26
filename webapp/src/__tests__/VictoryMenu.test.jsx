@@ -1,5 +1,4 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import VictoryMenu from "../components/VictoryMenu";
@@ -49,11 +48,11 @@ describe("VictoryMenu", () => {
     render(<VictoryMenu playerName="Pepe" matchSummary={matchSummary} />);
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("¡Victoria!")).toBeInTheDocument();
-    expect(screen.getByText("Pepe ha ganado la partida.")).toBeInTheDocument();
+    expect(screen.getByText("Resultado")).toBeInTheDocument();
+    expect(screen.getByText("Resultado de la partida para Pepe")).toBeInTheDocument();
 
     // Mientras carga (antes de resolver) muestra loading
-    expect(screen.getByText(/cargando puntuación/i)).toBeInTheDocument();
+    expect(screen.getByText(/obteniendo puntuación/i)).toBeInTheDocument();
 
     // Cuando resuelve, aparece la puntuación
     expect(await screen.findByText(/puntuación:\s*42/i)).toBeInTheDocument();
@@ -79,10 +78,10 @@ describe("VictoryMenu", () => {
 
     render(<VictoryMenu playerName="Pepe" matchSummary={matchSummary} />);
 
-    expect(screen.getByText(/cargando puntuación/i)).toBeInTheDocument();
+    expect(screen.getByText(/obteniendo puntuación/i)).toBeInTheDocument();
 
     // Espera a que pinte el error
-    expect(await screen.findByText(/no se ha podido cargar la puntuacion/i)).toBeInTheDocument();
+    expect(await screen.findByText(/error al cargar la puntuación/i)).toBeInTheDocument();
     expect(screen.getByText(/api caída/i)).toBeInTheDocument();
   });
 

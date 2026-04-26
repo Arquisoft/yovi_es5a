@@ -22,6 +22,7 @@ pub const SUPPORTED_VERSION: &str = "v1";
 pub fn check_api_version(version: &str) -> Result<(), ErrorResponse> {
     if version != SUPPORTED_VERSION {
         Err(ErrorResponse::error(
+            "UNSUPPORTED_API_VERSION",
             &format!(
                 "Unsupported API version: {}. Supported version is {}",
                 version, SUPPORTED_VERSION

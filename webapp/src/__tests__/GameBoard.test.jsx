@@ -1,5 +1,4 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -175,19 +174,19 @@ describe("GameBoard", () => {
     it("muestra el botón de sugerencia en modo 1vsbot", () => {
       setMockStore({ gameMode: "1vsbot" });
       renderGameBoard();
-      expect(screen.getByRole("button", { name: /sugerencia/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /sugerir movimiento/i })).toBeInTheDocument();
     });
 
     it("muestra el botón de sugerencia en modo 1vs1", () => {
       setMockStore({ gameMode: "1vs1" });
       renderGameBoard();
-      expect(screen.getByRole("button", { name: /sugerencia/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /sugerir movimiento/i })).toBeInTheDocument();
     });
 
     it("no muestra el botón de sugerencia si gameMode es null", () => {
       setMockStore({ gameMode: null });
       renderGameBoard();
-      expect(screen.queryByRole("button", { name: /sugerencia/i })).toBeNull();
+      expect(screen.queryByRole("button", { name: /sugerir movimiento/i })).not.toBeInTheDocument();
     });
 
     it("no muestra VictoryMenu en el estado inicial", () => {
@@ -205,7 +204,7 @@ describe("GameBoard", () => {
 
       await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
 
-      expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
+      expect(await screen.findByText(/celda no válida/i)).toBeInTheDocument();
       expect(validateTwoPlayerMove).not.toHaveBeenCalled();
     });
 
@@ -216,7 +215,7 @@ describe("GameBoard", () => {
 
       await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
 
-      expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
+      expect(await screen.findByText(/celda no válida/i)).toBeInTheDocument();
       expect(validateTwoPlayerMove).not.toHaveBeenCalled();
     });
 
@@ -227,11 +226,11 @@ describe("GameBoard", () => {
       renderGameBoard();
 
       await user.click(screen.getByRole("button", { name: /select invalid cell/i }));
-      expect(await screen.findByText(/celda seleccionada inválida/i)).toBeInTheDocument();
+      expect(await screen.findByText(/celda no válida/i)).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
       await waitFor(() =>
-        expect(screen.queryByText(/celda seleccionada inválida/i)).toBeNull()
+        expect(screen.queryByText(/celda no válida/i)).toBeNull()
       );
     });
   });
@@ -338,9 +337,7 @@ describe("GameBoard", () => {
 
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
-      expect(
-        await screen.findByText(/movimiento inválido\. el turno no cambia/i)
-      ).toBeInTheDocument();
+      await screen.findByText(/movimiento inválido: el turno no cambia/i);
     });
 
     it("setCellOwner devuelve false: muestra error y no llama a nextTurn", async () => {
@@ -392,8 +389,8 @@ describe("GameBoard", () => {
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).getByText(/¡victoria!/i)).toBeInTheDocument();
-      expect(within(dialog).getByText(/ana ha ganado la partida/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/ganador:/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/ana/i)).toBeInTheDocument();
     });
 
     it("player2 gana (turnNumber par): muestra su nombre en VictoryMenu", async () => {
@@ -409,7 +406,8 @@ describe("GameBoard", () => {
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).getByText(/invitado ha ganado la partida/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/ganador:/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/invitado/i)).toBeInTheDocument();  
     });
 
     it("no se puede hacer clic mientras hay una petición en vuelo", async () => {
@@ -495,8 +493,9 @@ describe("GameBoard", () => {
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).getByText(/¡victoria!/i)).toBeInTheDocument();
-      expect(within(dialog).getByText(/pepe ha ganado la partida/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/ganador:/i)).toBeInTheDocument();
+
+      expect(within(dialog).getByText(/pepe/i)).toBeInTheDocument();
       expect(requestBotMove).not.toHaveBeenCalled();
     });
 
@@ -522,7 +521,7 @@ describe("GameBoard", () => {
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
       expect(
-        await screen.findByText(/el servidor no devolvió una jugada válida del bot/i)
+        await screen.findByText(/no hay jugada válida para el bot/i)
       ).toBeInTheDocument();
     });
 
@@ -534,7 +533,7 @@ describe("GameBoard", () => {
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
       expect(
-        await screen.findByText(/el servidor no devolvió una jugada válida del bot/i)
+        await screen.findByText(/no hay jugada válida para el bot/i)
       ).toBeInTheDocument();
     });
 
@@ -546,7 +545,7 @@ describe("GameBoard", () => {
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
       expect(
-        await screen.findByText(/el servidor no devolvió una jugada válida del bot/i)
+        await screen.findByText(/no hay jugada válida para el bot/i)
       ).toBeInTheDocument();
     });
 
@@ -560,9 +559,9 @@ describe("GameBoard", () => {
 
       await user.click(screen.getByRole("button", { name: /select valid cell/i }));
 
-      expect(
-        await screen.findByText(/no se pudo aplicar el movimiento del bot/i)
-      ).toBeInTheDocument();
+     expect(
+      await screen.findByText(/no se pudo aplicar la jugada del bot/i)
+    ).toBeInTheDocument();
     });
 
     it("validateTwoPlayerMove rechaza en 1vsbot: muestra error y no llama bot", async () => {
@@ -616,7 +615,7 @@ describe("GameBoard", () => {
       requestBotMove.mockResolvedValue({ coords: { x: 1, y: 0, z: 0 } });
       renderGameBoard();
 
-      await user.click(screen.getByRole("button", { name: /sugerencia/i }));
+      await user.click(screen.getByRole("button", { name: /sugerir movimiento/i }));
 
       await waitFor(() => expect(requestBotMove).toHaveBeenCalledTimes(1));
     });
@@ -626,7 +625,7 @@ describe("GameBoard", () => {
       requestBotMove.mockResolvedValue({ coords: { x: 1, y: 0, z: 0 } });
       renderGameBoard();
 
-      await user.click(screen.getByRole("button", { name: /sugerencia/i }));
+      await user.click(screen.getByRole("button", { name: /sugerir movimiento/i }));
 
       await waitFor(() => expect(requestBotMove).toHaveBeenCalled());
       expect(screen.queryByText(/error/i)).toBeNull();
@@ -637,7 +636,7 @@ describe("GameBoard", () => {
       requestBotMove.mockRejectedValue(new Error("boom"));
       renderGameBoard();
 
-      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      const btn = screen.getByRole("button", { name: /sugerir movimiento/i });
       await user.click(btn);
 
       await waitFor(() => expect(btn).not.toBeDisabled());
@@ -649,7 +648,7 @@ describe("GameBoard", () => {
       requestBotMove.mockReturnValue(new Promise(() => {})); // nunca resuelve
       renderGameBoard();
 
-      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      const btn = screen.getByRole("button", { name: /sugerir movimiento/i });
       await user.click(btn);
 
       expect(btn).toBeDisabled();
@@ -660,7 +659,7 @@ describe("GameBoard", () => {
       requestBotMove.mockResolvedValue({ coords: null });
       renderGameBoard();
 
-      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      const btn = screen.getByRole("button", { name: /sugerir movimiento/i });
       await user.click(btn);
 
       await waitFor(() => expect(btn).not.toBeDisabled());
@@ -672,7 +671,7 @@ describe("GameBoard", () => {
       requestBotMove.mockResolvedValue({ coords: { x: "a", y: 0, z: 0 } });
       renderGameBoard();
 
-      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      const btn = screen.getByRole("button", { name: /sugerir movimiento/i });
       await user.click(btn);
 
       await waitFor(() => expect(btn).not.toBeDisabled());
@@ -684,7 +683,7 @@ describe("GameBoard", () => {
       requestBotMove.mockReturnValue(new Promise(() => {}));
       renderGameBoard();
 
-      const btn = screen.getByRole("button", { name: /sugerencia/i });
+      const btn = screen.getByRole("button", { name: /sugerir movimiento/i });
       await user.click(btn);
       await user.click(btn); // segundo clic mientras está deshabilitado
 
@@ -716,7 +715,7 @@ describe("GameBoard", () => {
 
     it("tras gameOver el botón de sugerencia está deshabilitado", async () => {
       await triggerGameOver();
-      expect(screen.getByRole("button", { name: /sugerencia/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /sugerir movimiento/i })).toBeDisabled();
     });
 
     it("VictoryMenu permanece visible tras intentar otro movimiento", async () => {

@@ -1,5 +1,4 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -195,7 +194,7 @@ describe("LeaderboardPage", () => {
       renderPage();
       await waitFor(() =>
         expect(
-          screen.getByText(/no se pudo cargar la tabla de puntuaciones/i)
+          screen.getByText(/no se pudo cargar la puntuación/i)
         ).toBeInTheDocument()
       );
     });

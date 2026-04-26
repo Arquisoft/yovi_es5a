@@ -7,18 +7,21 @@ use serde::{Deserialize, Serialize};
 /// It includes context about which API version were involved.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ErrorResponse {
+    /// A stable error code for localization and machine handling.
+    pub code: String,
     /// A human-readable error message describing what went wrong.
     pub message: String,
 }
 
 impl ErrorResponse {
-    /// Creates a new error response with the given message and optional context.
+    /// Creates a new error response with the given code and message.
     ///
     /// # Arguments
+    /// * `code` - A stable error code suitable for localization
     /// * `message` - A description of the error
-    /// * `api_version` - The API version from the request, if known
-    pub fn error(message: &str) -> Self {
+    pub fn error(code: &str, message: &str) -> Self {
         Self {
+            code: code.to_string(),
             message: message.to_string(),
         }
     }
@@ -37,21 +40,25 @@ mod tests {
     #[test]
     fn test_error_with_all_fields() {
         let err = ErrorResponse::error(
+            "UNKNOWN_ERROR",
             "Something went wrong"
         );
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "Something went wrong");
     }
 
     #[test]
     fn test_error_with_no_context() {
-        let err = ErrorResponse::error("Generic error");
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Generic error");
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "Generic error");
     }
 
     #[test]
     fn test_serialize() {
-        let err = ErrorResponse::error("Test error");
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Test error");
         let json = serde_json::to_string(&err).unwrap();
+        assert!(json.contains("\"code\":\"UNKNOWN_ERROR\""));
         assert!(json.contains("\"message\":\"Test error\""));
     }
 
@@ -64,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_clone() {
-        let err = ErrorResponse::error("Clone test");
+        let err = ErrorResponse::error("UNKNOWN_ERROR", "Clone test");
         let cloned = err.clone();
         assert_eq!(err, cloned);
     }

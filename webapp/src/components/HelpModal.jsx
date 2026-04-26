@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function HelpModal({ isOpen, onClose }) {
-  if (!isOpen) {
-    return null;
-  }
-
+  const { t } = useTranslation();
   const closeButtonRef = useRef(null);
 
   const handleBackdropKey = (e) => {
@@ -16,9 +14,9 @@ export default function HelpModal({ isOpen, onClose }) {
   };
 
   useEffect(() => {
-    if (!isOpen) return;
-    // Focus close button when modal opens
-    const t = setTimeout(() => closeButtonRef.current?.focus(), 0);
+    if (!isOpen) return undefined;
+
+    const timer = setTimeout(() => closeButtonRef.current?.focus(), 0);
 
     const onKey = (ev) => {
       if (ev.key === "Escape") {
@@ -29,17 +27,21 @@ export default function HelpModal({ isOpen, onClose }) {
 
     window.addEventListener("keydown", onKey);
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       window.removeEventListener("keydown", onKey);
     };
   }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div
       className="helpModalBackdrop"
       onClick={onClose}
       role="button"
-      aria-label="Cerrar ayuda"
+      aria-label={t("help.closeAria")}
       tabIndex={0}
       onKeyDown={handleBackdropKey}
     >
@@ -51,52 +53,42 @@ export default function HelpModal({ isOpen, onClose }) {
         onClick={(event) => event.stopPropagation()}
       >
         <header className="helpModalHeader">
-          <h2 id="helpModalTitle">Guía rápida de YOVI</h2>
+          <h2 id="helpModalTitle">{t("help.modalTitle")}</h2>
           <button
             type="button"
             ref={closeButtonRef}
             className="helpCloseButton"
             onClick={onClose}
-            aria-label="Cerrar ayuda"
+            aria-label={t("help.closeAria")}
           >
             ×
           </button>
         </header>
         <div className="helpModalContent">
-          <h3>Reglas (explicadas para principiantes)</h3>
-          <p>
-            Y es un juego para dos jugadores. Puedes jugar en local contra un amigo o contra uno de nuestros bots.
-             Cada turno, un jugador coloca una ficha en una casilla vacía del tablero triangular. 
-             El objetivo es conectar tus fichas de manera que formen una cadena que toque las tres aristas
-            del tablero; el primer jugador que lo consiga gana la partida.
-          </p>
+          <h3>{t("help.rulesTitle")}</h3>
+          <p>{t("help.rulesDescription")}</p>
 
-          <h3>Cómo jugar — pasos básicos</h3>
+          <h3>{t("help.howToPlayTitle")}</h3>
           <ol>
-            <li>Los jugadores juegan por turnos alternos; el jugador A comienza.</li>
-            <li>En tu turno coloca una ficha en cualquier casilla vacía, haciendo click con el ratón</li>
-            <li>No puedes colocar una ficha en una casilla ya ocupada.</li>
-            <li> Si tienes duda de que movimiento hacer, siempre puedes utilizar el botón de sugerencia</li>
-            <li> Tras colocar una ficha el turno pasa al otro jugador o al bot</li>
-            <li>El motor de juego valida las jugadas y detecta automáticamente la victoria.</li>
+            <li>{t("help.howToPlay.step1")}</li>
+            <li>{t("help.howToPlay.step2")}</li>
+            <li>{t("help.howToPlay.step3")}</li>
+            <li>{t("help.howToPlay.step4")}</li>
+            <li>{t("help.howToPlay.step5")}</li>
+            <li>{t("help.howToPlay.step6")}</li>
           </ol>
 
-          <h3>Tamaño del tablero y estrategia</h3>
-          <p>
-            El tamaño del tablero cambia la naturaleza del juego: en tableros pequeños
-            el juego es principalmente táctico (cada movimiento tiene gran impacto),
-            mientras que en tableros grandes la partida se vuelve más estratégica,
-            con planificación a largo plazo y control de zonas.
-          </p>
+          <h3>{t("help.boardSizeTitle")}</h3>
+          <p>{t("help.boardSizeDescription")}</p>
 
-          <h3>Consejos rápidos</h3>
+          <h3>{t("help.tipsTitle")}</h3>
           <ul>
-            <li>Prioriza crear conexiones continuas en vez de fichas aisladas.</li>
-            <li>Bloquea rutas que permitan a tu rival conectar varios lados.</li>
-            <li>Dominar el centro al principio suele ofrecer más opciones de conexión.</li>
+            <li>{t("help.tip1")}</li>
+            <li>{t("help.tip2")}</li>
+            <li>{t("help.tip3")}</li>
           </ul>
 
-          <p>¡Disfruta la partida y prueba diferentes tamaños de tablero para variar la estrategia!</p>
+          <p>{t("help.finalParagraph")}</p>
         </div>
       </section>
     </div>

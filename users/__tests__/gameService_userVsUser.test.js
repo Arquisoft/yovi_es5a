@@ -48,7 +48,7 @@ describe('createUserVsUserGame', () => {
     gameRepo.insertGame = vi.fn().mockResolvedValue(10)
     gameRepo.insertUserGame = vi.fn().mockRejectedValue(new Error('fail'))
 
-    await expect(createUserVsUserGame(1, 2, 8)).rejects.toThrow('Database error: fail')
+    await expect(createUserVsUserGame(1, 2, 8)).rejects.toThrow('Database error')
     expect(mockConn.rollback).toHaveBeenCalled()
   })
 

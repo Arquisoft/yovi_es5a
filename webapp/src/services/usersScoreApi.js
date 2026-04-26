@@ -1,6 +1,7 @@
+import i18n from "../i18n";
+import { getBackendErrorMessage } from "./apiErrorHelper";
 import { refreshToken as refreshAccessToken } from "./authApi";
 import { useSessionStore } from "../store/sessionStore";
-
 
 const USERS_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
@@ -112,7 +113,7 @@ export async function requestMatchScore(matchSummary) {
           } catch (refreshError) {
         
             useSessionStore.getState().clearSession?.();
-            throw new Error("SESSION_EXPIRED");
+            throw new Error(i18n.t("auth.error.sessionExpired"));
           }
         }
 
@@ -122,14 +123,14 @@ export async function requestMatchScore(matchSummary) {
       }
 
         if (!response.ok) {
-          throw new Error(data?.message || "No se pudo calcular la puntuación en users.");
+          throw new Error(getBackendErrorMessage(data, "users.error.scoreCalculationFailed"));
         }
 
         const rawScore = data?.score ?? data?.points ?? data?.puntuacion;
         const parsedScore = Number(rawScore);
 
         if (Number.isNaN(parsedScore)) {
-          throw new Error("La respuesta de users no incluye una puntuación válida.");
+          throw new Error(i18n.t("users.error.invalidScoreResponse"));
         }
 
         return {

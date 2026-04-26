@@ -32,6 +32,6 @@ describe('finishGame', () => {
     gameRepo.updateGameWinner.mockRejectedValue(new Error('fail'))
 
     await expect(finishGame(1, 'player1'))
-      .rejects.toThrow('Database error: fail')
+      .rejects.toThrow('Database error')
   })
 })

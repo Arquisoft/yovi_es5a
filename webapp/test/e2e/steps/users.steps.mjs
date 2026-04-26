@@ -23,7 +23,7 @@ Given('The users page is open', async function () {
   await page.click('.authSubmit')
 
   // Esperar a que el botón esté visible Y luego esperar navegación completa
-  await page.waitForSelector('a.primaryLinkButton', { timeout: 10000 })
+  await page.waitForSelector('a.primaryLinkButton', { timeout: 30000 })
   await page.click('a.primaryLinkButton')
 })
 

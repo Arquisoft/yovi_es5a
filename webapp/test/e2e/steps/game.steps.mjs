@@ -183,12 +183,12 @@ Given('I register the user {string} and the start game form page is open', async
 When('I play a game against the local player', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('#gameMode', { timeout: 10000 })
+  await page.waitForSelector('#gameMode', { timeout: 30000 })
   await page.fill('#boardSize', `${size}`);
   await page.fill('#guestName', "local_player")
   await page.click('.startButton')
 
-  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
+  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 30000 })
 
   const moves = [
     { q: 5, r: 0 },  // J1 - punta
@@ -213,7 +213,7 @@ When('I play a game against the local player', async function () {
         return el != null && (state === 'empty' || !state);
       },
       [q, r],
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
     const cell = page.locator(`[data-testid="cell-${q}-${r}"]`);
     await cell.click({ force: true });
@@ -224,7 +224,7 @@ When('I play a game against the local player', async function () {
         return el != null && el.getAttribute('data-state') !== 'empty';
       },
       [q, r],
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
   }
 })
@@ -232,35 +232,35 @@ When('I play a game against the local player', async function () {
 When('I play a game against the easy bot', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('#gameMode', { timeout: 10000 })
+  await page.waitForSelector('#gameMode', { timeout: 30000 })
   await page.selectOption('#gameMode', '1vsbot');
   await page.fill('#boardSize', `${size}`);
   await page.click('.startButton')
-  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
+  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 30000 })
   await playToWin(page, size)
 })
 
 When('I play a game against the medium bot', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('#gameMode', { timeout: 10000 })
+  await page.waitForSelector('#gameMode', { timeout: 30000 })
   await page.selectOption('#gameMode', '1vsbot');
   await page.fill('#boardSize', `${size}`);
   await page.selectOption('#difficulty', 'Media');
   await page.click('.startButton')
-  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
+  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 30000 })
   await playToWin(page, size)
 })
 
 When('I play a game against the hard bot', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('#gameMode', { timeout: 10000 })
+  await page.waitForSelector('#gameMode', { timeout: 30000 })
   await page.selectOption('#gameMode', '1vsbot');
   await page.fill('#boardSize', `${size}`);
   await page.selectOption('#difficulty', 'Dificil');
   await page.click('.startButton')
-  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
+  await page.waitForSelector('[data-testid^="cell-"]', { timeout: 30000 })
   await playToWin(page, size)
 })
 

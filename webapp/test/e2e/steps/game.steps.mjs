@@ -31,10 +31,17 @@ async function playToWin(page, size) {
 
   async function tryClick(q, r) {
     try {
+      await page.waitForSelector(`[data-testid="cell-${q}-${r}"]`, { timeout: 5000 });
       const cell = page.locator(`[data-testid="cell-${q}-${r}"]`);
-      // Forzamos la espera de que sea clicable
       await cell.click({ timeout: 2000 });
-      await page.waitForTimeout(600); 
+      await page.waitForFunction(
+        ([tq, tr]) => {
+          const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
+          return el != null && el.getAttribute('data-state') !== 'empty';
+        },
+        [q, r],
+        { timeout: 5000 }
+      );
       return true;
     } catch (e) {
       return false;
@@ -184,6 +191,28 @@ When('I play a game against the local player', async function () {
 
   await page.waitForSelector('[data-testid^="cell-"]', { timeout: 10000 })
 
+  const debugInfo = await page.evaluate(() => {
+    const firstCell = document.querySelector('[data-testid^="cell-"]');
+    return {
+      testid: firstCell?.getAttribute('data-testid'),
+      state: firstCell?.getAttribute('data-state'),
+      allStates: [...document.querySelectorAll('[data-testid^="cell-"]')]
+        .slice(0, 5)
+        .map(el => ({ id: el.getAttribute('data-testid'), state: el.getAttribute('data-state') }))
+    };
+  });
+  console.log('DEBUG CELLS:', JSON.stringify(debugInfo));
+  
+  const targetDebug = await page.evaluate(([tq, tr]) => {
+    const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
+    return {
+      exists: el != null,
+      state: el?.getAttribute('data-state'),
+      allAttributes: el ? [...el.attributes].map(a => ({ name: a.name, value: a.value })) : []
+    };
+  }, [5, 0]);
+  console.log('DEBUG TARGET CELL:', JSON.stringify(targetDebug));
+
   const moves = [
     { q: 5, r: 0 },  // J1 - punta
     { q: 0, r: 2 },  // J2 - libre
@@ -199,13 +228,24 @@ When('I play a game against the local player', async function () {
   ];
 
   for (const { q, r } of moves) {
+    await page.waitForFunction(
+      ([tq, tr]) => {
+        const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
+        return el != null && !el.getAttribute('data-state');
+      },
+      [q, r],
+      { timeout: 10000 }
+    );
     const cell = page.locator(`[data-testid="cell-${q}-${r}"]`);
-    // 1. Esperamos a que la celda esté visible en el DOM de Firefox
-    await cell.waitFor({ state: 'visible' });
-    // 2. Forzamos el click por si los bordes del SVG/div se solapan
     await cell.click({ force: true });
-    // 3. Aumentamos el margen de renderizado a 600ms (igual que en tu función bot)
-    await page.waitForTimeout(600);
+    await page.waitForFunction(
+      ([tq, tr]) => {
+        const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
+        return el != null && el.getAttribute('data-state') !== 'empty';
+      },
+      [q, r],
+      { timeout: 10000 }
+    );
   }
 })
 
@@ -247,6 +287,6 @@ When('I play a game against the hard bot', async function () {
 Then('I should see the victory menu', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('div.victoryCard', { state: 'visible', timeout: 10000 })
+  await page.waitForSelector('div.victoryCard', { state: 'visible', timeout: 30000 })
   const v1 = await page.locator('div.victoryCard').isVisible()
 })

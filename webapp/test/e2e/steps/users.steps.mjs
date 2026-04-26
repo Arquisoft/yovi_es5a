@@ -17,13 +17,13 @@ Given('The users page is open', async function () {
   await register({ 
     email, username, password, confirmPassword: password 
   })
-
+  await new Promise(r => setTimeout(r, 1000))
   await page.fill('#identifier', username)
   await page.fill('#loginPassword', password)
   await page.click('.authSubmit')
 
   // Esperar a que el botón esté visible Y luego esperar navegación completa
-  await page.waitForSelector('a.primaryLinkButton', { timeout: 30000 })
+  await page.waitForSelector('div.homeActions', { timeout: 30000 })
   await page.click('a.primaryLinkButton')
 })
 

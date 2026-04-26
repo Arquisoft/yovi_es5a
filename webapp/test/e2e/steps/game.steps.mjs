@@ -175,9 +175,11 @@ Given('I register the user {string} and the start game form page is open', async
     username: username, 
     password: password, 
     confirmPassword: password })
+  await new Promise(r => setTimeout(r, 1000))
   await page.fill('#identifier', username)
   await page.fill('#loginPassword', password)
   await page.click('.authSubmit')
+  await page.waitForSelector('#gameMode', { timeout: 20000 })
 })
 
 When('I play a game against the local player', async function () {

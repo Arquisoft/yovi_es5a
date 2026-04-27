@@ -44,6 +44,7 @@ pub async fn choose(
         Ok(game) => game,
         Err(err) => {
             return Err(Json(ErrorResponse::error(
+                "INVALID_YEN_FORMAT",
                 &format!("Invalid YEN format: {}", err),
                 Some(params.api_version),
                 Some(params.bot_id),
@@ -53,6 +54,7 @@ pub async fn choose(
 
     if game_y.check_game_over() {
         return Err(Json(ErrorResponse::error(
+            "GAME_ALREADY_OVER",
             "The game is already over, no moves can be made",
             Some(params.api_version),
             Some(params.bot_id),
@@ -64,6 +66,7 @@ pub async fn choose(
         None => {
             let available_bots = state.bots().names().join(", ");
             return Err(Json(ErrorResponse::error(
+                "BOT_NOT_FOUND",
                 &format!(
                     "Bot not found: {}, available bots: [{}]",
                     params.bot_id, available_bots
@@ -78,6 +81,7 @@ pub async fn choose(
         match bot.choose_move(&game_y) {
             None => {
                 return Err(Json(ErrorResponse::error(
+                    "NO_VALID_BOT_MOVES",
                     "No valid moves available for the bot",
                     Some(params.api_version),
                     Some(params.bot_id),
@@ -95,6 +99,7 @@ pub async fn choose(
         coords: coords.clone(),
     }) {
         return Err(Json(ErrorResponse::error(
+            "INVALID_BOT_MOVE",
             &format!("The bot selected an invalid move: {}", err),
             Some(params.api_version),
             Some(params.bot_id),

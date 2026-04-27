@@ -1,7 +1,8 @@
+import { getBackendErrorMessage } from "./apiErrorHelper.js";
+
 const USERS_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
   "http://localhost:3000";
-
 
 export function createUrl(path) {
   const normalizedBaseUrl = USERS_BASE_URL.endsWith("/") ? USERS_BASE_URL.slice(0, -1) : USERS_BASE_URL;
@@ -25,7 +26,7 @@ async function requestJson(path, payload) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.error || "Error de autenticación");
+    throw new Error(getBackendErrorMessage(data, "auth.error.authenticationFailed"));
   }
 
   return data;

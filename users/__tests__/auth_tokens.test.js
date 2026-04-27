@@ -39,7 +39,7 @@ describe('auth tokens', () => {
       .send({ refreshToken: initial.refreshToken })
 
     expect(second.status).toBe(401)
-    expect(second.body.message).toMatch(/revocado|reutilizado/i)
+    expect(second.body.message).toMatch("Refresh token reused or revoked")
   })
 
   it('logout revoca el refresh token', async () => {

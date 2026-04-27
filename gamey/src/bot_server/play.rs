@@ -73,6 +73,7 @@ pub async fn play(
         Ok(y) => y,
         Err(err) => {
             return Err(Json(ErrorResponse::error(
+                "INVALID_POSITION_JSON",
                 &format!("Invalid JSON in `position` parameter: {}", err),
                 Some(params.api_version),
                 Some(bot_id),
@@ -87,6 +88,7 @@ pub async fn play(
         Ok(game) => game,
         Err(err) => {
             return Err(Json(ErrorResponse::error(
+                "INVALID_YEN_FORMAT",
                 &format!("Invalid YEN format: {}", err),
                 Some(params.api_version),
                 Some(bot_id),
@@ -97,6 +99,7 @@ pub async fn play(
     // Reject already-finished games.
     if game_y.check_game_over() {
         return Err(Json(ErrorResponse::error(
+            "GAME_ALREADY_OVER",
             "The game is already over, no moves can be made",
             Some(params.api_version),
             Some(bot_id),
@@ -109,6 +112,7 @@ pub async fn play(
         None => {
             let available_bots = state.bots().names().join(", ");
             return Err(Json(ErrorResponse::error(
+                "BOT_NOT_FOUND",
                 &format!(
                     "Bot not found: {}, available bots: [{}]",
                     bot_id, available_bots
@@ -124,6 +128,7 @@ pub async fn play(
         match bot.choose_move(&game_y) {
             None => {
                 return Err(Json(ErrorResponse::error(
+                    "NO_VALID_BOT_MOVES",
                     "No valid moves available for the bot",
                     Some(params.api_version),
                     Some(bot_id),
@@ -142,6 +147,7 @@ pub async fn play(
         coords: coords.clone(),
     }) {
         return Err(Json(ErrorResponse::error(
+            "INVALID_BOT_MOVE",
             &format!("The bot selected an invalid move: {}", err),
             Some(params.api_version),
             Some(bot_id),

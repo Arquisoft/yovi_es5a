@@ -201,16 +201,50 @@
   box-shadow: 0 2px 8px rgba(100, 112, 255, 0.25);
 }
 
+.globalLanguageSelector {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
 
-/* ── Top bar con logout ── */
+.languageSelector {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.languageSelector label {
+  font-weight: 600;
+}
+
+.languageSelector select {
+  min-width: 9rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #111;
+  font-size: 0.95rem;
+}
+
+
+
+/* ── Top bar con acciones globales ── */
+
 .topBar {
   position: fixed;
   top: 1rem;
-  right: 1.5rem;
+  right: 1rem;
   z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.logoutButton {
+.topActionButton {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -219,6 +253,7 @@
   border: 1.5px solid rgba(100, 112, 255, 0.3);
   background: rgba(100, 112, 255, 0.08);
   color: #a0a8ff;
+  text-decoration: none;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -227,14 +262,135 @@
   backdrop-filter: blur(6px);
 }
 
+.topActionButton:hover {
+  background: rgba(100, 112, 255, 0.16);
+  border-color: rgba(100, 112, 255, 0.55);
+  color: #c3c8ff;
+  transform: translateY(-1px);
+}
+
+.topActionButton:active {
+  transform: translateY(0);
+}
+
 .logoutButton:hover {
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.4);
   color: #fca5a5;
-  transform: translateY(-1px);
 }
 
 .logoutButton:active {
-  transform: translateY(0);
   background: rgba(239, 68, 68, 0.2);
+}
+
+.helpModalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 16, 36, 0.6);
+  backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  z-index: 120;
+  padding: 1rem;
+}
+
+.helpModal {
+  width: min(44rem, 100%);
+  background: #121735;
+  border: 1px solid rgba(149, 157, 255, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  color: #e7e9ff;
+  text-align: left;
+}
+
+.helpModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(149, 157, 255, 0.2);
+  position: relative; /* permite posicionar el botón de cerrar dentro del header */
+}
+
+.helpModalHeader h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.helpCloseButton {
+  position: absolute; /* forzar posicion dentro del header */
+  top: 0.55rem;
+  right: 0.55rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.02);
+  color: #ff6b6b; /* cruz en rojo */
+  border-radius: 50%; /* círculo perfecto */
+  width: 1.6rem; /* tamaño fijo */
+  height: 1.6rem; /* tamaño fijo */
+  padding: 0; /* sin padding para evitar expansión */
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.helpCloseButton:hover {
+  background: rgba(255, 107, 107, 0.12); /* hover en rojo suave */
+  transform: translateY(-1px) scale(1.02);
+  color: #ff3b3b; /* cruz más intensa al pasar el ratón */
+}
+
+.helpCloseButton:focus {
+  outline: 2px solid rgba(149,157,255,0.35);
+  outline-offset: 2px;
+}
+
+.helpModalContent {
+  padding: 1rem;
+  display: grid;
+  gap: 0.4rem; /* espacio general más compacto; los headings controlan margenes específicos */
+}
+
+.helpModalContent p {
+  margin: 0;
+  line-height: 1.5;
+  color: #d6d9ff;
+}
+
+/* Ajustes de los títulos dentro del modal de ayuda: más espacio antes, menos después */
+.helpModalContent h3 {
+  margin: 0.8rem 0 0.12rem; /* más espacio arriba, muy poco abajo */
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cfd6ff;
+}
+
+.helpModalContent ol,
+.helpModalContent ul {
+  margin: 0 0 0 1.1rem; /* listas con indentado coherente */
+  padding: 0;
+}
+
+.helpModalContent li {
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .topBar {
+    left: 0.75rem;
+    right: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .topActionButton {
+    padding: 6px 12px;
+  }
 }

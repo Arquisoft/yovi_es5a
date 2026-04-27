@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useBoardStore } from "../store/boardStore";
 import { useSessionStore } from "../store/sessionStore";
 import { createUrl } from "../services/authApi";
 import "./StartGameForm.css";
 
 export default function StartGameForm() {
+  const { t } = useTranslation();
   const setGameConfig = useBoardStore((state) => state.setGameConfig);
   const startGameFromConfig = useBoardStore((state) => state.startGameFromConfig);
   const user = useSessionStore((state) => state.user);
@@ -30,33 +32,32 @@ export default function StartGameForm() {
       const normalizedPlayerName = String(user?.username || "test").trim();
       
       if (!normalizedPlayerName) {
-        throw new Error("No hay sesión activa. Inicia sesión de nuevo.");
+        throw new Error(t("startGame.error.noAuth"));
       }
 
       if (gameMode === "1vs1" && !String(guestName || "").trim()) {
-        throw new Error("Debes indicar el nombre del invitado.");
+        throw new Error(t("startGame.error.guestNameRequired"));
       }
 
      // 1. Validar que hay token
       if (!accessToken) {
         clearSession();
-        throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
+        throw new Error(t("startGame.error.sessionExpired"));
       }
         
       const resp = await fetch(createUrl("/auth/check"), {
         method: "GET",
         headers: {
+
         "Authorization": `Bearer ${accessToken}`,
       },
     });
 
 
-    if (!resp.ok) {
-      clearSession();
-      throw new Error("Tu sesión ha expirado. Inicia sesión de nuevo.");
-    }
- 
-
+      if (!resp.ok) {
+        clearSession();
+        throw new Error(t("startGame.error.sessionExpired"));
+      }
 
       setGameConfig({
         gameMode,
@@ -76,23 +77,23 @@ export default function StartGameForm() {
 
   return (
     <form className="startGameForm" onSubmit={handleSubmit}>
-      <h2>Configurar partida</h2>
+      <h2>{t("startGame.title")}</h2>
 
       <div className="fieldGroup">
-        <label htmlFor="gameMode">Modo</label>
+        <label htmlFor="gameMode">{t("startGame.modeLabel")}</label>
         <select
           id="gameMode"
           className="startInput"
           value={gameMode}
           onChange={(event) => setGameMode(event.target.value)}
         >
-          <option value="1vs1">2 jugadores (1vs1)</option>
-          <option value="1vsbot">1 jugador (1vsbot)</option>
+          <option value="1vs1">{t("startGame.mode.1vs1")}</option>
+          <option value="1vsbot">{t("startGame.mode.1vsbot")}</option>
         </select>
       </div>
 
       <div className="fieldGroup">
-        <label htmlFor="player1Name">Jugador autenticado</label>
+        <label htmlFor="player1Name">{t("startGame.authenticatedPlayer")}</label>
         <input
           id="player1Name"
           className="startInput"
@@ -104,35 +105,35 @@ export default function StartGameForm() {
 
       {gameMode === "1vs1" ? (
         <div className="fieldGroup">
-          <label htmlFor="guestName">Nombre invitado</label>
+          <label htmlFor="guestName">{t("startGame.guestNameLabel")}</label>
           <input
             id="guestName"
             className="startInput"
             type="text"
             value={guestName}
             onChange={(event) => setGuestName(event.target.value)}
-            placeholder="Invitado"
+            placeholder={t("startGame.guestPlaceholder")}
             required
           />
         </div>
       ) : (
         <div className="fieldGroup">
-          <label htmlFor="difficulty">Dificultad</label>
+          <label htmlFor="difficulty">{t("startGame.difficultyLabel")}</label>
           <select
             id="difficulty"
             className="startInput"
             value={difficulty}
             onChange={(event) => setDifficulty(event.target.value)}
           >
-            <option value="Facil">Facil</option>
-            <option value="Media">Media</option>
-            <option value="Dificil">Dificil</option>
+            <option value="Facil">{t("startGame.easy")}</option>
+            <option value="Media">{t("startGame.medium")}</option>
+            <option value="Dificil">{t("startGame.hard")}</option>
           </select>
         </div>
       )}
 
       <div className="fieldGroup">
-        <label htmlFor="boardSize">Tamaño tablero (6-15)</label>
+        <label htmlFor="boardSize">{t("startGame.boardSizeLabel")}</label>
         <input
           id="boardSize"
           className="startInput"
@@ -145,7 +146,7 @@ export default function StartGameForm() {
       </div>
 
       <button className="startButton" type="submit" disabled={loading}>
-        {loading ? "Preparando partida..." : "Empezar partida"}
+        {loading ? t("startGame.loading") : t("startGame.startButton")}
       </button>
       {error && <p className="error">{error}</p>}
     </form>

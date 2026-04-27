@@ -69,41 +69,41 @@ describe('recordFinishedMatch', () => {
 
 
   it('si no existe usuario principal en 1vs1 devuelve error y rollback', async () => {
-  gameRepo.findUserIdByUsername.mockResolvedValueOnce(null)
+    gameRepo.findUserIdByUsername.mockResolvedValueOnce(null)
 
-  await expect(recordFinishedMatch({
-    mode: '1vs1',
-    boardSize: 8,
-    turnNumber: 9,
-    elapsedSeconds: 20,
-    playerName: 'Desconocido',
-    guestName: 'Luis',
-    winner: 'guest',
-  }, 100, { username: 'Desconocido' }))
-    .rejects.toMatchObject({
-      statusCode: 400,
-      message: 'Usuario no encontrado: Desconocido',
-    })
+    await expect(recordFinishedMatch({
+      mode: '1vs1',
+      boardSize: 8,
+      turnNumber: 9,
+      elapsedSeconds: 20,
+      playerName: 'Desconocido',
+      guestName: 'Luis',
+      winner: 'guest',
+    }, 100, { username: 'Desconocido' }))
+      .rejects.toMatchObject({
+        statusCode: 400,
+        message: 'User not found: Desconocido',
+      })
 
-  expect(conn.rollback).toHaveBeenCalledOnce()
-})
+    expect(conn.rollback).toHaveBeenCalledOnce()
+  })
 
 
   it('rechaza 1vs1 si el token no coincide con el usuario principal', async () => {
-  await expect(recordFinishedMatch({
-    mode: '1vs1',
-    boardSize: 8,
-    turnNumber: 10,
-    elapsedSeconds: 25,
-    playerName: 'Ana',
-    guestName: 'Luis',
-    winner: 'player',
-  }, 100, { username: 'Otra' }))
-    .rejects.toMatchObject({
-      statusCode: 400,
-      message: 'El token no corresponde con playerName en 1vs1',
-    })
-})
+    await expect(recordFinishedMatch({
+      mode: '1vs1',
+      boardSize: 8,
+      turnNumber: 10,
+      elapsedSeconds: 25,
+      playerName: 'Ana',
+      guestName: 'Luis',
+      winner: 'player',
+    }, 100, { username: 'Otra' }))
+      .rejects.toMatchObject({
+        statusCode: 400,
+        message: 'Token does not match playerName in 1vs1',
+      })
+  })
 
 
   it('guarda partida 1vsbot y actualiza stats', async () => {
@@ -164,7 +164,7 @@ describe('recordFinishedMatch', () => {
       difficulty: 'imposible',
     }, 180, { username: 'Ana' })).rejects.toMatchObject({
       statusCode: 400,
-      message: 'Dificultad inválida para 1vsbot',
+      message: 'Invalid difficulty for 1vsbot',
     })
 
     expect(conn.rollback).toHaveBeenCalledOnce()
@@ -179,8 +179,8 @@ describe('recordFinishedMatch', () => {
   }, 0, { username: 'Ana' }))
     .rejects.toMatchObject({
       statusCode: 400,
-      message: 'Modo de partida no soportado',
-    })
+        message: 'Unsupported game mode',
+        })
 
   expect(conn.rollback).toHaveBeenCalledOnce()
 })

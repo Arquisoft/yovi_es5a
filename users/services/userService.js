@@ -2,16 +2,24 @@ const UserRepository = require('../repositories/userRepository');
 
 const userRepo = new UserRepository();
 
+// Funciones auxiliares para crear errores de servicio con código y mensaje
+function createServiceError(message, code, statusCode = 400) {
+  const error = new Error(message);
+  error.code = code;
+  error.statusCode = statusCode;
+  return error;
+}
+
 async function createUser(username, email, password) {
   if (!username) {
-    throw new Error('Username is required');
+    throw createServiceError('Username is required', 'MISSING_USERNAME', 400);
   }
   try {
     const connection = await userRepo.getConnection();
     const userId = await userRepo.insertUser(username, email, password, connection);
     return `Hello ${username}! Welcome to the course! User created with ID: ${userId}`;
   } catch (err) {
-    throw new Error('Database error: ' + err.message);
+    throw createServiceError('Database error', 'DATABASE_ERROR', 500);
   }
 }
 

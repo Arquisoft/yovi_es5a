@@ -16,7 +16,7 @@ function getBearerToken(headerValue) {
 function authenticateAccessToken(req, res, next) {
   const token = getBearerToken(req.headers.authorization);
   if (!token) {
-    return res.status(401).json({ message: 'Token de acceso requerido' });
+    return res.status(401).json({ message: 'Access token required', code: 'ACCESS_TOKEN_REQUIRED' });
   }
 
   try {
@@ -27,7 +27,7 @@ function authenticateAccessToken(req, res, next) {
     };
     return next();
   } catch {
-    return res.status(401).json({ message: 'Token de acceso inválido o expirado' });
+    return res.status(401).json({ message: 'Access token invalid or expired', code: 'ACCESS_TOKEN_INVALID' });
   }
 }
 

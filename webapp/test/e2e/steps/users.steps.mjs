@@ -7,57 +7,36 @@ const browserName = process.env.BROWSER || 'chromium'
 Given('The users page is open', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-
   await page.goto(`http://localhost:5173`)
-
   const email = `test3+${browserName}@example.com`
   const username = `test3+${browserName}`
   const password = "PrUeBa"
-
   await register({ 
-    email, username, password, confirmPassword: password 
-  })
-  await new Promise(r => setTimeout(r, 1000))
+    email: email, 
+    username: username, 
+    password: password, 
+    confirmPassword: password })
   await page.fill('#identifier', username)
   await page.fill('#loginPassword', password)
-  await page.click('.authSubmit');
-
-  // Después de page.click('.authSubmit')
-  // 1. Esperar a que el formulario de login desaparezca (esto confirma que el login procesó)
-  await page.waitForSelector('#identifier', { state: 'hidden', timeout: 15000 });
-
-  // 2. Esperar a que aparezca el contenedor del botón (según tu imagen es .homeActions)
-  await page.waitForSelector('.homeActions', { state: 'visible', timeout: 15000 });
-
-  // 3. Ahora el botón DEBE estar ahí
-  const scoresLink = page.getByText('Ver puntuaciones');
-  await scoresLink.click();
-
+  await page.click('.authSubmit')
+  await page.waitForSelector('a.primaryLinkButton', { timeout: 10000 })
+  await page.click('a.primaryLinkButton')
 })
 
 When('I select a specific user', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-
-  await page.waitForSelector('div.tableWrap', { state: 'visible' })
-  
+  await page.waitForSelector('div.tableWrap', { timeout: 10000 })
   await page.getByRole('link', { name: `test3+${browserName}` }).click()
+ 
 })
 
 Then('I should see his game historial and global score', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-
   await page.waitForSelector('div.tableWrap', { state: 'visible', timeout: 10000 })
-
-  await page.waitForSelector(
-    'text=Este usuario no tiene partidas.', 
-    { state: 'visible', timeout: 10000 }
-  )
-
   const v1 = await page.locator('div.tableWrap').isVisible()
   const noMatches = await page.getByText('Este usuario no tiene partidas.').isVisible()
-
-  assert.ok(v1, 'La tabla de usuarios no es visible')
   assert.ok(noMatches, 'El mensaje de usuario sin partidas no es visible')
+  assert.ok(v1, 'La tabla de usuarios no es visible')
 })

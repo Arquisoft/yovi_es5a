@@ -1,4 +1,4 @@
-import i18n from "../i18n";
+import i18n from "../i18n.js";
 
 // Esto centraliza la lógica de interpretación de errores provenientes del backend, permitiendo mapear códigos de error a mensajes traducidos y proporcionando un fallback adecuado. De esta forma, se mejora la experiencia del usuario al mostrar mensajes de error claros y localizados, incluso para errores no previstos o sin mensaje específico.
 const backendErrorKeyByCode = {

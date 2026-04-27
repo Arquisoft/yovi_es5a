@@ -115,10 +115,7 @@ jobs:
 
       - name: Pre-build gamey binary
         run: 
-          cd gamey && cargo build --release
-
-      - name : Allow execute gamey binary
-        run: chmod +x gamey/target/release/gamey
+          cd gamey && cargo build
 
       - name: Install Playwright browsers
         run: |

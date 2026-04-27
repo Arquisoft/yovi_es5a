@@ -1,4 +1,4 @@
-import { getBackendErrorMessage } from "./apiErrorHelper";
+import { getBackendErrorMessage } from "./apiErrorHelper.js";
 
 const USERS_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||

@@ -64,8 +64,9 @@ mod tests {
 
     #[test]
     fn test_deserialize() {
-        let json = r#"{"api_version":"v1","message":"error msg"}"#;
+        let json = r#"{"code":"UNKNOWN_ERROR","message":"error msg"}"#;
         let err: ErrorResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(err.code, "UNKNOWN_ERROR");
         assert_eq!(err.message, "error msg");
     }
 

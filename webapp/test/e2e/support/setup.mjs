@@ -34,7 +34,7 @@ Before(async function () {
   this.page = await this.browser.newPage()
 })
 
-After(async function () {
+After(async function (scenario) {
   if (this.page) await this.page.close()
   if (this.browser) await this.browser.close()
 })

@@ -17,7 +17,7 @@ export default function LanguageSelector() {
 
   return (
     <div className="languageSelector">
-      <label htmlFor="languageSelector">{t("app.language")}</label>
+      <label style={{ color: "white" }} htmlFor="languageSelector">{t("app.language")}</label>
       <select
         id="languageSelector"
         value={i18n.language?.split("-")[0] || "es"}

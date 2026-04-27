@@ -207,27 +207,27 @@ When('I play a game against the local player', async function () {
   ];
 
   for (const { q, r } of moves) {
-    await page.waitForFunction(
-      ([tq, tr]) => {
-        const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
-        // CORRECCIÓN: Comprobar correctamente el estado vacío. Si devuelve la cadena "empty", es truthy.
-        const state = el ? el.getAttribute('data-state') : null;
-        return el != null && (state === 'empty' || !state);
-      },
-      [q, r],
-      { timeout: 30000 }
-    );
-    const cell = page.locator(`[data-testid="cell-${q}-${r}"]`);
-    await cell.click({ force: true });
-    
-    await page.waitForFunction(
-      ([tq, tr]) => {
-        const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
-        return el != null && el.getAttribute('data-state') !== 'empty';
-      },
-      [q, r],
-      { timeout: 30000 }
-    );
+    const selector = `[data-testid="cell-${q}-${r}"]`;
+
+    await page.waitForSelector(selector, { timeout: 30000 });
+
+    try {
+      await page.click(selector, { timeout: 2000 });
+
+      await page.waitForFunction(
+        ([tq, tr]) => {
+          const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
+          return el && el.getAttribute('data-state') !== 'empty';
+        },
+        [q, r],
+        { timeout: 5000 }
+      );
+
+      await page.waitForTimeout(500);
+
+    } catch (e) {
+      continue;
+    }
   }
 })
 

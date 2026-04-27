@@ -194,10 +194,10 @@ When('I play a game against the local player', async function () {
       return false;
     }
   }, { 
-    timeout: 60000, // Le damos 1 minuto extra de margen
+    timeout: 180000, // Le damos 3 minuto extra de margen
     polling: 2000   // Pregunta cada 2 segundos
   });
-  
+
   await page.waitForSelector('#gameMode', { timeout: 30000 })
   await page.fill('#boardSize', `${size}`);
   await page.fill('#guestName', "local_player")

@@ -76,6 +76,8 @@ jobs:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: yovi_db
+      VITE_API_URL: http://localhost:3000
+      VITE_GAMEY_URL: http://localhost:4000
 
     steps:
       - name: Checkout

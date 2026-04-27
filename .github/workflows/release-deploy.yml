@@ -109,6 +109,10 @@ jobs:
             sleep 2
           done
 
+      - name: Initialize database
+        run: |
+          mysql -h 127.0.0.1 -uroot -prootpassword yovi_db < users/database/init.sql
+
       - name: Pre-build gamey binary
         run: cd gamey && cargo build --release
 

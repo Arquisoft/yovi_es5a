@@ -1,7 +1,7 @@
 import { setWorldConstructor, Before, After, setDefaultTimeout } from '@cucumber/cucumber'
 import { chromium, firefox, webkit } from 'playwright'
 
-setDefaultTimeout(120_000)
+setDefaultTimeout(60_000)
 
 class CustomWorld {
   browser = null
@@ -35,10 +35,6 @@ Before(async function () {
 })
 
 After(async function (scenario) {
-  if (scenario.result?.status === 'FAILED' && this.page) {
-    const screenshot = await this.page.screenshot({ fullPage: true })
-    await this.attach(screenshot, 'image/png')
-  }
   if (this.page) await this.page.close()
   if (this.browser) await this.browser.close()
 })

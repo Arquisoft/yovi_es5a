@@ -89,17 +89,6 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            gamey/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('gamey/Cargo.lock') }}
-
       - name: Install users dependencies
         run: |
           cd users
@@ -125,7 +114,7 @@ jobs:
           mysql -h 127.0.0.1 -uroot -prootpassword yovi_db < users/database/init.sql
 
       - name: Pre-build gamey binary
-        run: cd gamey && cargo build
+        run: cd gamey && cargo build --release
 
       - name: Install Playwright browsers
         run: |
@@ -136,14 +125,6 @@ jobs:
         run: |
           cd webapp
           npm run test:e2e
-          
-      - name: Upload E2E screenshots on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-screenshots
-          path: webapp/test/e2e/screenshots/
-          if-no-files-found: ignore
 
   docker-push-users:
     name: Publish users image

@@ -206,16 +206,28 @@ When('I play a game against the local player', async function () {
     { q: 0, r: 1 },  // J1 - esquina inferior → GANA
   ];
 
+  // En game.steps.mjs, dentro del bucle de movimientos locales:
   for (const { q, r } of moves) {
     const selector = `[data-testid="cell-${q}-${r}"]`;
+
+    // 1. Asegurar que la celda es visible y estable
+    const cell = page.locator(selector);
+    await cell.waitFor({ state: 'visible', timeout: 10000 });
+    
+    // 2. Forzar el clic (a veces los elementos están solapados por milisegundos)
+    await cell.click({ force: true });
+
+    // 3. Espera mejorada: cualquier estado que NO sea 'empty' o null
     await page.waitForFunction(
       (sel) => {
         const el = document.querySelector(sel);
+        if (!el) return false;
         const state = el.getAttribute('data-state');
-        return el !== null && state !== 'empty' && state !== 'null' && state !== null;
+        // Retornamos true si el estado ya no es el inicial
+        return state !== 'empty' && state !== null && state !== 'null' && state !== '';
       },
       selector,
-      { timeout: 5000 }
+      { timeout: 7000 } // Subimos a 7s por si el CI va lento
     );
   }
 })

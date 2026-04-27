@@ -21,10 +21,10 @@ Given('The users page is open', async function () {
   await page.fill('#identifier', username)
   await page.fill('#loginPassword', password)
   await page.click('.authSubmit');
-  
-  await page.waitForURL('**/');
-  await page.waitForSelector('.homeActions', { timeout: 10000 });
 
+  await page.waitForURL('**/', { timeout: 15000 }); 
+
+  // En lugar de .homeActions, vamos a esperar directamente al botón que queremos
   const scoresLink = page.getByText('Ver puntuaciones');
   await scoresLink.waitFor({ state: 'visible', timeout: 15000 });
   await scoresLink.click();

@@ -116,6 +116,15 @@ jobs:
       - name: Pre-build gamey binary
         run: cd gamey && cargo build --release
 
+      - name: Start gamey service
+        run: |
+          cd gamey && cargo run -- --mode server --port 4000
+          for i in {1..30}; do
+            curl -s http://localhost:4000/health && break
+            echo "Waiting for gamey... ($i)"
+            sleep 2
+          done
+
       - name: Install Playwright browsers
         run: |
           cd webapp

@@ -54,7 +54,7 @@ export default function Header({
 
       {/* Centro: turno y tiempo */}
       <div style={{ textAlign: "center", flex: 1 }}>
-        <div style={{ fontSize: "1rem", fontWeight: 600 }}>
+        <div data-testid="turnNumber" style={{ fontSize: "1rem", fontWeight: 600 }}>
           {t("header.turn", { turnNumber })}
         </div>
         <div

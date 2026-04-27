@@ -20,12 +20,12 @@ Given('The users page is open', async function () {
   await new Promise(r => setTimeout(r, 1000))
   await page.fill('#identifier', username)
   await page.fill('#loginPassword', password)
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'networkidle' }),
-    page.click('.authSubmit')
-  ]);
-  await page.waitForSelector('a.primaryLinkButton', { state: 'visible', timeout: 15000 });
+  await page.click('.authSubmit')
+
+  await page.waitForSelector('#gameMode', { timeout: 15000 })
+  await page.waitForSelector('a.primaryLinkButton', { state: 'visible' })
   await page.click('a.primaryLinkButton')
+
 })
 
 When('I select a specific user', async function () {

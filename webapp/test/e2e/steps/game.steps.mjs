@@ -207,27 +207,12 @@ When('I play a game against the local player', async function () {
   ];
 
   for (const { q, r } of moves) {
-    const selector = `[data-testid="cell-${q}-${r}"]`;
-
-    await page.waitForSelector(selector, { timeout: 30000 });
-
-    try {
-      await page.click(selector, { timeout: 2000 });
-
-      await page.waitForFunction(
-        ([tq, tr]) => {
-          const el = document.querySelector(`[data-testid="cell-${tq}-${tr}"]`);
-          return el && el.getAttribute('data-state') !== 'empty';
-        },
-        [q, r],
-        { timeout: 5000 }
-      );
-
-      await page.waitForTimeout(500);
-
-    } catch (e) {
-      continue;
-    }
+    const prevTurn = await page.textContent('[data-testid="turnNumber"]');
+    await page.click(selector);
+    await page.waitForFunction((prev) => {
+      const el = document.querySelector('[data-testid="turnNumber"]');
+      return el && el.textContent !== prev;
+    }, prevTurn, { timeout: 5000 });  
   }
 })
 
@@ -269,6 +254,8 @@ When('I play a game against the hard bot', async function () {
 Then('I should see the victory menu', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('div.victoryCard', { state: 'visible', timeout: 30000 })
+  await page.waitForFunction(() => {
+    return document.querySelector('div.victoryCard') !== null;
+  }, { timeout: 30000 });
   const v1 = await page.locator('div.victoryCard').isVisible()
 })

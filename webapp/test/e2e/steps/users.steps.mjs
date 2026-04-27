@@ -23,15 +23,16 @@ Given('The users page is open', async function () {
   await page.click('.authSubmit')
 
   // Esperar a que el botón esté visible Y luego esperar navegación completa
-  await page.waitForSelector('div.homeActions', { timeout: 30000 })
+  await page.waitForSelector('a.primaryLinkButton', { state: 'visible' })
   await page.click('a.primaryLinkButton')
+
 })
 
 When('I select a specific user', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
 
-  await page.waitForSelector('div.tableWrap', { timeout: 10000 })
+  await page.waitForSelector('div.tableWrap', { state: 'visible' })
   
   await page.getByRole('link', { name: `test3+${browserName}` }).click()
 })

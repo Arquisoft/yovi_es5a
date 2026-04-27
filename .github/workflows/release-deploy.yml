@@ -114,7 +114,9 @@ jobs:
           mysql -h 127.0.0.1 -uroot -prootpassword yovi_db < users/database/init.sql
 
       - name: Pre-build gamey binary
-        run: cd gamey && cargo build --release
+        run: 
+          cd gamey && cargo build --release
+          chmod +x target/release/gamey
 
       - name: Install Playwright browsers
         run: |

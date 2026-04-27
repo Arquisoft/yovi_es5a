@@ -40,7 +40,3 @@ pub async fn run_game_server(port: u16) -> Result<(), GameYError> {
 
     Ok(())
 }
-
-async fn health() -> &'static str {
-    "ok"
-}

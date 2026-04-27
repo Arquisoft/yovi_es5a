@@ -16,6 +16,7 @@ fn create_router() -> axum::Router {
 
 
     axum::Router::new()
+        .route("/health", axum::routing::get(health))
         .route("/game/play/", axum::routing::post(place))
         .layer(cors) 
 }
@@ -39,4 +40,8 @@ pub async fn run_game_server(port: u16) -> Result<(), GameYError> {
         })?;
 
     Ok(())
+}
+
+async fn health() -> &'static str {
+    "ok"
 }

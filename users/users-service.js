@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+app.disable('x-powered-by'); //lo pide sonar
 const port = 3000;
 const swaggerUi = require('swagger-ui-express');
 const fs = require('node:fs');

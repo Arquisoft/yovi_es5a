@@ -17,7 +17,7 @@
     "test:e2e:firefox": "BROWSER=firefox npm run test:e2e:run",
     "test:e2e:webkit": "BROWSER=webkit npm run test:e2e:run",
     "test:e2e:all": "concurrently \"npm run test:e2e:chromium\" \"npm run test:e2e:firefox\" \"npm run test:e2e:webkit\"",
-    "test:e2e": "start-server-and-test start:all 'http://localhost:5173' test:e2e:all",
+    "test:e2e": "start-server-and-test start:all 'http://localhost:5173|http://0.0.0.0:4000|http://0.0.0.0:4001|http://0.0.0.0:4002' test:e2e:all",
     "start:all": "concurrently \"npm run dev\" \"npm --prefix ../users start\" \"cargo run --manifest-path ../gamey/Cargo.toml -- --mode server --port 4000\""
   },
   "dependencies": {

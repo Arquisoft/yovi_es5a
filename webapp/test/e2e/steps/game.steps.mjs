@@ -186,18 +186,6 @@ When('I play a game against the local player', async function () {
   const page = this.page
   if (!page) throw new Error('Page not initialized')
 
-  await page.waitForFunction(async () => {
-    try {
-      const res = await fetch('http://localhost:4000/'); 
-      return res.ok || res.status === 200; 
-    } catch {
-      return false;
-    }
-  }, { 
-    timeout: 180000, // Le damos 3 minuto extra de margen
-    polling: 2000   // Pregunta cada 2 segundos
-  });
-
   await page.waitForSelector('#gameMode', { timeout: 30000 })
   await page.fill('#boardSize', `${size}`);
   await page.fill('#guestName', "local_player")

@@ -124,13 +124,13 @@ jobs:
         run: |
           mysql -h 127.0.0.1 -uroot -prootpassword yovi_db < users/database/init.sql
 
+      - name: Pre-build gamey binary
+        run: cd gamey && cargo build
+
       - name: Install Playwright browsers
         run: |
           cd webapp
           npm run test:e2e:install-browsers
-
-      - name: Debug ports
-        run: sudo lsof -i -P -n | grep LISTEN
 
       - name: Run E2E tests
         run: |

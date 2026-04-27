@@ -20,11 +20,13 @@ Given('The users page is open', async function () {
   await new Promise(r => setTimeout(r, 1000))
   await page.fill('#identifier', username)
   await page.fill('#loginPassword', password)
-  await page.click('.authSubmit')
+  await page.click('.authSubmit');
+  
+  await page.waitForURL('**/');
+  await page.waitForSelector('.homeActions', { timeout: 10000 });
 
-  await page.waitForSelector('#gameMode', { timeout: 15000 })
-  const scoresLink = page.getByRole('link', { name: 'Ver puntuaciones' });
-  await scoresLink.waitFor({ state: 'visible' });
+  const scoresLink = page.getByText('Ver puntuaciones');
+  await scoresLink.waitFor({ state: 'visible', timeout: 15000 });
   await scoresLink.click();
 
 })

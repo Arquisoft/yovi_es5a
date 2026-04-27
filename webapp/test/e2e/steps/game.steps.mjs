@@ -208,13 +208,15 @@ When('I play a game against the local player', async function () {
 
   for (const { q, r } of moves) {
     const selector = `[data-testid="cell-${q}-${r}"]`;
-
-    await page.waitForSelector(selector, { timeout: 10000 });
-
-    await page.click(selector);
-
-    // espera mínima de render, no lógica de estado
-    await page.waitForTimeout(100);
+    await page.waitForFunction(
+      (sel) => {
+        const el = document.querySelector(sel);
+        const state = el.getAttribute('data-state');
+        return el !== null && state !== 'empty' && state !== 'null' && state !== null;
+      },
+      selector,
+      { timeout: 5000 }
+    );
   }
 })
 

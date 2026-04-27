@@ -135,6 +135,7 @@ jobs:
       - name: Run E2E tests
         run: |
           cd webapp
+          npm run test:e2e
           
       - name: Upload E2E screenshots on failure
         if: failure()

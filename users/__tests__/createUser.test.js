@@ -34,7 +34,7 @@ describe('createUser', () => {
   it('error en DB → error controlado', async () => {
     userRepo.insertUser.mockRejectedValue(new Error('DB fail'))
 
-    await expect(createUser('Pablo')).rejects.toThrow('Database error: DB fail')
+    await expect(createUser('Pablo')).rejects.toThrow('Database error')
   })
 
 })

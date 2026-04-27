@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useSessionStore } from "../store/sessionStore";
 import { logout as logoutApi } from "../services/authApi";
 import HelpModal from "./HelpModal";
 
 export default function GlobalActionsBar() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated);
   const refreshToken = useSessionStore((state) => state.refreshToken);
@@ -53,23 +55,23 @@ export default function GlobalActionsBar() {
   return (
     <>
       <div className="topBar">
-        <Link className="topActionButton" to="/puntuaciones" aria-label="Ir a clasificación">
-          Clasificación
+        <Link className="topActionButton" to="/puntuaciones" aria-label={t("app.viewLeaderboardAria")}>
+          {t("app.viewLeaderboard")}
         </Link>
         <button
           type="button"
           className="topActionButton"
           onClick={() => setIsHelpOpen(true)}
-          aria-label="Abrir menú de ayuda"
+          aria-label={t("help.openAria")}
         >
-          Ayuda
+          {t("help.button")}
         </button>
         {isAuthenticated ? (
           <button
             type="button"
             className="topActionButton logoutButton"
             onClick={handleLogout}
-            aria-label="Cerrar sesión"
+            aria-label={t("app.logoutAria")}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -77,7 +79,7 @@ export default function GlobalActionsBar() {
               <polyline points="16 17 21 12 16 7"/>
               <line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-            Salir
+            {t("app.logout")}
           </button>
         ) : null}
       </div>

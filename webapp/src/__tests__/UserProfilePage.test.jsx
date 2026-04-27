@@ -1,5 +1,4 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -883,7 +882,7 @@ describe("UserProfilePage", () => {
       renderPage();
       await waitFor(() =>
         expect(
-          screen.getByRole("heading", { name: /leaderboard \(centrado en usuario\)/i })
+          screen.getByRole("heading", { name: /clasificaci[oó]n centrada en usuario/i })
         ).toBeInTheDocument()
       );
     });

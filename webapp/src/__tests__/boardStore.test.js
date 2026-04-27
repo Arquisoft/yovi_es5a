@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { useBoardStore } from "../store/boardStore";
 
 // ── Helper ────────────────────────────────────────────────────────────────────

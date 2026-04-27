@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { requestMatchScore } from "../services/usersScoreApi";
 
 vi.mock("../services/authApi", () => ({

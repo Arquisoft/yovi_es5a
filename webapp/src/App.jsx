@@ -1,6 +1,13 @@
 import React from 'react';
 import "./App.css";
-import { Navigate, Route, Routes } from "react-router-dom";
+
+import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+import StartGameForm from "./components/StartGameForm";
+import GameBoard from "./components/GameBoard";
+import LanguageSelector from "./components/LanguageSelector";
+import { useBoardStore } from "./store/boardStore";
 
 import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
@@ -19,16 +26,23 @@ function RequireAuth({ children }) {
 }
 
 
+
 function App() {
   return (
     <>
+      <div className="globalLanguageSelector">
+        <LanguageSelector />
+      </div>
+    
       <GlobalActionsBar />
+
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route
           path="/"
           element={(
-           <RequireAuth>
+            <RequireAuth>
+
               <HomePage />
             </RequireAuth>
           )}

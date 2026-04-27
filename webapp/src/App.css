@@ -164,7 +164,76 @@
 }
 
 
+/* Botón ver puntuaciones */
+.homeActions {
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+
+.primaryLinkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6470ff, #4e58e6);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(100, 112, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  letter-spacing: 0.02em;
+}
+
+
+.primaryLinkButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 112, 255, 0.45);
+  opacity: 1;
+}
+
+
+.primaryLinkButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(100, 112, 255, 0.25);
+}
+
+.globalLanguageSelector {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.languageSelector {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.languageSelector label {
+  font-weight: 600;
+}
+
+.languageSelector select {
+  min-width: 9rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #111;
+  font-size: 0.95rem;
+}
+
+
+
 /* ── Top bar con acciones globales ── */
+
 .topBar {
   position: fixed;
   top: 1rem;

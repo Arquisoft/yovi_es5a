@@ -98,6 +98,7 @@ pub async fn place(
         Ok(game) => game,
         Err(err) => {
             return Err(Json(ErrorResponse::error(
+                "INVALID_YEN_FORMAT",
                 &format!("Formato YEN inválido: {}", err),
             )));
         }
@@ -137,7 +138,8 @@ pub async fn place(
         }
         Err(_e) => {
             return Err(Json(ErrorResponse::error(
-                "Se ha producido un error al realizar la jugada"
+                "GAME_MOVE_ERROR",
+                "Se ha producido un error al realizar la jugada",
             )));
         }
     };

@@ -1,0 +1,231 @@
+{
+  "app": {
+    "title": "Yovi",
+    "logout": "Se déconnecter",
+    "logoutAria": "Déconnexion",
+    "viewLeaderboard": "Classement",
+    "viewLeaderboardAria": "Aller au classement",
+    "language": "Langue",
+    "error": {
+      "databaseError": "Erreur de base de données"
+    }
+  },
+  "help": {
+    "button": "Aide",
+    "openAria": "Ouvrir l'aide",
+    "modalTitle": "Guide rapide de YOVI",
+    "closeAria": "Fermer l'aide",
+    "rulesTitle": "Règles (expliquées pour les débutants)",
+    "rulesDescription": "Y est un jeu pour deux joueurs. Vous pouvez jouer localement contre un ami ou contre l'un de nos bots. À chaque tour, un joueur place une pièce sur une case vide du plateau triangulaire. L'objectif est de connecter vos pièces afin qu'elles forment une chaîne touchant les trois bords du plateau ; le premier joueur qui y parvient remporte la partie.",
+    "howToPlayTitle": "Comment jouer — étapes de base",
+    "howToPlay": {
+      "step1": "Les joueurs jouent à tour de rôle ; le joueur A commence.",
+      "step2": "À votre tour, placez une pièce sur une case vide en cliquant avec la souris.",
+      "step3": "Vous ne pouvez pas placer une pièce sur une case déjà occupée.",
+      "step4": "Si vous ne savez pas quel coup jouer, vous pouvez toujours utiliser le bouton de suggestion.",
+      "step5": "Après avoir placé une pièce, le tour passe à l'autre joueur ou au bot.",
+      "step6": "Le moteur de jeu valide les coups et détecte automatiquement la victoire."
+    },
+    "boardSizeTitle": "Taille du plateau et stratégie",
+    "boardSizeDescription": "La taille du plateau change la nature du jeu : sur les petits plateaux, le jeu est surtout tactique (chaque coup a un grand impact), tandis que sur les grands plateaux, la partie devient plus stratégique, avec une planification à long terme et le contrôle des zones.",
+    "tipsTitle": "Conseils rapides",
+    "tip1": "Privilégiez la création de connexions continues plutôt que des pièces isolées.",
+    "tip2": "Bloquez les routes qui permettent à votre adversaire de relier plusieurs côtés.",
+    "tip3": "Contrôler le centre tôt offre généralement plus d'options de connexion.",
+    "finalParagraph": "Profitez de la partie et essayez différentes tailles de plateau pour varier votre stratégie !"
+  },
+  "auth": {
+    "title": "Connexion",
+    "subtitle": "Gérez votre compte ou inscrivez-vous",
+    "ariaLabel": "Onglets d'authentification",
+    "tab": {
+      "login": "Se connecter",
+      "register": "S'inscrire"
+    },
+    "login": {
+      "identifier": "Nom d'utilisateur",
+      "identifierPlaceholder": "Entrez votre nom d'utilisateur",
+      "password": "Mot de passe",
+      "loading": "Connexion en cours...",
+      "submit": "Entrer"
+    },
+    "register": {
+      "email": "E-mail",
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "passwordRepeat": "Répéter le mot de passe",
+      "loading": "Inscription en cours...",
+      "submit": "Créer un compte"
+    },
+    "error": {
+      "missingUsername": "Entrez un nom d'utilisateur",
+      "missingPassword": "Entrez un mot de passe",
+      "missingEmail": "Entrez votre e-mail",
+      "invalidEmail": "Entrez une adresse e-mail valide",
+      "emailAlreadyRegistered": "L'e-mail est déjà enregistré",
+      "missingLoginData": "Entrez le nom d'utilisateur et le mot de passe",
+      "userNotFound": "Utilisateur non trouvé",
+      "invalidCredentials": "Nom d'utilisateur ou mot de passe invalide",
+      "missingRegisterUsername": "Entrez un nom d'utilisateur",
+      "missingRegistrationData": "Entrez toutes les informations d'inscription",
+      "passwordTooShort": "Le mot de passe est trop court",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "registrationFailed": "Échec de l'inscription",
+      "refreshTokenRequired": "refreshToken est requis",
+      "refreshTokenInvalidOrExpired": "Refresh token invalide ou expiré",
+      "refreshTokenInvalid": "Refresh token invalide",
+      "refreshTokenSessionNotFound": "Session de refresh token introuvable",
+      "refreshTokenRevoked": "Refresh token réutilisé ou révoqué",
+      "accessTokenRequired": "Jeton d'accès requis",
+      "accessTokenInvalid": "Le token d'accès est invalide ou expiré",
+      "invalidFinishedMatchPayload": "La payload de la partie terminée est invalide",
+      "authenticationFailed": "Échec de l'authentification",
+      "sessionExpired": "Session expirée"
+    },
+    "success": {
+      "registrationSent": "Inscription envoyée avec succès"
+    }
+  },
+  "leaderboard": {
+    "pageTitle": "Classement",
+    "backToGame": "Retour au jeu",
+    "loading": "Chargement du classement...",
+    "error": {
+      "loadFailed": "Impossible de charger le classement"
+    },
+    "emptyState": "Aucun joueur à afficher.",
+    "position": "Position",
+    "player": "Joueur",
+    "bestScore": "Meilleur score"
+  },
+  "pagination": {
+    "ariaLabel": "Commandes de pagination",
+    "previous": "Précédent",
+    "pageInfo": "Page {{page}} sur {{totalPages}}",
+    "next": "Suivant",
+    "size": "Taille"
+  },
+  "search": {
+    "ariaLabel": "Rechercher des joueurs",
+    "placeholder": "Rechercher des joueurs...",
+    "suggestionsAria": "Suggestions de recherche de joueurs",
+    "errorMessage": "Entrez au moins 3 caractères pour rechercher",
+    "error": {
+      "suggestionsFailed": "Impossible de charger les suggestions.",
+      "userNotFound": "Utilisateur non trouvé"
+    }
+  },
+  "header": {
+    "turn": "Tour {{turnNumber}}"
+  },
+  "startGame": {
+    "title": "Configurer la partie",
+    "modeLabel": "Mode",
+    "mode": {
+      "1vs1": "2 joueurs (1vs1)",
+      "1vsbot": "1 joueur (vs Bot)"
+    },
+    "error": {
+      "noAuth": "Vous n'êtes pas authentifié",
+      "guestNameRequired": "Le nombre d'invité est requis",
+      "sessionExpired": "Session expirée"
+    },
+    "authenticatedPlayer": "Joueur authentifié",
+    "guestNameLabel": "Nom de l'invité",
+    "guestPlaceholder": "Entrez un nom d'invité",
+    "difficultyLabel": "Difficulté",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "boardSizeLabel": "Taille du plateau",
+    "loading": "Création de la partie...",
+    "startButton": "Commencer le jeu"
+  },
+  "game": {
+    "error": {
+      "invalidCell": "Case invalide",
+      "invalidMoveTurnNotChange": "Mouvement invalide : le tour n'a pas changé",
+      "couldNotConfirmMove": "Impossible de confirmer le mouvement",
+      "serverCommunication": "Erreur de communication avec le serveur",
+      "invalidMove": "Mouvement invalide",
+      "couldNotConfirmPlayerMove": "Impossible de confirmer le mouvement du joueur",
+      "noValidBotMove": "Aucun mouvement valide pour le bot",
+      "couldNotApplyBotMove": "Impossible d'appliquer le mouvement du bot",
+      "serverValidationFailed": "Impossible de valider le mouvement sur le serveur.",
+      "serverBotMoveFailed": "Impossible de récupérer le mouvement du bot.",
+      "invalidYenFormat": "Format YEN invalide.",
+      "gameAlreadyOver": "La partie est déjà terminée.",
+      "botNotFound": "Bot sélectionné introuvable.",
+      "invalidBotMove": "Le bot a sélectionné un mouvement invalide.",
+      "unsupportedApiVersion": "Version d'API non prise en charge.",
+      "invalidPositionJson": "JSON de position invalide.",
+      "serverMoveFailed": "Impossible d'effectuer le mouvement sur le serveur.",
+      "botCoordsMissing": "La réponse du bot n'inclut pas de coordonnées."
+    },
+    "winMessage": "Vainqueur : {{playerName}}",
+    "defeatTitle": "Défaite",
+    "defeatSubtitle": "Le bot a gagné",
+    "loadingBoard": "Chargement du plateau...",
+    "difficulty": "Difficulté : {{difficulty}}",
+    "suggestionLoading": "Récupération d'une suggestion...",
+    "suggestion": "Suggérer un mouvement",
+    "validating": "Validation du mouvement..."
+  },
+  "victory": {
+    "title": "Résultat",
+    "defaultMessage": "Résultat du match pour {{playerName}}",
+    "defaultSubtitle": "Consultez votre score et terminez.",
+    "unknownScoreError": "Impossible de charger le score",
+    "score": "Score : {{score}}",
+    "loadingScore": "Chargement du score...",
+    "scoreError": "Erreur lors du chargement du score",
+    "finishButton": "Terminer"
+  },
+  "users": {
+    "error": {
+      "scoreCalculationFailed": "Impossible de calculer le score des utilisateurs.",
+      "invalidScoreResponse": "La réponse des utilisateurs n'inclut pas de score valide.",
+      "invalidFinishedMatchPayload": "La payload de la partie terminée est invalide",
+      "databaseError": "Erreur de base de données",
+      "missingGameParameters": "Paramètres de partie manquants",
+      "invalidGamePlayers": "Les joueurs doivent être différents",
+      "invalidWinner": "Gagnant invalide",
+      "tokenMismatchPlayerName": "Le token ne correspond pas au nom du joueur",
+      "noBotForDifficulty": "Aucun bot n'existe pour cette difficulté",
+      "unsupportedGameMode": "Mode de jeu non pris en charge",
+      "invalidDifficulty": "Difficulté invalide pour 1vsbot"
+    }
+  },
+  "profile": {
+    "error": {
+      "loadProfile": "Impossible de charger le profil"
+    },
+    "title": "Utilisateur : {{username}}",
+    "backToGame": "Retour au jeu",
+    "backToLeaderboard": "Retour au classement",
+    "loadingProfile": "Chargement du profil...",
+    "loadingCentered": "Chargement du classement...",
+    "loadingHistory": "Chargement de l'historique...",
+    "noMatchesMessage": "Cet utilisateur n'a aucun match.",
+    "field": {
+      "name": "Nom :",
+      "globalPosition": "Position globale :",
+      "bestScore": "Meilleur score :",
+      "totalGames": "Total des parties :"
+    },
+    "centeredLeaderboardTitle": "Classement centré sur l'utilisateur",
+    "historyTitle": "Historique des matchs",
+    "botMatchesTitle": "Matchs contre le bot",
+    "pvpMatchesTitle": "Matchs Joueur vs Joueur",
+    "table": {
+      "id": "ID",
+      "score": "Score",
+      "board": "Plateau",
+      "turns": "Tours",
+      "difficulty": "Difficulté",
+      "winner": "Vainqueur",
+      "player1": "Joueur 1",
+      "player2": "Joueur 2"
+    }
+  }
+}

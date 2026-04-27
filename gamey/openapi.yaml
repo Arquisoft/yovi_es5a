@@ -179,8 +179,13 @@ components:
       type: object
       description: Respuesta de error estándar
       properties:
-        error:
+        code:
           type: string
+          description: Código de error estable para internacionalización
+          example: INVALID_YEN_FORMAT
+        message:
+          type: string
+          description: Mensaje legible del error
           example: Invalid YEN format
         api_version:
           type: string
@@ -189,4 +194,5 @@ components:
           type: string
           example: hard_bot
       required:
-        - error
+        - code
+        - message

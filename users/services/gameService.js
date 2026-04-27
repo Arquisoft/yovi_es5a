@@ -2,9 +2,23 @@ const GameRepository = require('../repositories/gameRepository');
 
 const gameRepo = new GameRepository();
 
-function createClientError(message) {
+// Función auxiliar para crear errores de servicio con código y mensaje
+function createServiceError(message, code, statusCode = 400) {
   const error = new Error(message);
-  error.statusCode = 400;
+  error.code = code;
+  error.statusCode = statusCode;
+  return error;
+}
+
+// Función auxiliar para crear errores de cliente (400) con código específico
+function createClientError(message, code = 'INVALID_FINISHED_MATCH_PAYLOAD') {
+  return createServiceError(message, code, 400);
+}
+
+function createDatabaseError(err) {
+  const error = new Error('Database error');
+  error.code = 'DATABASE_ERROR';
+  error.statusCode = 500;
   return error;
 }
 
@@ -27,10 +41,10 @@ function normalizeUserVsBotWinner(winner, isDraw) {
 
 async function createUserVsUserGame(player1Id, player2Id, boardSize) {
   if (!player1Id || !player2Id || !boardSize) {
-    throw new Error('player1Id, player2Id, and boardSize are required');
+    throw createServiceError('player1Id, player2Id, and boardSize are required', 'MISSING_GAME_PARAMETERS');
   }
   if (player1Id === player2Id) {
-    throw new Error('Players must be different');
+    throw createServiceError('Players must be different', 'INVALID_GAME_PLAYERS');
   }
   const connection = await gameRepo.getConnection();
   try {
@@ -41,13 +55,13 @@ async function createUserVsUserGame(player1Id, player2Id, boardSize) {
     return `Game created with ID: ${gameId}`;
   } catch (err) {
     await connection.rollback();
-    throw new Error('Database error: ' + err.message);
+    throw createDatabaseError(err);
   }
 }
 
 async function createUserVsBotGame(userId, botId, boardSize, difficulty) {
   if (!userId || !botId || !boardSize || !difficulty) {
-    throw new Error('userId, botId, boardSize, and difficulty are required');
+    throw createServiceError('userId, botId, boardSize, and difficulty are required', 'MISSING_GAME_PARAMETERS');
   }
   const connection = await gameRepo.getConnection();
   try {
@@ -58,16 +72,16 @@ async function createUserVsBotGame(userId, botId, boardSize, difficulty) {
     return `Game created with ID: ${gameId}`;
   } catch (err) {
     await connection.rollback();
-    throw new Error('Database error: ' + err.message);
+    throw createDatabaseError(err);
   }
 }
 
 async function createBotVsBotGame(bot1Id, bot2Id, boardSize, difficulty) {
   if (!bot1Id || !bot2Id || !boardSize || !difficulty) {
-    throw new Error('bot1Id, bot2Id, boardSize, and difficulty are required');
+    throw createServiceError('bot1Id, bot2Id, boardSize, and difficulty are required', 'MISSING_GAME_PARAMETERS');
   }
   if (bot1Id === bot2Id) {
-    throw new Error('Bots must be different');
+    throw createServiceError('Bots must be different', 'INVALID_GAME_PLAYERS');
   }
   const connection = await gameRepo.getConnection();
   try {
@@ -78,22 +92,22 @@ async function createBotVsBotGame(bot1Id, bot2Id, boardSize, difficulty) {
     return `Game created with ID: ${gameId}`;
   } catch (err) {
     await connection.rollback();
-    throw new Error('Database error: ' + err.message);
+    throw createDatabaseError(err);
   }
 }
 
 async function finishGame(gameId, winner) {
   if (!gameId || !winner) {
-    throw new Error('gameId and winner are required');
+    throw createServiceError('gameId and winner are required', 'MISSING_FINISH_GAME_DATA');
   }
   if (!['player1', 'player2', 'player', 'bot', 'draw'].includes(winner)) {
-    throw new Error('Winner must be player1, player2, player, bot, or draw');
+    throw createServiceError('Winner must be player1, player2, player, bot, or draw', 'INVALID_WINNER');
   }
   try {
     await gameRepo.updateGameWinner(gameId, winner);
     return `Game ${gameId} finished with winner: ${winner}`;
   } catch (err) {
-    throw new Error('Database error: ' + err.message);
+    throw createDatabaseError(err);
   }
 }
 
@@ -116,16 +130,16 @@ async function recordFinishedMatch(matchSummary, score, auth) {
       const winner = String(matchSummary.winner || '').trim().toLowerCase();
 
       if (auth?.username !== playerName) {
-        throw createClientError('El token no corresponde con playerName en 1vs1');
+        throw createClientError('Token does not match playerName in 1vs1', 'TOKEN_MISMATCH_PLAYER_NAME');
       }
 
       if (!['player', 'guest', 'draw'].includes(winner)) {
-        throw createClientError('winner debe ser player, guest o draw en 1vs1');
+        throw createClientError('winner must be player, guest, or draw in 1vs1', 'INVALID_FINISHED_MATCH_PAYLOAD');
       }
 
       const playerUserId = await gameRepo.findUserIdByUsername(playerName, connection);
       if (!playerUserId) {
-        throw createClientError(`Usuario no encontrado: ${playerName}`);
+        throw createClientError(`User not found: ${playerName}`, 'USER_NOT_FOUND');
       }
 
     const winnerValue = winner === 'player'
@@ -153,25 +167,25 @@ async function recordFinishedMatch(matchSummary, score, auth) {
       const difficulty = normalizeDifficulty(matchSummary.difficulty);
 
       if (auth?.username !== playerName) {
-        throw createClientError('El token no corresponde con playerName en 1vsbot');
+        throw createClientError('Token does not match playerName in 1vsbot', 'TOKEN_MISMATCH_PLAYER_NAME');
       }
 
       if (!winner) {
-        throw createClientError('El campo winner debe ser player, bot o draw');
+        throw createClientError('Winner must be player, bot, or draw', 'INVALID_FINISHED_MATCH_PAYLOAD');
       }
 
       if (!difficulty) {
-        throw createClientError('Dificultad inválida para 1vsbot');
+        throw createClientError('Invalid difficulty for 1vsbot', 'INVALID_DIFFICULTY');
       }
 
       const userId = await gameRepo.findUserIdByUsername(playerName, connection);
       if (!userId) {
-        throw createClientError(`Usuario no encontrado: ${playerName}`);
+        throw createClientError(`User not found: ${playerName}`, 'USER_NOT_FOUND');
       }
 
       const botId = await gameRepo.findBotIdByDifficulty(difficulty, connection);
       if (!botId) {
-        throw createClientError(`No existe bot para dificultad: ${difficulty}`);
+        throw createClientError(`No bot exists for difficulty: ${difficulty}`, 'NO_BOT_FOR_DIFFICULTY');
       }
 
       const finishedGame = await gameRepo.insertFinishedGame({
@@ -187,7 +201,7 @@ async function recordFinishedMatch(matchSummary, score, auth) {
       await gameRepo.insertUserBotGame(finishedGame, userId.id, botId, difficulty, connection);
       await gameRepo.updateUserBotStats(userId.id, score, connection);
     } else {
-      throw createClientError('Modo de partida no soportado');
+      throw createClientError('Unsupported game mode', 'UNSUPPORTED_GAME_MODE');
     }
 
     await connection.commit();

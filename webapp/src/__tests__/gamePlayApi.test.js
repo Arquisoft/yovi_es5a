@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { validateTwoPlayerMove, requestBotMove } from "../services/gamePlayApi";
 
 describe("gamePlayApi", () => {
@@ -96,6 +95,20 @@ describe("gamePlayApi", () => {
       await expect(
         validateTwoPlayerMove({ board, selectedCell })
       ).rejects.toThrow("Error backend");
+    });
+
+    it("lanza mensaje traducido si response.ok es false y viene un code conocido", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          code: "INVALID_YEN_FORMAT",
+          message: "Invalid YEN format",
+        }),
+      });
+
+      await expect(
+        validateTwoPlayerMove({ board, selectedCell })
+      ).rejects.toThrow("Formato YEN inválido.");
     });
 
     it("lanza mensaje genérico si response.ok es false y no hay message", async () => {
@@ -319,6 +332,20 @@ describe("gamePlayApi", () => {
       await expect(
         requestBotMove({ board, difficulty: "Facil" })
       ).rejects.toThrow("Error backend");
+    });
+
+    it("lanza mensaje traducido si response.ok es false y viene un code conocido", async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          code: "BOT_NOT_FOUND",
+          message: "Bot not found",
+        }),
+      });
+
+      await expect(
+        requestBotMove({ board, difficulty: "Facil" })
+      ).rejects.toThrow("No se encontró el bot seleccionado.");
     });
 
     it("lanza mensaje genérico si response.ok es false y no hay message", async () => {

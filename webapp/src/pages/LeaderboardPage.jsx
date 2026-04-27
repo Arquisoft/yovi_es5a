@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import LeaderboardTable from "../components/LeaderboardTable";
 import PaginationControls from "../components/PaginationControls";
@@ -7,6 +8,7 @@ import { fetchLeaderboard } from "../services/leaderboardApi";
 import "./Leaderboard.css";
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation();
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(25);
   const [data, setData] = React.useState({ items: [], totalPages: 1 });
@@ -29,7 +31,7 @@ export default function LeaderboardPage() {
         if (!active) {
           return;
         }
-        setError(err.message || "No se pudo cargar la tabla de puntuaciones");
+        setError(err.message || t("leaderboard.error.loadFailed"));
       })
       .finally(() => {
         if (active) {
@@ -45,17 +47,17 @@ export default function LeaderboardPage() {
   return (
     <section className="leaderboardPage">
       <header className="pageHeader">
-        <h2>Leaderboard</h2>
+        <h2>{t("leaderboard.pageTitle")}</h2>
         <div className="pageLinks">
           <Link className="secondaryLinkButton" to="/">
-            Volver al juego
+            {t("leaderboard.backToGame")}
           </Link>
         </div>
       </header>
 
       <UserSearchBar />
 
-      {loading ? <p className="loadingText">Cargando puntuaciones...</p> : null}
+      {loading ? <p className="loadingText">{t("leaderboard.loading")}</p> : null}
       {error ? <p className="errorText">{error}</p> : null}
 
       {!loading && !error ? <LeaderboardTable rows={data.items || []} /> : <div className="tablePlaceholder" />}

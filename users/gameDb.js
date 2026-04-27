@@ -288,12 +288,12 @@ async function getUserVsUserMatchHistory(userId, page, pageSize, connection) {
        g.winner,
        g.finished_at,
        p1.username AS player1_name,
-       COALESCE(ug.guest_name, p2.username, 'Invitado') AS player2_name,
+       COALESCE(ug.guest_name, p2.username, 'Guest') AS player2_name,
        CASE
          WHEN g.winner = 'player1' THEN p1.username
-         WHEN g.winner = 'player2' THEN COALESCE(ug.guest_name, p2.username, 'Invitado')
-         WHEN g.winner = 'draw' THEN 'Empate'
-         ELSE 'Desconocido'
+         WHEN g.winner = 'player2' THEN COALESCE(ug.guest_name, p2.username, 'Guest')
+         WHEN g.winner = 'draw' THEN 'Draw'
+         ELSE 'Unknown'
        END AS winner_name
      FROM game g
      INNER JOIN userGames ug ON ug.id = g.id

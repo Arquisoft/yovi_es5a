@@ -22,11 +22,15 @@ Given('The users page is open', async function () {
   await page.fill('#loginPassword', password)
   await page.click('.authSubmit');
 
-  await page.waitForURL('**/', { timeout: 15000 }); 
+  // Después de page.click('.authSubmit')
+  // 1. Esperar a que el formulario de login desaparezca (esto confirma que el login procesó)
+  await page.waitForSelector('#identifier', { state: 'hidden', timeout: 15000 });
 
-  // En lugar de .homeActions, vamos a esperar directamente al botón que queremos
+  // 2. Esperar a que aparezca el contenedor del botón (según tu imagen es .homeActions)
+  await page.waitForSelector('.homeActions', { state: 'visible', timeout: 15000 });
+
+  // 3. Ahora el botón DEBE estar ahí
   const scoresLink = page.getByText('Ver puntuaciones');
-  await scoresLink.waitFor({ state: 'visible', timeout: 15000 });
   await scoresLink.click();
 
 })

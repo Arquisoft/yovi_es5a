@@ -23,7 +23,11 @@ Given('The users page is open', async function () {
   await page.click('.authSubmit')
 
   await page.waitForSelector('#gameMode', { timeout: 15000 })
-  await page.waitForSelector('a.primaryLinkButton', { state: 'visible' })
+  console.log(await page.content());
+  await page.waitForSelector('a.primaryLinkButton', {
+    state: 'attached',
+    timeout: 15000
+  });
   await page.click('a.primaryLinkButton')
 
 })

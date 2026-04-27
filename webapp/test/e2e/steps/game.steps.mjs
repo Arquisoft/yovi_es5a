@@ -207,6 +207,7 @@ When('I play a game against the local player', async function () {
   ];
 
   for (const { q, r } of moves) {
+    const selector = `[data-testid="cell-${q}-${r}"]`;
     const prevTurn = await page.textContent('[data-testid="turnNumber"]');
     await page.click(selector);
     await page.waitForFunction((prev) => {

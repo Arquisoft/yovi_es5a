@@ -118,7 +118,7 @@ jobs:
           cd gamey && cargo build --release
 
       - name : Allow execute gamey binary
-        run: chmod +x target/release/gamey
+        run: chmod +x gamey/target/release/gamey
 
       - name: Install Playwright browsers
         run: |

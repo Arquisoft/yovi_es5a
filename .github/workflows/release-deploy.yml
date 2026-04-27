@@ -109,6 +109,9 @@ jobs:
             sleep 2
           done
 
+      - name: Pre-build gamey binary
+        run: cd gamey && cargo build --release
+
       - name: Install Playwright browsers
         run: |
           cd webapp
@@ -116,9 +119,7 @@ jobs:
 
       - name: Run E2E tests
         run: |
-          cd gamey
-          cargo run --manifest-path ../gamey/Cargo.toml -- --mode server --port 4000
-          cd ./webapp
+          cd webapp
           npm run test:e2e
 
   docker-push-users:

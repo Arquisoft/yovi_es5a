@@ -34,7 +34,11 @@ Before(async function () {
   this.page = await this.browser.newPage()
 })
 
-After(async function () {
+After(async function (scenario) {
+  if (scenario.result?.status === 'FAILED' && this.page) {
+    const screenshot = await this.page.screenshot({ fullPage: true })
+    await this.attach(screenshot, 'image/png')
+  }
   if (this.page) await this.page.close()
   if (this.browser) await this.browser.close()
 })

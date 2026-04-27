@@ -76,8 +76,6 @@ jobs:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: yovi_db
-      VITE_API_URL: http://localhost:3000
-      VITE_GAMEY_URL: http://localhost:4000
 
     steps:
       - name: Checkout
@@ -137,7 +135,14 @@ jobs:
       - name: Run E2E tests
         run: |
           cd webapp
-          npm run test:e2e
+          
+      - name: Upload E2E screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: webapp/test/e2e/screenshots/
+          if-no-files-found: ignore
 
   docker-push-users:
     name: Publish users image

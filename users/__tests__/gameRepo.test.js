@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// 👇 mock de conexión
+
 const conn = {
   execute: vi.fn(),
 }
@@ -9,7 +9,7 @@ vi.mock('../db', () => ({
   getConnection: vi.fn().mockResolvedValue(conn)
 }))
 
-// 👇 mock de gameDb y userDb
+
 const gameDb = {
   insertGame: vi.fn().mockResolvedValue(1),
   insertUserBotGame: vi.fn().mockResolvedValue(3),
@@ -25,7 +25,7 @@ const userDb = {
   findUserByUsernameExact: vi.fn().mockResolvedValue({ id: 10 }),
 }
 
-// 👇 importar el repositorio después de mockear
+
 const GameRepository = require('../repositories/gameRepository')
 
 describe('GameRepository uncovered methods', () => {

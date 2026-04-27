@@ -99,4 +99,5 @@ export default memo(function KonvaRenderer({
       </Layer>
     </Stage>
   );
+  
 });

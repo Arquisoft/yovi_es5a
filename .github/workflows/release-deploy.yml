@@ -129,6 +129,9 @@ jobs:
           cd webapp
           npm run test:e2e:install-browsers
 
+      - name: Debug ports
+        run: sudo lsof -i -P -n | grep LISTEN
+
       - name: Run E2E tests
         run: |
           cd webapp

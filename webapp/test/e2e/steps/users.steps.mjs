@@ -23,12 +23,9 @@ Given('The users page is open', async function () {
   await page.click('.authSubmit')
 
   await page.waitForSelector('#gameMode', { timeout: 15000 })
-  console.log(await page.content());
-  await page.waitForSelector('a.primaryLinkButton', {
-    state: 'attached',
-    timeout: 15000
-  });
-  await page.click('a.primaryLinkButton')
+  const scoresLink = page.getByRole('link', { name: 'Ver puntuaciones' });
+  await scoresLink.waitFor({ state: 'visible' });
+  await scoresLink.click();
 
 })
 

@@ -109,19 +109,6 @@ jobs:
             sleep 2
           done
 
-      - name: Initialize database
-        run: |
-          mysql -h 127.0.0.1 -uroot -prootpassword yovi_db < users/database/init.sql
-
-      - name: Start gamey service
-        run: |
-          cd gamey && cargo run -- --mode server --port 4000
-          for i in {1..30}; do
-            curl -s http://localhost:4000/health && break
-            echo "Waiting for gamey... ($i)"
-            sleep 2
-          done
-
       - name: Install Playwright browsers
         run: |
           cd webapp
@@ -129,7 +116,9 @@ jobs:
 
       - name: Run E2E tests
         run: |
-          cd webapp
+          cd gamey
+          cargo run --manifest-path ../gamey/Cargo.toml -- --mode server --port 4000
+          cd ./webapp
           npm run test:e2e
 
   docker-push-users:

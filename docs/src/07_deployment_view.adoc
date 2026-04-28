@@ -44,6 +44,10 @@ See https://docs.arc42.org/section-7/[Deployment View] in the arc42 documentatio
 ****
 endif::arc42help[]
 
+Para representar de la manera más exacta y representativa posible el despliegue de nuestro sistema en la máquina virtual creada para la realización de las prácticas, se especifican dos niveles de infraestructura, 
+con el fin ofrecer distintos puntos de vista del sistema: uno más general que represente los módulos más característicos de nuestro sistema, y otro más específico en el que aparecen los distintos contenedores encargados
+de la monitorización del mismo.
+
 === Nivel de infraestructura 1
 
 ifdef::arc42help[]
@@ -66,42 +70,47 @@ endif::arc42help[]
 skinparam monochrome true
 left to right direction
 
-actor Navegador
+node "Navegador" <<device>> as Navegador
 
-node "Azure VM (Linux Ubuntu 24.04)" {
+node "Azure VM (Linux Ubuntu 24.04)" <<device>> as AzureVM {
 
-    node "Docker" {
-
-        node "WebApp\n(React Front-end)" as WebApp
+    node "Docker" <<execution environment>> as Docker {
+        artifact "WebApp\n(React Front-end)"   as WebApp
+        artifact "Users\n(Node Back-end)"      as Users
+        artifact "Gamey\n(Rust Game Engine)"   as Gamey
         
-        node "Users\n(Node Back-end)" as Users
-        
-        node "Gamey\n(Rust Game Engine)" as Gamey
-        
-        node "Database" as Database
+        node "Database" as Database{
+            artifact "MySQL"                   as MySQL
+            artifact "db_data"                 as Volume <<volume>>
+        }
     }
 }
 
-Navegador <--> WebApp : Interacción UI
+Navegador   --   WebApp      : <<interaccón UI>>
+WebApp      -->  Users       : <<HTTP/REST>>
+WebApp      -->  Gamey       : <<HTTP/REST>>
+Users       --   MySQL       : <<MySQL>>
+MySQL       --   Volume      : <<mount>>
 
-WebApp <--> Users : HTTP/JSON
-
-WebApp <--> Gamey : Lógica juego / Bot
-
-Users <--> Database : Persistencia datos
 @enduml
 ----
 
-Motivation::
+Descripción::
 
-La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. El usuario interactua con el sistema a través de una interfaz diseñada con React. Está se comunica con el back-end mediante OpenApi. A su vez, el back-end se comunica con la base de datos con la api mencionada anteriormente.
-El front-end también se comunica con el módulo de juego mediante los módulo Bot-server y Game-server.
+La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. 
++
+El usuario interactua con el sistema a través del módulo WebApp, que no es más que una interfaz gráfica diseñada en React. El front-end a su vez se comunica con los dos back-ends del sistema mediante peticiones HTTP: Users y Gamey. 
+Cada uno de ellos expone una serie de endpoints para realizar diferentes tareas, ya sea consultar la base de datos y almacenar/devolver la información relevante de nuestro sistema (módulo Users) o actuar como motor de juego (módulo Rust).
++
+A su vez, el módulo Users mantiene una comunicación directa con nuestra base de datos relacional MySQL. La base de datos tiene un volumen asociado para permitir que los datos de nuestro sistema persistan una vez se despliegue el mismo.   
 
 Características de calidad/rendimiento::
 
 El hecho de emplear Docker para encapsular cada uno de los módulos del sistema en distintos contenedores permite que el sistema sea escalable y portable. Además, la separación de las distintas partes en distintos contenedores
-facilita el mantenimiento y la extensibilidad. Además,  aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
+facilita el mantenimiento y la extensibilidad. Además, aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
 continuo de nuestra aplicación.
++
+El despliegue automático desde GitHub Actions favorece tiempos de entrega cortos (en comparación al empleo de otras tecnologías) y una actualización uniforme de los servicios desplegados.
 
 Mapeo de los bloques de construcción a infraestructura::
 
@@ -110,17 +119,17 @@ Mapeo de los bloques de construcción a infraestructura::
 
 | **Nombre** | **Descripción**
 
-| Azure | Servicio con el servidor en el que se encuentra la aplicación.
+| Azure VM (Linux Ubuntu 24.04) | Máquina virtual que actúa como servidor de la aplicación y sobre la que se despliega toda la infraestructura del sistema.
 
-| Docker | Genera cada uno de los contenedores para almacenar cada uno de los módulos de la aplicación.
+| Docker | Entorno de ejecución que aísla cada módulo del sistema en distintos contenedores.
 
-| WebApp | Front-end diseñado con React para la interacción con el usuario.
+| WebApp | Front-end desarrollado en React que permite la interación con el usuario y se comunica directamente con los back-ends del sistema a través de sus correspondientes API REST.
 
-| Users | Back-end diseñado con Node para gestionar la interacción con la BD. 
+| Users | Back-end desarrollado en Node.js para gestionar la información relevante del sistema (información del usuario, resultado de partidas, ...) y que interactua con la base de datos del sistema.
 
-| Gamey | Módulo Rust con la lógica del juego y del bot.
+| Gamey | Back-end Rust que actúa como motor de juego y expone una API REST.
 
-| Database | Almacena un registro de los usuarios de la aplicación, las partidas realizadas, los usuarios obtenidos, ...
+| Database | Base de datos MySQL que almacena la información de valor de la app (usuarios, resultados, ...)
 
 |===
 
@@ -136,79 +145,75 @@ endif::arc42help[]
 
 === Nivel de infraestructura 2
 
-En este nivel se detalla la estructura interna de los elementos de infraestructura definidos en el nivel 1. En particular, se descompone el nodo Azure VM y el entorno Docker para mostrar cómo se organizan los contenedores, servicios auxiliares y la persistencia de datos.
-
 [plantuml,"Nivel de infraestructura 2",png]
 ----
 @startuml
 skinparam monochrome true
 left to right direction
 
-node "Azure VM\n(Linux Ubuntu 24.04)" as VM {
-  node "Docker" as Docker {
+node "Navegador" <<device>> as Navegador
 
-    node "webapp\n(React + Vite)" as WebApp
-    node "users\n(Node.js)" as Users
-    node "gamey\n(Rust)" as Gamey
-    database "MySQL" as Database
+node "Azure VM (Linux Ubuntu 24.04)" <<device>> as AzureVM {
 
-    node "Monitoring" as Monitoring {
-      node "Prometheus" as Prometheus
-      node "Grafana" as Grafana
+    node "Docker" <<execution environment>> as Docker {
+        artifact "WebApp\n(React Front-end)"     as WebApp
+        artifact "Users\n(Node Back-end)"        as Users
+        artifact "Gamey\n(Rust Game Engine)"     as Gamey
+        artifact "Swagger"                       as Swagger
+
+        node "Database" as Database{
+            artifact "MySQL"                     as MySQL
+            artifact "db_data"                   as Volume <<volume>>
+        }
+        
+        node "Monitoring" as Monitoring{
+            artifact "Prometheus"                as Prometheus
+            artifact "Grafana"                   as Grafana
+        }
     }
-  }
 }
 
-actor Navegador
-
-Navegador <--> WebApp : HTTPS / UI
-WebApp <--> Users : HTTP/JSON
-WebApp <--> Gamey : HTTP/JSON
-
-Users <--> Database : SQL
-Users <--> Prometheus : Métricas
-Grafana <--> Prometheus : Consultas de métricas
-
+Navegador   --   WebApp      
+WebApp      -->  Users       : <<HTTP/REST>>
+WebApp      -->  Gamey       : <<HTTP/REST>>
+Users       --   MySQL       
+MySQL       --   Volume      : <<mount>>
+Prometheus  ..>  Users       
+Prometheus  ..>  Gamey       
+Grafana     -->  Prometheus  : <<datasource>>
 @enduml
 ----
 
-Motivación::
+Descripción::
 
-El sistema se sostiene en una máquina virtual Ubuntu 24.04 en Azure sobre la que se despliega Docker, porque esto simplifica la ejecución aislada de cada servicio y permite reproducir el entorno de forma consistente en despliegues de prueba, integración y producción.
-Los módulos webapp, users y gamey se publican como imágenes independientes, mientras que MySQL actúa como base de datos persistente y Prometheus/Grafana proporcionan la observabilidad del sistema.
-
-El flujo de despliegue confirma además que cada release pasa por pruebas de Node, Rust y E2E antes de publicar imágenes y actualizar el sistema. Esto refuerza una estrategia de despliegue continua, basada en contenedores y con separación clara entre construcción, publicación y ejecución.
+En este nivel de infraestructura aparecen los módulos destinados a la monitorización del sistema, concretamente, los módulos Grafana y Prometheus.
++
+El módulo Prometheus observa constantemente las APIs REST de los back-ends del sistema con el fin de recopilar estadísticas acerca del número de peticiones que reciben cada una de estas en cada instante, el tiempo de respuesta, ...
+Todos estos datos se alamcenan en bases de datos volátiles que crea y elimina el propio Prometheus cuando el sistema se sistema se levanta o se tumba respectivamente; por lo tanto, la información no persiste.
++
+Por otro lado, el contenedor Grafana accede a los datos extraidos por el módulo Prometheus con el fin de reprensentarlos gráficamente y poder comprender de manera visual el comportamiento de las diferentes APIs del sistema.
++
+Además, es necesario mencionar la existencia del contenedor Swagger, destinado a desplegar la documentación sobre las diferentes APIs mencionadas anteriormente: endpoints existentes en cada una, acción asociada a cada uno de estos, URLs, ... 
+De esta manera, los desarrollados no tienen que acudir directamente al código (y desperdiciar demasiado tiempo comprendiendo el mismo) para enteder el funcionamiento de las mismas y los distintos servicios que ofrecen.
 
 Características de calidad/rendimiento::
 
-El uso de contenedores independientes mejora la portabilidad y reduce el acoplamiento entre servicios, porque cada bloque se ejecuta con sus dependencias y configuración propias.
-La base de datos MySQL queda aislada como servicio persistente, lo que facilita las tareas de mantenimiento y recuperación sin afectar al resto de componentes.
-
 La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.
-Además, el despliegue automático desde GitHub Actions favorece tiempos de entrega cortos y una actualización uniforme de los servicios desplegados.
++
+Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo.
 
 Mapeo de los bloques de construcción a infraestructura::
 
-[cols="1,2,2" options="header"]
+[cols="1,2" options="header"]
+|===
+
+| **Nombre** | **Descripción**
+
+| Prometheus | Herramienta de monitorización que recopila métricas de los servicios de la aplicación y los almacena en bases de datos temporales.
+
+| Grafana | Herramienta de visualización que consume Prometheus como datasource para mostrar dashboards con las métricas del sistema.
+
+| Swagger | Contenedor destinado a mostrar la documentación asociada a cada una de las APIs del sistema (Users y Gamey).
 
 |===
 
-| Elemento de infraestructura | Rol | Responsabilidad
-
-| Azure VM | Host físico/virtual con Ubuntu 24.04 | Ejecuta toda la infraestructura mediante Docker.
-
-| Docker | Motor de contenedores y Docker Compose | Aísla y orquesta los servicios de la solución.
-
-| webapp | Imagen Docker del front-end React/Vite | Sirve la interfaz de usuario y consume las APIs del sistema.
-
-| users | Imagen Docker del backend Node.js | Gestiona autenticación, lógica de usuarios y acceso a datos.
-
-| gamey | Imagen Docker del motor Rust | Valida jugadas, gestiona la lógica del juego y la interacción con bots.
-
-| MySQL | Contenedor de base de datos | Persiste usuarios, partidas, puntuaciones y otros datos del sistema.
-
-| Prometheus | Contenedor de monitorización | Recoge métricas del backend y del entorno de ejecución.
-
-| Grafana | Contenedor de visualización | Presenta paneles y cuadros de mando a partir de las métricas de Prometheus.
-
-|===

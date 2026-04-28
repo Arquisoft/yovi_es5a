@@ -10,6 +10,7 @@ function axialToPixel(q, r, hexSize, size) {
 
   const x = (j - rowIndex / 2) * Math.sqrt(3) * hexSize;
   const y = rowIndex * (3 / 2) * hexSize;
+
   return { x, y };
 }
 
@@ -36,17 +37,22 @@ export default memo(function KonvaRenderer({
 }) {
   const hex = hexPoints(HEX_DRAW_SIZE);
   const size = Math.max(...cells.map((c) => c.q)) + 1;
+
   const STAGE_WIDTH = 800;
   const STAGE_HEIGHT = 600;
+
   const pixels = cells.map((c) => axialToPixel(c.q, c.r, HEX_SIZE, size));
   const xs = pixels.map((p) => p.x);
   const ys = pixels.map((p) => p.y);
+
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
+
   const boardCenterX = (minX + maxX) / 2;
   const boardCenterY = (minY + maxY) / 2;
+
   const groupX = STAGE_WIDTH / 2 - boardCenterX;
   const groupY = STAGE_HEIGHT / 2 - boardCenterY;
 
@@ -57,19 +63,33 @@ export default memo(function KonvaRenderer({
   });
 
   return (
-    <div style={{ position: 'relative', width: STAGE_WIDTH, height: STAGE_HEIGHT }}>
+    <div
+      style={{
+        position: "relative",
+        width: STAGE_WIDTH,
+        height: STAGE_HEIGHT,
+      }}
+    >
       <Stage width={STAGE_WIDTH} height={STAGE_HEIGHT}>
         <Layer>
           <Group x={groupX} y={groupY}>
-            {cells.map((cell) => {
+            {orderedCells.map((cell) => {
               const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
 
               let fill = playerColors?.empty ?? "#ccc";
-              if (cell.state === "player1") fill = playerColors?.player1 ?? "#e63946";
-              if (cell.state === "player2") fill = playerColors?.player2 ?? "#1d4ed8";
+
+              if (cell.state === "player1") {
+                fill = playerColors?.player1 ?? "#e63946";
+              }
+
+              if (cell.state === "player2") {
+                fill = playerColors?.player2 ?? "#1d4ed8";
+              }
+
               if (cell.id === suggestionId && cell.state == null) {
                 fill = playerColors?.suggestion ?? "#f5c518";
               }
+
               if (cell.id === selectedId) {
                 fill = playerColors?.selected ?? "#2ecc71";
               }
@@ -88,8 +108,8 @@ export default memo(function KonvaRenderer({
                   strokeWidth={isLastBotMove ? 5 : 2}
                   lineJoin="round"
                   perfectDrawEnabled
-                  onClick={() => onCellClick && onCellClick(cell.id)}
-                  onTap={() => onCellClick && onCellClick(cell.id)}
+                  onClick={() => onCellClick?.(cell.id)}
+                  onTap={() => onCellClick?.(cell.id)}
                 />
               );
             })}
@@ -97,28 +117,41 @@ export default memo(function KonvaRenderer({
         </Layer>
       </Stage>
 
-      <div style={{ position: 'absolute', top: 0, left: 0, width: STAGE_WIDTH, height: STAGE_HEIGHT, pointerEvents: 'none' }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: STAGE_WIDTH,
+          height: STAGE_HEIGHT,
+          pointerEvents: "none",
+        }}
+      >
         {cells.map((cell) => {
           const { x, y } = axialToPixel(cell.q, cell.r, HEX_SIZE, size);
           const screenX = groupX + x;
           const screenY = groupY + y;
+
           return (
             <div
               key={cell.id}
               id={`cell-${cell.q}-${cell.r}`}
               data-testid={`cell-${cell.q}-${cell.r}`}
               data-state={cell.state ?? 'empty'}
+              aria-label={`Celda ${cell.q}, ${cell.r}`}
               role="presentation"
               style={{
-                position: 'absolute',
+                position: "absolute",
                 left: screenX - HEX_SIZE,
                 top: screenY - HEX_SIZE,
                 width: HEX_SIZE * 2,
                 height: HEX_SIZE * 2,
-                pointerEvents: 'all', // solo este div captura clicks
-                cursor: 'pointer',
-                // En producción puedes quitar el background:
-                // background: 'rgba(255,0,0,0.1)',
+                pointerEvents: "all",
+                cursor: "pointer",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                margin: 0,
               }}
               onClick={() => onCellClick && onCellClick(cell.id)}
             />

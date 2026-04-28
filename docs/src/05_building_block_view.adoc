@@ -106,7 +106,7 @@ Componentes::
 
 |===
   
-*OpenApi*
+*user-service*
 
 Comunica el front-end con el back-end Node siguiendo el protocolo HTTP y con el formato JSON. Expone una serie de operaciones para almacenar información de relevancia en la BD.
 Entre toda esa información, se encuentra:

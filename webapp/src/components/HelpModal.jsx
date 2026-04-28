@@ -5,10 +5,17 @@ export default function HelpModal({ isOpen, onClose }) {
   const { t } = useTranslation();
   const closeButtonRef = useRef(null);
 
-  const handleBackdropKey = (e) => {
-    const key = e.key;
+  const handleBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleBackdropKey = (event) => {
+    const key = event.key;
+
     if (key === "Enter" || key === " " || key === "Spacebar") {
-      e.preventDefault();
+      event.preventDefault();
       onClose();
     }
   };
@@ -16,16 +23,19 @@ export default function HelpModal({ isOpen, onClose }) {
   useEffect(() => {
     if (!isOpen) return undefined;
 
-    const timer = setTimeout(() => closeButtonRef.current?.focus(), 0);
+    const timer = setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 0);
 
-    const onKey = (ev) => {
-      if (ev.key === "Escape") {
-        ev.preventDefault();
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
         onClose();
       }
     };
 
     window.addEventListener("keydown", onKey);
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener("keydown", onKey);
@@ -39,7 +49,7 @@ export default function HelpModal({ isOpen, onClose }) {
   return (
     <div
       className="helpModalBackdrop"
-      onClick={onClose}
+      onClick={handleBackdropClick}
       role="button"
       aria-label={t("help.closeAria")}
       tabIndex={0}
@@ -50,10 +60,10 @@ export default function HelpModal({ isOpen, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="helpModalTitle"
-        onClick={(event) => event.stopPropagation()}
       >
         <header className="helpModalHeader">
           <h2 id="helpModalTitle">{t("help.modalTitle")}</h2>
+
           <button
             type="button"
             ref={closeButtonRef}
@@ -64,6 +74,7 @@ export default function HelpModal({ isOpen, onClose }) {
             ×
           </button>
         </header>
+
         <div className="helpModalContent">
           <h3>{t("help.rulesTitle")}</h3>
           <p>{t("help.rulesDescription")}</p>

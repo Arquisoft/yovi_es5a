@@ -1,5 +1,7 @@
 FROM node:20-alpine
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
 # Instalar solo dependencias de producción de forma determinista
@@ -17,6 +19,9 @@ COPY services ./services
 COPY repositories ./repositories
 COPY auth ./auth
 COPY middleware ./middleware
+
+RUN chown -R appuser:appgroup /app
+USER appuser
 
 EXPOSE 3000
 CMD ["node", "users-service.js"]

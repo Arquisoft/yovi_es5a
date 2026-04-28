@@ -18,7 +18,7 @@ mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD << EOF
 CREATE DATABASE IF NOT EXISTS $DB_NAME;
 EOF
 
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Error creating database $DB_NAME"
     exit 1
 fi
@@ -27,7 +27,7 @@ echo "Database $DB_NAME created or already exists."
 
 mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < $SCHEMA_FILE
 
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
     echo "All tables initialized successfully!"
 else
     echo "Failed to initialize tables from $SCHEMA_FILE!"

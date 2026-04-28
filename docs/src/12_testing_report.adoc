@@ -248,8 +248,6 @@ La suite E2E de la webapp reside en `webapp/test/e2e/features` y `webapp/test/e2
 
 . *Partida completa contra bot Easy/Medium/Hard* — `game.feature` valida partidas completas contra los bots Easy, Medium y Hard, comprobando la finalización correcta del flujo y la visualización del resultado.
 
-El archivo `webapp/test/e2e/features/users.feature` existe en el repositorio pero está comentado, por lo que no forma parte de la suite activa.
-
 === 12.3. Tests de Carga
 
 Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.

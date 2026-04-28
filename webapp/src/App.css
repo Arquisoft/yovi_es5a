@@ -5,7 +5,6 @@
   text-align: center;
 }
 
-
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -19,12 +18,10 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-
 @keyframes logo-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-
 
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
@@ -32,16 +29,13 @@
   }
 }
 
-
 .card {
   padding: 2em;
 }
 
-
 .read-the-docs {
   color: #888;
 }
-
 
 .register-form {
   display: flex;
@@ -56,19 +50,16 @@
   background-color: #fff;
 }
 
-
 .form-group {
   display: flex;
   flex-direction: column;
 }
-
 
 .form-group label {
   margin-bottom: 0.3125rem;
   font-weight: bold;
   color: #333;
 }
-
 
 .form-input {
   padding: 0.625rem;
@@ -77,13 +68,11 @@
   font-size: 1rem;
 }
 
-
 .form-input:focus {
   border-color: #007bff;
   outline: none;
   box-shadow: 0 0 0 0.125rem rgba(0, 123, 255, 0.25);
 }
-
 
 .submit-button {
   padding: 0.625rem 0.9375rem;
@@ -96,11 +85,9 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-
 .submit-button:hover {
   background-color: #0056b3;
 }
-
 
 .health-button {
   padding: 0.625rem 0.9375rem;
@@ -113,11 +100,9 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-
 .health-button:hover {
   background-color: #218838;
 }
-
 
 /* ── Hero de inicio ── */
 .homeHero {
@@ -128,7 +113,6 @@
   margin-bottom: 8px;
 }
 
-
 .homeTitle {
   margin: 0;
   font-size: 2.6rem;
@@ -136,7 +120,6 @@
   color: #e0e0ff;
   letter-spacing: -0.02em;
 }
-
 
 /* Badge de sesión iniciada */
 .homeSessionBadge {
@@ -153,7 +136,6 @@
   color: #4338ca;
 }
 
-
 .homeSessionBadge__dot {
   width: 8px;
   height: 8px;
@@ -163,13 +145,11 @@
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
 }
 
-
 /* Botón ver puntuaciones */
 .homeActions {
   margin-top: 2px;
   margin-bottom: 4px;
 }
-
 
 .primaryLinkButton {
   display: inline-flex;
@@ -188,30 +168,29 @@
   letter-spacing: 0.02em;
 }
 
-
 .primaryLinkButton:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(100, 112, 255, 0.45);
   opacity: 1;
 }
 
-
 .primaryLinkButton:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(100, 112, 255, 0.25);
 }
 
+/* ── Language Selector - Arriba a la izquierda ── */
 .globalLanguageSelector {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
 }
 
 .languageSelector {
   display: inline-flex;
   gap: 0.5rem;
   align-items: center;
-  justify-content: flex-end;
   font-size: 0.95rem;
   color: #222;
 }
@@ -229,8 +208,6 @@
   color: #111;
   font-size: 0.95rem;
 }
-
-
 
 /* ── Top bar con acciones globales ── */
 
@@ -311,7 +288,7 @@
   gap: 0.75rem;
   padding: 1rem 1rem 0.75rem;
   border-bottom: 1px solid rgba(149, 157, 255, 0.2);
-  position: relative; /* permite posicionar el botón de cerrar dentro del header */
+  position: relative;
 }
 
 .helpModalHeader h2 {
@@ -320,16 +297,16 @@
 }
 
 .helpCloseButton {
-  position: absolute; /* forzar posicion dentro del header */
+  position: absolute;
   top: 0.55rem;
   right: 0.55rem;
   border: none;
   background: rgba(255, 255, 255, 0.02);
-  color: #ff6b6b; /* cruz en rojo */
-  border-radius: 50%; /* círculo perfecto */
-  width: 1.6rem; /* tamaño fijo */
-  height: 1.6rem; /* tamaño fijo */
-  padding: 0; /* sin padding para evitar expansión */
+  color: #ff6b6b;
+  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
   box-sizing: border-box;
   font-size: 0.95rem;
   line-height: 1;
@@ -342,9 +319,9 @@
 }
 
 .helpCloseButton:hover {
-  background: rgba(255, 107, 107, 0.12); /* hover en rojo suave */
+  background: rgba(255, 107, 107, 0.12);
   transform: translateY(-1px) scale(1.02);
-  color: #ff3b3b; /* cruz más intensa al pasar el ratón */
+  color: #ff3b3b;
 }
 
 .helpCloseButton:focus {
@@ -355,7 +332,7 @@
 .helpModalContent {
   padding: 1rem;
   display: grid;
-  gap: 0.4rem; /* espacio general más compacto; los headings controlan margenes específicos */
+  gap: 0.4rem;
 }
 
 .helpModalContent p {
@@ -364,9 +341,8 @@
   color: #d6d9ff;
 }
 
-/* Ajustes de los títulos dentro del modal de ayuda: más espacio antes, menos después */
 .helpModalContent h3 {
-  margin: 0.8rem 0 0.12rem; /* más espacio arriba, muy poco abajo */
+  margin: 0.8rem 0 0.12rem;
   font-size: 1rem;
   font-weight: 600;
   color: #cfd6ff;
@@ -374,7 +350,7 @@
 
 .helpModalContent ol,
 .helpModalContent ul {
-  margin: 0 0 0 1.1rem; /* listas con indentado coherente */
+  margin: 0 0 0 1.1rem;
   padding: 0;
 }
 
@@ -383,9 +359,15 @@
 }
 
 @media (max-width: 640px) {
+  .globalLanguageSelector {
+    top: 0.75rem;
+    left: 0.75rem;
+  }
+
   .topBar {
     left: 0.75rem;
     right: 0.75rem;
+    top: 3.5rem;
     justify-content: flex-end;
     flex-wrap: wrap;
   }

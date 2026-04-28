@@ -47,7 +47,7 @@ Construir una plataforma web para jugar partidas del juego Y con soporte de usua
 
 * RF02.4: La interfaz mostrará el turno actual del jugador.
 
-* RF02.5: El sistema notificará visualmente el resultado de la partida (victoria/derrota/empate).
+* RF02.5: El sistema notificará visualmente el resultado de la partida (victoria/derrota).
 
 ===== RF03 - Historial de Partidas
 
@@ -61,22 +61,16 @@ Construir una plataforma web para jugar partidas del juego Y con soporte de usua
 
 ** RF03.3.2: El sistema mostrará las partidas perdidas
 
-** RF03.3.3: El sistema mostrará las partidas empatadas
-
-** RF03.3.4: El sistema mostrará el tiempo total de juego
-
 
 ===== RF04 - API Externa para Bots
 
 * RF04.1: El sistema expondrá una interfaz para permitir la integración con bots
 
-* RF04.2: La API requerirá autenticación para las peticiones de los bots.
+* RF04.2: La API permitirá crear nuevas partidas como bot.
 
-* RF04.3: La API permitirá crear nuevas partidas como bot.
+* RF04.3: La API permitirá realizar movimientos en partidas existentes.
 
-* RF04.4: La API permitirá realizar movimientos en partidas existentes.
-
-* RF04.5: La API devolverá el estado actual de la partida en formato YEN.
+* RF04.4: La API devolverá el estado actual de la partida en formato YEN.
 
 ==== MÓDULO 2: MÓDULO DE LÓGICA (RUST)
 
@@ -85,8 +79,6 @@ Construir una plataforma web para jugar partidas del juego Y con soporte de usua
 * RF05.1: El módulo recibirá una representación de partida en formato YEN y determinará si existe un ganador.
 
 * RF05.2: El módulo identificará qué jugador ha ganado la partida.
-
-* RF05.3: El módulo detectará condiciones de empate o tablas.
 
 * RF06 - Servicio Web
 

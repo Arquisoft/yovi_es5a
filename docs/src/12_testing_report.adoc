@@ -236,7 +236,8 @@ El motor Rust se prueba con `cargo test`, combinando tests de integración en `g
 
 === 12.2. Tests End-to-End (E2E)
 
-Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada.
+Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada. Estas se ejecutan sobre 3 navegadores distintos de forma concurrente:
+ chromium, firefox y webkit. Todo esto con el fin de probar del sistema al completo en diferentes condiciones para garantizar el correcto funcionamiento del mismo en la medida de lo posible.
 
 La suite E2E de la webapp reside en `webapp/test/e2e/features` y `webapp/test/e2e/steps`, y actualmente cubre los siguientes escenarios:
 
@@ -252,98 +253,84 @@ La suite E2E de la webapp reside en `webapp/test/e2e/features` y `webapp/test/e2
 
 Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.
 
-Para la realización de estas pruebas se ha utilizado *Gatling* (Java + Maven), siguiendo las directrices del Laboratorio 9 de la asignatura.
+Para la realización de estas pruebas se ha utilizado *Gatling* en su versión "gatling-charts-highcharts-bundle-3.15.0" (Java + Maven), siguiendo las directrices del Laboratorio 9 de la asignatura.
 
 ==== Escenario de prueba
 
 El escenario simula el flujo completo de un usuario jugando una partida:
 
-. *Login* — autenticación y obtención de JWT
-. *Reset de partida* — inicialización del tablero (tamaño 6, dificultad Easy)
-. *Movimiento 1* — el jugador coloca una ficha (cellIndex: 3)
-. *Movimiento 2* — el jugador coloca una segunda ficha (cellIndex: 8)
-. *Rendición* — el jugador se rinde y se persiste la derrota en MongoDB
-. *Consulta de historial* — el usuario consulta sus partidas anteriores
+. *Registro del usuario* — creación de una cuenta con su respectivo nombre, correo y contraseña.
+. *Login* — autenticación del mismo y obtención del token de acceso.
+. *Comienzo de una partida* - se inicia una partida contra el jugador 111 de manera local.
+. *Movimientos* - se selecciona una sucesión de celdas (los movimientos están predefinidos).
+. *Victoria* - se comprueba que, en efecto, se ha verificado la autenticidad del token y el usuario ha ganado la partida.
+. *Consulta de estadísticas* - se accede al apartado de estádisticas e historial del jugador.
+
+El código correspondiente al escenario se puede consultar en el archivo archivo webapp/test/load/MyGatlingSimulation.java. También se puede consultar el cuerpo de cada una de las peticiones .json realizadas
+durante la prueba en el directorio webapp/test/load/requests/.
 
 ==== Configuración de carga
 
-[cols="1,2,2", options="header"]
-|===
-|Escenario |Configuración |Descripción
-
-|Carga sostenida
-|`rampUsers(10).during(30)` + `constantUsersPerSec(2).during(60)`
-|Subida progresiva a 10 usuarios en 30 segundos, manteniendo 2 usuarios/segundo durante 1 minuto.
-
-|Pico de carga
-|`nothingFor(10)` + `rampUsers(25).during(15)` + `constantUsersPerSec(4).during(30)`
-|Pausa de 10 segundos seguida de rampa rápida a 25 usuarios en 15 segundos.
-|===
-
-Los *thresholds* de aceptación definidos son:
-
-* p95 de tiempo de respuesta < 500ms
-* Porcentaje de peticiones exitosas > 95%
+Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 15 usuarios ficticios (archivo webapp/test/load/usuarios.csv).
++
+De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segundos, con un retraso de 2 segundos entre cada usuario (rampUsers(15).during(30)). 
 
 ==== Resultados
 
 [cols="1,1,1", options="header"]
 |===
-|Métrica |Carga sostenida (10 VUs) |Pico de carga (25 VUs)
+| Métrica | Valor resultante
 
-|Peticiones totales
-|780
-|1.650
+| Peticiones totales
+| 525 peticiones
 
-|Peticiones OK
-|780 (100%)
-|1.650 (100%)
+| Peticiones OK
+| 525 (100%)
 
-|Error rate
-|0%
-|0%
+| Porcentaje de error
+| 0%
 
-|Latencia mínima
-|2ms
-|2ms
+| Latencia mínima
+| 16ms
 
-|Latencia media
-|43ms
-|41ms
+| Latencia media
+| 31ms
 
-|Percentil 50 (p50)
-|37ms
-|37ms
+| Latencia máxima
+| 121ms
+
+| Percentil 50 (p50)
+| 22ms
 
 |Percentil 75 (p75)
-|75ms
-|76ms
+| 37ms
 
 |Percentil 95 (p95)
-|116ms ✓
-|109ms ✓
+| 99ms 
 
-|Percentil 99 (p99)
-|136ms
-|124ms
+| Percentil 99 (p99)
+| 109ms
 
-|Latencia máxima
-|441ms
-|157ms
+| Throughput medio
+| 8.7.72 req/s
 
-|Throughput medio
-|8.21 req/s
-|11 req/s
-
-|Duración total
-|94s
-|149s
+| Duración total
+| 92s
 |===
 
-==== Conclusiones de las pruebas de carga
+A continuación se muestran un conjunto de capturas para corroborar los datos obtenidas en las pruebas de carga realizadas.
+En cualquier caso, si se desea consultar los resultados obtenidos, se puede consultar el directorio webapp/test/load/results/.
 
-El sistema YoVi supera en ambos escenarios los thresholds de calidad definidos. Con 25 usuarios concurrentes ejecutando flujos completos de partida, el p95 de latencia es de 109ms, muy por debajo del límite de 500ms. Destacablemente, el sistema escala bien bajo pico de carga: el p95 mejora de 116ms a 109ms al pasar de 10 a 25 usuarios, y el throughput aumenta de 8.21 a 11 req/s. El error rate se mantiene en 0% en ambos escenarios.
+image::prueba_carga_R1[Rangos de tiempos de respuesta]
 
-Esto valida el escenario de calidad *SC-09* (acceso concurrente de múltiples usuarios) definido en la sección 10, donde se exigía un error rate < 1% y latencia media < 500ms.
+image::prueba_carga_R2[Número de usuarios lanzados por unidad de tiempo]
 
-image::12_gatling_response_times.png[align="center", title="Distribución de tiempos de respuesta - Gatling"]
+image::prueba_carga_R3[Número de usuarios concurrentes]
+
+image::prueba_carga_R4[Distribución del tiempo de respuesta]
+
+image::prueba_carga_R5[Percentiles del tiempo de respuesta]
+
+image::prueba_carga_R6[Número de peticiones por segundo]
+
+image::prueba_carga_R7[Número de respuestas por segundo]

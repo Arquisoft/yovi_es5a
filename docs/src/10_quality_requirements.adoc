@@ -3,7 +3,6 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-quality-scenarios]]
 == Requisitos de calidad
 
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -18,7 +17,6 @@ which will not create high risks when they are not fully achieved.
 Since quality requirements will have a lot of influence on architectural
 decisions you should know for every stakeholder what is really important to them,
 concrete and measurable.
-
 
 .Further Information
 
@@ -45,7 +43,6 @@ The quality tree is a high-level overview of the quality goals and requirements:
 * a mind map with quality categories as main branches
 
 In any case the tree should include links to the scenarios of the following section.
-
 
 ****
 endif::arc42help[]
@@ -83,8 +80,7 @@ rectangle "Módulo 1 - Aplicación Web" {
     usecase "RF03.3\nMostrar estadísticas" as UC12
     usecase "RF03.3.1\nPartidas ganadas" as UC13
     usecase "RF03.3.2\nPartidas perdidas" as UC14
-    usecase "RF03.3.3\nPartidas empatadas" as UC15
-    usecase "RF03.3.4\nTiempo total jugado" as UC16
+    usecase "RF03.3.3\nTiempo total jugado" as UC15
   }
 
   package "RF04 - API Externa para Bots" {
@@ -101,8 +97,7 @@ rectangle "Módulo 2 - Lógica (Rust)" {
   package "RF05 - Verificación de Victoria" {
     usecase "RF05.1\nDeterminar ganador" as UC22
     usecase "RF05.2\nIdentificar jugador ganador" as UC23
-    usecase "RF05.3\nDetectar empate" as UC24
-    usecase "RF05.4\nResponder en JSON" as UC25
+    usecase "RF05.3\nResponder en JSON" as UC24
   }
 
   package "RF06 - Servicio Web" {
@@ -136,7 +131,6 @@ Usuario --> UC12
 UC12 .> UC13 : <<include>>
 UC12 .> UC14 : <<include>>
 UC12 .> UC15 : <<include>>
-UC12 .> UC16 : <<include>>
 
 ' Relaciones Bot
 Bot --> UC18
@@ -169,7 +163,7 @@ These scenarios describe what should happen when a stimulus arrives at the syste
 
 For architects, two kinds of scenarios are important:
 
-* Usage scenarios (also called application scenarios or use case scenarios) describe the system’s runtime reaction to a certain stimulus. This also includes scenarios that describe the system’s efficiency or performance. Example: The system reacts to a user’s request within one second.
+* Usage scenarios (also called application scenarios or use case scenarios) describe the system's runtime reaction to a certain stimulus. This also includes scenarios that describe the system's efficiency or performance. Example: The system reacts to a user's request within one second.
 * Change scenarios describe a modification of the system or of its immediate environment. Example: Additional functionality is implemented or requirements for a quality attribute change.
 
 .Motivation
@@ -242,7 +236,7 @@ endif::arc42help[]
 |ID |Escenario
 
 |QU01 |Cuando el tablero cambia tras un movimiento, el usuario entiende visualmente qué pieza se ha movido.
-|QU02 |Cuando termina una partida, el usuario identifica de forma inmediata si ha ganado, perdido o empatado.
+|QU02 |Cuando termina una partida, el usuario identifica de forma inmediata si ha ganado o perdido.
 |QU03 |Cuando el usuario consulta su historial, puede localizar partidas anteriores sin esfuerzo excesivo.
 |QU04 |Cuando el usuario usa la plataforma por primera vez, entiende cómo registrarse, iniciar sesión y empezar una partida.
 
@@ -289,7 +283,7 @@ endif::arc42help[]
 |ID |Escenario
 
 |QC01 |Cuando se introduce una nueva implementación de un bot, no es necesario reescribir la lógica central.
-|QC04 |Si se sustituyera la base de datos empleada, el front-end no se vería afectado.
+|QC02 |Si se sustituyera la base de datos empleada, el front-end no se vería afectado.
 |QC03 |Si se sustituyera la interfaz web por otra tecnología, el contrato con la API de bots sigue estable.
 
 |===

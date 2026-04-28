@@ -200,7 +200,7 @@ Características de calidad/rendimiento::
 
 La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.
 +
-Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo.
+Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo. Además permite liberar a las APIS que tienen los servicios de la carga de mostrar la documentación, mejorando el rendimiento.
 
 Mapeo de los bloques de construcción a infraestructura::
 

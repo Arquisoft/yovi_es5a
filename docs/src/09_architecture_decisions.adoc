@@ -65,6 +65,11 @@ Además, se reconoce explícitamente el contexto de partida del proyecto: la bas
 | Mantener varias estrategias de bot y mapear dificultad funcional a bots concretos.
 | Aceptada
 | Cumplimiento de requisito de múltiples estrategias seleccionables.
+
+| ADR-10
+| Separar la documentación de las APIs a un contenedor aparte
+| Aceptada
+| Mejorar el rendimiento de las APIs liberándolas de la carga de servir las documentaciones.
 |===
 
 === ADR-00. Base inicial docente y evolución del equipo
@@ -212,3 +217,25 @@ Mantener varias estrategias en Gamey (aleatoria, media y difícil) y mapear difi
 Cumplimiento directo del requisito funcional de estrategias.
 Extensible a nuevos bots sin rediseñar la UI.
 Necesidad de mantener coherencia entre nomenclatura de dificultad y bot real disponible.
+
+=== ADR-10. Separar documentación de APIs a un contenedor aparte
+
+.Contexto
+
+Las APIs actuales manejan tanto el tráfico de producción como las consultas a la documentación interactiva (Swagger UI/OpenAPI). Esta carga adicional impacta negativamente en el rendimiento de las APIs, especialmente cuando desarrolladores y usuarios realizan pruebas frecuentes desde la interfaz de documentación.
+
+.Decisión
+
+Desplegar la documentación de las APIs (Swagger UI) en un contenedor separado e independiente, sirviendo los archivos de especificación OpenAPI desde este nuevo contenedor.
+
+.Consecuencias
+
+Mejora de rendimiento: Las APIs ya no procesan peticiones de documentación ni ejecuciones de prueba desde Swagger UI, liberando recursos para peticiones de producción
+
+Escalabilidad independiente: La documentación puede escalarse según demanda (ej. durante onboarding de nuevos desarrolladores) sin afectar las APIs de producción
+
+Despliegues desacoplados: Actualizaciones a la documentación no requieren redesplegar las APIs, y viceversa.
+
+Mayor modularidad: Facilita la gestión y evolución independiente de la documentación técnica
+
+Requiere gestión de un contenedor adicional en la infraestructura.

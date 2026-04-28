@@ -42,6 +42,7 @@ Reglas derivadas:
 Toda integración entre frontend y motor intercambia estado en JSON YEN.
 Las transformaciones de coordenadas se realizan en los bordes (UI/servicio), no en el núcleo de reglas.
 El motor es la referencia final de validez de jugada.
+
 === Conceptos de UX y consistencia funcional
 
 ==== SPA con estado local y confirmación de servidor
@@ -53,6 +54,7 @@ Reglas derivadas:
 La interacción visual es optimista, pero el estado confirmado es el devuelto por backend/motor.
 En jugadas inválidas, se informa al usuario y no se consolida el turno.
 El frontend mantiene separadas lógica visual y reglas del juego.
+
 === Conceptos de seguridad
 
 ==== Autenticación con JWT y control de sesión
@@ -67,6 +69,7 @@ Las credenciales de base de datos y secretos se inyectan por entorno, no en cód
 Nota de implementación actual:
 
 El mecanismo de sesión de refresh está implementado en memoria del proceso, útil para entorno de desarrollo y pruebas, pero no ideal para escalado horizontal sin almacenamiento compartido.
+
 === Conceptos de arquitectura y patrones
 
 ==== Control por modulos y responsabilidades
@@ -75,6 +78,7 @@ La solución separa claramente I/O y experiencia de usuario de la lógica de jue
 
 Webapp y servicio Users gestionan interacción, autenticación, persistencia y contratos HTTP.
 Gamey concentra validación de reglas y cálculo de jugadas/bots.
+
 Beneficio arquitectónico:
 
 Evolucionar reglas o estrategias de bot no obliga a rediseñar frontend.

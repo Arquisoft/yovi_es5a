@@ -1471,7 +1471,7 @@ La separación entre WebApp y Gamey permite desacoplar la interfaz de usuario de
 </tbody>
 </table>
 <div class="paragraph">
-<p><strong>OpenApi</strong></p>
+<p><strong>user-service</strong></p>
 </div>
 <div class="paragraph">
 <p>Comunica el front-end con el back-end Node siguiendo el protocolo HTTP y con el formato JSON. Expone una serie de operaciones para almacenar información de relevancia en la BD.
@@ -1945,6 +1945,11 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>Para representar de la manera más exacta y representativa posible el despliegue de nuestro sistema en la máquina virtual creada para la realización de las prácticas, se especifican dos niveles de infraestructura,
+con el fin ofrecer distintos puntos de vista del sistema: uno más general que represente los módulos más característicos de nuestro sistema, y otro más específico en el que aparecen los distintos contenedores encargados
+de la monitorización del mismo.</p>
+</div>
 <div class="sect2">
 <h3 id="_nivel_de_infraestructura_1">7.1. Nivel de infraestructura 1</h3>
 <div class="sidebarblock arc42help">
@@ -1975,21 +1980,30 @@ when your infrastructure is more complex.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="940" height="251">
+<img src="./images/Diagrama%20de%20despliegue.png" alt="Diagrama de despliegue" width="1072" height="272">
 </div>
 </div>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">Motivation</dt>
+<dt class="hdlist1">Descripción</dt>
 <dd>
-<p>La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. El usuario interactua con el sistema a través de una interfaz diseñada con React. Está se comunica con el back-end mediante OpenApi. A su vez, el back-end se comunica con la base de datos con la api mencionada anteriormente.
-El front-end también se comunica con el módulo de juego mediante los módulo Bot-server y Game-server.</p>
+<p>La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker.</p>
+<div class="paragraph">
+<p>El usuario interactua con el sistema a través del módulo WebApp, que no es más que una interfaz gráfica diseñada en React. El front-end a su vez se comunica con los dos back-ends del sistema mediante peticiones HTTP: Users y Gamey.
+Cada uno de ellos expone una serie de endpoints para realizar diferentes tareas, ya sea consultar la base de datos y almacenar/devolver la información relevante de nuestro sistema (módulo Users) o actuar como motor de juego (módulo Rust).</p>
+</div>
+<div class="paragraph">
+<p>A su vez, el módulo Users mantiene una comunicación directa con nuestra base de datos relacional MySQL. La base de datos tiene un volumen asociado para permitir que los datos de nuestro sistema persistan una vez se despliegue el mismo.</p>
+</div>
 </dd>
 <dt class="hdlist1">Características de calidad/rendimiento</dt>
 <dd>
 <p>El hecho de emplear Docker para encapsular cada uno de los módulos del sistema en distintos contenedores permite que el sistema sea escalable y portable. Además, la separación de las distintas partes en distintos contenedores
-facilita el mantenimiento y la extensibilidad. Además,  aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
+facilita el mantenimiento y la extensibilidad. Además, aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
 continuo de nuestra aplicación.</p>
+<div class="paragraph">
+<p>El despliegue automático desde GitHub Actions favorece tiempos de entrega cortos (en comparación al empleo de otras tecnologías) y una actualización uniforme de los servicios desplegados.</p>
+</div>
 </dd>
 <dt class="hdlist1">Mapeo de los bloques de construcción a infraestructura</dt>
 </dl>
@@ -2007,28 +2021,28 @@ continuo de nuestra aplicación.</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Azure</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Servicio con el servidor en el que se encuentra la aplicación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Azure VM (Linux Ubuntu 24.04)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Máquina virtual que actúa como servidor de la aplicación y sobre la que se despliega toda la infraestructura del sistema.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Docker</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Genera cada uno de los contenedores para almacenar cada uno de los módulos de la aplicación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Entorno de ejecución que aísla cada módulo del sistema en distintos contenedores.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WebApp</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> Front-end diseñado con React para la interacción con el usuario.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"> Front-end desarrollado en React que permite la interación con el usuario y se comunica directamente con los back-ends del sistema a través de sus correspondientes API REST.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Users</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Back-end diseñado con Node para gestionar la interacción con la BD.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Back-end desarrollado en Node.js para gestionar la información relevante del sistema (información del usuario, resultado de partidas, &#8230;&#8203;) y que interactua con la base de datos del sistema.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Gamey</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> Módulo Rust con la lógica del juego y del bot.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Back-end Rust que actúa como motor de juego y expone una API REST.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Database</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Almacena un registro de los usuarios de la aplicación, las partidas realizadas, los usuarios obtenidos, &#8230;&#8203;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de datos MySQL que almacena la información de valor de la app (usuarios, resultados, &#8230;&#8203;)</p></td>
 </tr>
 </tbody>
 </table>
@@ -2045,97 +2059,61 @@ continuo de nuestra aplicación.</p>
 </div>
 <div class="sect2">
 <h3 id="_nivel_de_infraestructura_2">7.2. Nivel de infraestructura 2</h3>
-<div class="paragraph">
-<p>En este nivel se detalla la estructura interna de los elementos de infraestructura definidos en el nivel 1. En particular, se descompone el nodo Azure VM y el entorno Docker para mostrar cómo se organizan los contenedores, servicios auxiliares y la persistencia de datos.</p>
-</div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Nivel%20de%20infraestructura%202.png" alt="Nivel de infraestructura 2" width="844" height="368">
+<img src="./images/Nivel%20de%20infraestructura%202.png" alt="Nivel de infraestructura 2" width="1011" height="411">
 </div>
 </div>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">Motivación</dt>
+<dt class="hdlist1">Descripción</dt>
 <dd>
-<p>El sistema se sostiene en una máquina virtual Ubuntu 24.04 en Azure sobre la que se despliega Docker, porque esto simplifica la ejecución aislada de cada servicio y permite reproducir el entorno de forma consistente en despliegues de prueba, integración y producción.
-Los módulos webapp, users y gamey se publican como imágenes independientes, mientras que MySQL actúa como base de datos persistente y Prometheus/Grafana proporcionan la observabilidad del sistema.</p>
-</dd>
-</dl>
+<p>En este nivel de infraestructura aparecen los módulos destinados a la monitorización del sistema, concretamente, los módulos Grafana y Prometheus.</p>
+<div class="paragraph">
+<p>El módulo Prometheus observa constantemente las APIs REST de los back-ends del sistema con el fin de recopilar estadísticas acerca del número de peticiones que reciben cada una de estas en cada instante, el tiempo de respuesta, &#8230;&#8203;
+Todos estos datos se alamcenan en bases de datos volátiles que crea y elimina el propio Prometheus cuando el sistema se sistema se levanta o se tumba respectivamente; por lo tanto, la información no persiste.</p>
 </div>
 <div class="paragraph">
-<p>El flujo de despliegue confirma además que cada release pasa por pruebas de Node, Rust y E2E antes de publicar imágenes y actualizar el sistema. Esto refuerza una estrategia de despliegue continua, basada en contenedores y con separación clara entre construcción, publicación y ejecución.</p>
+<p>Por otro lado, el contenedor Grafana accede a los datos extraidos por el módulo Prometheus con el fin de reprensentarlos gráficamente y poder comprender de manera visual el comportamiento de las diferentes APIs del sistema.</p>
 </div>
-<div class="dlist">
-<dl>
+<div class="paragraph">
+<p>Además, es necesario mencionar la existencia del contenedor Swagger, destinado a desplegar la documentación sobre las diferentes APIs mencionadas anteriormente: endpoints existentes en cada una, acción asociada a cada uno de estos, URLs, &#8230;&#8203;
+De esta manera, los desarrollados no tienen que acudir directamente al código (y desperdiciar demasiado tiempo comprendiendo el mismo) para enteder el funcionamiento de las mismas y los distintos servicios que ofrecen.</p>
+</div>
+</dd>
 <dt class="hdlist1">Características de calidad/rendimiento</dt>
 <dd>
-<p>El uso de contenedores independientes mejora la portabilidad y reduce el acoplamiento entre servicios, porque cada bloque se ejecuta con sus dependencias y configuración propias.
-La base de datos MySQL queda aislada como servicio persistente, lo que facilita las tareas de mantenimiento y recuperación sin afectar al resto de componentes.</p>
-</dd>
-</dl>
-</div>
+<p>La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.</p>
 <div class="paragraph">
-<p>La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.
-Además, el despliegue automático desde GitHub Actions favorece tiempos de entrega cortos y una actualización uniforme de los servicios desplegados.</p>
+<p>Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo.</p>
 </div>
-<div class="dlist">
-<dl>
+</dd>
 <dt class="hdlist1">Mapeo de los bloques de construcción a infraestructura</dt>
 </dl>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 20%;">
-<col style="width: 40%;">
-<col style="width: 40%;">
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Elemento de infraestructura</th>
-<th class="tableblock halign-left valign-top">Rol</th>
-<th class="tableblock halign-left valign-top">Responsabilidad</th>
+<th class="tableblock halign-left valign-top"><strong>Nombre</strong></th>
+<th class="tableblock halign-left valign-top"><strong>Descripción</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Azure VM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Host físico/virtual con Ubuntu 24.04</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ejecuta toda la infraestructura mediante Docker.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Docker</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Motor de contenedores y Docker Compose</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aísla y orquesta los servicios de la solución.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">webapp</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Imagen Docker del front-end React/Vite</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Sirve la interfaz de usuario y consume las APIs del sistema.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">users</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Imagen Docker del backend Node.js</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Gestiona autenticación, lógica de usuarios y acceso a datos.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gamey</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Imagen Docker del motor Rust</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Valida jugadas, gestiona la lógica del juego y la interacción con bots.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">MySQL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor de base de datos</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Persiste usuarios, partidas, puntuaciones y otros datos del sistema.</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Prometheus</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor de monitorización</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Recoge métricas del backend y del entorno de ejecución.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Herramienta de monitorización que recopila métricas de los servicios de la aplicación y los almacena en bases de datos temporales.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Grafana</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor de visualización</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Presenta paneles y cuadros de mando a partir de las métricas de Prometheus.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Herramienta de visualización que consume Prometheus como datasource para mostrar dashboards con las métricas del sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Swagger</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contenedor destinado a mostrar la documentación asociada a cada una de las APIs del sistema (Users y Gamey).</p></td>
 </tr>
 </tbody>
 </table>
@@ -3452,7 +3430,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-03-26 00:17:49 +0100
+Last updated 2026-03-16 18:10:57 +0100
 </div>
 </div>
 </body>

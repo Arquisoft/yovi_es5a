@@ -496,10 +496,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_resumen_2">8.1. Resumen</a></li>
 <li><a href="#_conceptos_de_dominio">8.2. Conceptos de dominio</a></li>
-<li><a href="#_conceptos_de_puntuación_y_ranking">8.3. Conceptos de puntuación y ranking</a></li>
-<li><a href="#_conceptos_de_bots_y_dificultad">8.4. Conceptos de bots y dificultad</a></li>
-<li><a href="#_conceptos_de_datos_y_despliegue">8.5. Conceptos de datos y despliegue</a></li>
-<li><a href="#_conceptos_de_desarrollo_y_operación">8.6. Conceptos de desarrollo y operación</a></li>
+<li><a href="#_conceptos_de_ux_y_consistencia_funcional">8.3. Conceptos de UX y consistencia funcional</a></li>
+<li><a href="#_conceptos_de_seguridad">8.4. Conceptos de seguridad</a></li>
+<li><a href="#_conceptos_de_arquitectura_y_patrones">8.5. Conceptos de arquitectura y patrones</a></li>
+<li><a href="#_conceptos_de_puntuación_y_ranking">8.6. Conceptos de puntuación y ranking</a></li>
+<li><a href="#_conceptos_de_bots_y_dificultad">8.7. Conceptos de bots y dificultad</a></li>
+<li><a href="#_conceptos_de_datos_y_despliegue">8.8. Conceptos de datos y despliegue</a></li>
+<li><a href="#_conceptos_de_desarrollo_y_operación">8.9. Conceptos de desarrollo y operación</a></li>
 </ul>
 </li>
 <li><a href="#section-architecture-decisions">9. Decisiones arquitectónicas</a>
@@ -516,6 +519,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_adr_07_modelo_de_puntuación_y_ranking">9.10. ADR-07. Modelo de puntuación y ranking</a></li>
 <li><a href="#_adr_08_observabilidad_incorporada_desde_la_arquitectura">9.11. ADR-08. Observabilidad incorporada desde la arquitectura</a></li>
 <li><a href="#_adr_09_estrategias_múltiples_de_bot_y_dificultad_seleccionable">9.12. ADR-09. Estrategias múltiples de bot y dificultad seleccionable</a></li>
+<li><a href="#_adr_10_separar_documentación_de_apis_a_un_contenedor_aparte">9.13. ADR-10. Separar documentación de APIs a un contenedor aparte</a></li>
 </ul>
 </li>
 <li><a href="#section-quality-scenarios">10. Requisitos de calidad</a>
@@ -670,7 +674,7 @@ These include</p>
 <p>RF02.4: La interfaz mostrará el turno actual del jugador.</p>
 </li>
 <li>
-<p>RF02.5: El sistema notificará visualmente el resultado de la partida (victoria/derrota/empate).</p>
+<p>RF02.5: El sistema notificará visualmente el resultado de la partida (victoria/derrota).</p>
 </li>
 </ul>
 </div>
@@ -695,12 +699,6 @@ These include</p>
 <li>
 <p>RF03.3.2: El sistema mostrará las partidas perdidas</p>
 </li>
-<li>
-<p>RF03.3.3: El sistema mostrará las partidas empatadas</p>
-</li>
-<li>
-<p>RF03.3.4: El sistema mostrará el tiempo total de juego</p>
-</li>
 </ul>
 </div>
 </li>
@@ -715,16 +713,13 @@ These include</p>
 <p>RF04.1: El sistema expondrá una interfaz para permitir la integración con bots</p>
 </li>
 <li>
-<p>RF04.2: La API requerirá autenticación para las peticiones de los bots.</p>
+<p>RF04.2: La API permitirá crear nuevas partidas como bot.</p>
 </li>
 <li>
-<p>RF04.3: La API permitirá crear nuevas partidas como bot.</p>
+<p>RF04.3: La API permitirá realizar movimientos en partidas existentes.</p>
 </li>
 <li>
-<p>RF04.4: La API permitirá realizar movimientos en partidas existentes.</p>
-</li>
-<li>
-<p>RF04.5: La API devolverá el estado actual de la partida en formato YEN.</p>
+<p>RF04.4: La API devolverá el estado actual de la partida en formato YEN.</p>
 </li>
 </ul>
 </div>
@@ -741,9 +736,6 @@ These include</p>
 </li>
 <li>
 <p>RF05.2: El módulo identificará qué jugador ha ganado la partida.</p>
-</li>
-<li>
-<p>RF05.3: El módulo detectará condiciones de empate o tablas.</p>
 </li>
 <li>
 <p>RF06 - Servicio Web</p>
@@ -1006,7 +998,7 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Testing</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Se utilizará Jest para testing unitario y Cypress para testing end-to-end</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Se utilizará Vitest para testing unitario y Cucumber para testing end-to-end</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Apis Creadas</em></p></td>
@@ -1271,7 +1263,7 @@ Refer to details in the following sections.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Express</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Express como framework para el backend debido a su simplicidad.</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Usaremos Express como framework para el backend del módulo de users debido a su simplicidad.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>PlantUML</em></p></td>
@@ -1484,9 +1476,6 @@ Entre toda esa información, se encuentra:</p>
 </li>
 <li>
 <p>Inicio de partidas.</p>
-</li>
-<li>
-<p>Realización de movimientos.</p>
 </li>
 <li>
 <p>Consulta de puntuaciones.
@@ -1804,7 +1793,7 @@ part of arc42 for additional levels.</p>
 <div class="sect2">
 <h3 id="_resumen">6.1. Resumen</h3>
 <div class="paragraph">
-<p>Este documento describe los escenarios de ejecución más relevantes del sistema YOVI y las interacciones entre sus subsistemas principales: la Aplicación Web (Typescript) y el módulo de lógica en Rust (gamey). El intercambio entre ambos usa JSON en notación YEN para representar posiciones y movimientos. El fichero actualizado es [docs/src/06_runtime_view.adoc](docs/src/06_runtime_view.adoc).</p>
+<p>Este documento describe los escenarios de ejecución más relevantes del sistema YOVI y las interacciones entre sus subsistemas principales: la Aplicación Web (Typescript) y el módulo de lógica en Rust (gamey). El intercambio entre ambos usa JSON en notación YEN para representar posiciones y movimientos.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1813,21 +1802,51 @@ part of arc42 for additional levels.</p>
 <p>Propósito: mostrar la interacción típica cuando un usuario desde la web juega contra un bot.</p>
 </div>
 <div class="paragraph">
-<p>Actores:
-- Usuario (navegador)
-- Webapp — <code>webapp/src/App.tsx</code>
-- Servicio de bots / lógica (Rust) — <code>gamey</code></p>
+<p>Actores:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Usuario (navegador)</p>
+</li>
+<li>
+<p>Webapp — <code>webapp/src/App.tsx</code></p>
+</li>
+<li>
+<p>Servicio de bots / lógica (Rust) — <code>gamey</code></p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Flujo (pasos):
-1. Usuario inicia una partida en la UI y selecciona "Jugar vs Máquina" y la estrategia (ej. <code>random</code>).
-2. La web prepara la posición inicial en notación YEN y la mantiene como estado local.
-3. Usuario hace un movimiento; la web lo muestra en el tablero y el usuario confirma el fin de turno.
-4. Webapp manda un post con body JSON con la notación YEN del nuevo estado.
-5. El servicio Rust recibe el YEN, lo parsea a <code>GameY</code> y valida la posición.
-6. Se invoca al bot y se calcula la respuesta.
-7. El servicio devuelve el movimiento en notación YEN; la web lo aplica al tablero y los datos de partida.
-8. Se repite 3-7 hasta que se finaliza el juego. Una vez se finaliza, muestra el resultado al jugador y se guardan las estadísticas del juego</p>
+<p>Flujo (pasos):</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Usuario inicia una partida en la UI y selecciona "Jugar vs Máquina" y la estrategia (ej. <code>random</code>).</p>
+</li>
+<li>
+<p>La web prepara la posición inicial en notación YEN y la mantiene como estado local.</p>
+</li>
+<li>
+<p>Usuario hace un movimiento; la web lo muestra en el tablero.</p>
+</li>
+<li>
+<p>Webapp manda un post con body JSON con la notación YEN del nuevo estado.</p>
+</li>
+<li>
+<p>El servicio Rust recibe el YEN, lo parsea a <code>GameY</code> y valida la posición.</p>
+</li>
+<li>
+<p>Se invoca al bot y se calcula la respuesta.</p>
+</li>
+<li>
+<p>El servicio devuelve el movimiento en notación YEN; la web lo aplica al tablero y los datos de partida.</p>
+</li>
+<li>
+<p>Se repite 3-7 hasta que se finaliza el juego. Una vez se finaliza, muestra el resultado al jugador y se guardan las estadísticas del juego.</p>
+</li>
+</ol>
 </div>
 </div>
 <div class="sect2">
@@ -1843,18 +1862,21 @@ part of arc42 for additional levels.</p>
 </div>
 <div class="paragraph">
 <p>Flujo:
-1. Cliente prepara un JSON en notación YEN describiendo la posición y parámetros (p.ej. <code>strategy</code>, <code>difficulty</code>) y hace POST la API de nuestro servidor
-2. El endpoint valida la versión de API y los parámetros.
-3. Se envía la notación YEN a GameY; si es válido se invoca al bot para que calcule el proximo movimiento.
-4. Respuesta: En formato YEN en JSON. Contiene el estado del tablero tras realizar el movimiento.</p>
+1. Cliente prepara un JSON en notación YEN describiendo la posición en un parámetro position y hace GEt la API de nuestro servidor
+2. Se envía la notación YEN a GameY; si es válido se invoca al bot para que calcule el proximo movimiento.
+3. Respuesta: En formato YEN en JSON. Contiene el estado del tablero tras realizar el movimiento.</p>
 </div>
 <div class="paragraph">
-<p>Flujo altenativo 1:
-3* YEN inválido → Se devuelve la peticion en estado de  error y con cuerpo explicativo</p>
+<p>Flujo altenativo 1:</p>
 </div>
 <div class="paragraph">
-<p>Flujo alternativo 2:
-2* Bot solicitado no reconocido → Se devuelve la peticion en estado de  error y con cuerpo explicativo</p>
+<p>3* YEN inválido → Se devuelve la peticion en estado de  error y con cuerpo explicativo</p>
+</div>
+<div class="paragraph">
+<p>Flujo alternativo 2:</p>
+</div>
+<div class="paragraph">
+<p>3* Bot solicitado no reconocido → Se devuelve la peticion en estado de  error y con cuerpo explicativo</p>
 </div>
 </div>
 <div class="sect2">
@@ -1863,21 +1885,51 @@ part of arc42 for additional levels.</p>
 <p>Propósito: describir la interacción típica cuando dos jugadores comparten la misma instancia de la Webapp y juegan por turnos en el mismo dispositivo o en la misma sesión del navegador.</p>
 </div>
 <div class="paragraph">
-<p>Actores:
-- Jugador A (navegador)
-- Jugador B (mismo navegadors)
-- Webapp
-- GameY</p>
+<p>Actores:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Jugador A (navegador)</p>
+</li>
+<li>
+<p>Jugador B (mismo navegadors)</p>
+</li>
+<li>
+<p>Webapp</p>
+</li>
+<li>
+<p>GameY</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Flujo (pasos):
-1. Un jugador crea o inicia una partida local en la web y define el tamaño del tablero y opciones
-2. La web inicializa la posición en notación YEN y la mantiene como estado compartido entre turnos.
-3. Jugador A realiza su movimiento en el tablero; la web serializa la posición resultante a notación YEN y envía una petición POST al servicio <code>GameY</code> para validar/aplicar la jugada (p. ej. <code>POST /v1/game/move</code>).
-4. El servicio Rust (<code>GameY</code>) recibe el YEN, valida la jugada con las reglas completas y devuelve la respuesta al frontend
-5. La web, al recibir la confirmación, aplica el estado devuelto al tablero y muestra que es el turno del Jugador B; la web no aplica reglas complejas por su cuenta.
-6. Jugador B realiza su jugada y se repite 3–5 alternando hasta que se detecta una condición de victoria o empate.
-7. Al finalizar la partida, la web envía el resultado al backend para persistencia y estadísticas</p>
+<p>Flujo (pasos):</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Un jugador crea o inicia una partida local en la web y define el tamaño del tablero y opciones</p>
+</li>
+<li>
+<p>La web inicializa la posición en notación YEN y la mantiene como estado compartido entre turnos.</p>
+</li>
+<li>
+<p>Jugador A realiza su movimiento en el tablero; la web serializa la posición resultante a notación YEN y envía una petición POST al servicio <code>GameY</code> para validar/aplicar la jugada.</p>
+</li>
+<li>
+<p>El servicio Rust (<code>GameY</code>) recibe el YEN, valida la jugada con las reglas completas y devuelve la respuesta al frontend</p>
+</li>
+<li>
+<p>La web, al recibir la confirmación, aplica el estado devuelto al tablero y muestra que es el turno del Jugador B; la web no aplica reglas complejas por su cuenta.</p>
+</li>
+<li>
+<p>Jugador B realiza su jugada y se repite 3–5 alternando hasta que se detecta una condición de victoria.</p>
+</li>
+<li>
+<p>Al finalizar la partida, la web envía el resultado al backend para persistencia y estadísticas</p>
+</li>
+</ol>
 </div>
 <div class="paragraph">
 <p>Flujo alternativo:
@@ -2085,7 +2137,7 @@ De esta manera, los desarrollados no tienen que acudir directamente al código (
 <dd>
 <p>La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.</p>
 <div class="paragraph">
-<p>Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo.</p>
+<p>Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo. Además permite liberar a las APIS que tienen los servicios de la carga de mostrar la documentación, mejorando el rendimiento.</p>
 </div>
 </dd>
 <dt class="hdlist1">Mapeo de los bloques de construcción a infraestructura</dt>
@@ -2185,12 +2237,14 @@ De esta manera, los desarrollados no tienen que acudir directamente al código (
 <div class="paragraph">
 <p>Toda integración entre frontend y motor intercambia estado en JSON YEN.
 Las transformaciones de coordenadas se realizan en los bordes (UI/servicio), no en el núcleo de reglas.
-El motor es la referencia final de validez de jugada.
-=== Conceptos de UX y consistencia funcional</p>
+El motor es la referencia final de validez de jugada.</p>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_conceptos_de_ux_y_consistencia_funcional">8.3. Conceptos de UX y consistencia funcional</h3>
 <div class="sect3">
-<h4 id="_spa_con_estado_local_y_confirmación_de_servidor">8.2.2. SPA con estado local y confirmación de servidor</h4>
+<h4 id="_spa_con_estado_local_y_confirmación_de_servidor">8.3.1. SPA con estado local y confirmación de servidor</h4>
 <div class="paragraph">
 <p>La Webapp ofrece respuesta inmediata en interfaz, pero la consistencia fuerte de reglas se obtiene al confirmar la jugada con Gamey. Este patrón equilibra fluidez y corrección.</p>
 </div>
@@ -2200,12 +2254,14 @@ El motor es la referencia final de validez de jugada.
 <div class="paragraph">
 <p>La interacción visual es optimista, pero el estado confirmado es el devuelto por backend/motor.
 En jugadas inválidas, se informa al usuario y no se consolida el turno.
-El frontend mantiene separadas lógica visual y reglas del juego.
-=== Conceptos de seguridad</p>
+El frontend mantiene separadas lógica visual y reglas del juego.</p>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_conceptos_de_seguridad">8.4. Conceptos de seguridad</h3>
 <div class="sect3">
-<h4 id="_autenticación_con_jwt_y_control_de_sesión">8.2.3. Autenticación con JWT y control de sesión</h4>
+<h4 id="_autenticación_con_jwt_y_control_de_sesión">8.4.1. Autenticación con JWT y control de sesión</h4>
 <div class="paragraph">
 <p>El servicio de usuarios emite access token y refresh token para autenticar llamadas. Operaciones de escritura relevantes (como registrar partida finalizada) exigen token válido.</p>
 </div>
@@ -2219,19 +2275,23 @@ Las credenciales de base de datos y secretos se inyectan por entorno, no en cód
 Nota de implementación actual:</p>
 </div>
 <div class="paragraph">
-<p>El mecanismo de sesión de refresh está implementado en memoria del proceso, útil para entorno de desarrollo y pruebas, pero no ideal para escalado horizontal sin almacenamiento compartido.
-=== Conceptos de arquitectura y patrones</p>
+<p>El mecanismo de sesión de refresh está implementado en memoria del proceso, útil para entorno de desarrollo y pruebas, pero no ideal para escalado horizontal sin almacenamiento compartido.</p>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_conceptos_de_arquitectura_y_patrones">8.5. Conceptos de arquitectura y patrones</h3>
 <div class="sect3">
-<h4 id="_control_por_modulos_y_responsabilidades">8.2.4. Control por modulos y responsabilidades</h4>
+<h4 id="_control_por_modulos_y_responsabilidades">8.5.1. Control por modulos y responsabilidades</h4>
 <div class="paragraph">
 <p>La solución separa claramente I/O y experiencia de usuario de la lógica de juego:</p>
 </div>
 <div class="paragraph">
 <p>Webapp y servicio Users gestionan interacción, autenticación, persistencia y contratos HTTP.
-Gamey concentra validación de reglas y cálculo de jugadas/bots.
-Beneficio arquitectónico:</p>
+Gamey concentra validación de reglas y cálculo de jugadas/bots.</p>
+</div>
+<div class="paragraph">
+<p>Beneficio arquitectónico:</p>
 </div>
 <div class="paragraph">
 <p>Evolucionar reglas o estrategias de bot no obliga a rediseñar frontend.
@@ -2239,16 +2299,16 @@ Cambios de UX o API no requieren reescribir núcleo algorítmico.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_apis_explícitas_y_contratos_estables">8.2.5. APIs explícitas y contratos estables</h4>
+<h4 id="_apis_explícitas_y_contratos_estables">8.5.2. APIs explícitas y contratos estables</h4>
 <div class="paragraph">
 <p>Cada capacidad se expone por endpoints definidos y estructuras de entrada/salida conocidas. Esto permite pruebas de integración más robustas y facilita uso por clientes externos.</p>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_conceptos_de_puntuación_y_ranking">8.3. Conceptos de puntuación y ranking</h3>
+<h3 id="_conceptos_de_puntuación_y_ranking">8.6. Conceptos de puntuación y ranking</h3>
 <div class="sect3">
-<h4 id="_modelo_de_puntuación_score_del_sistema">8.3.1. Modelo de puntuación (score) del sistema</h4>
+<h4 id="_modelo_de_puntuación_score_del_sistema">8.6.1. Modelo de puntuación (score) del sistema</h4>
 <div class="paragraph">
 <p>La puntuación de partida se calcula de forma determinista con dos factores:</p>
 </div>
@@ -2268,7 +2328,7 @@ La fórmula evita valores negativos en el término de eficiencia.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_modelo_de_ranking">8.3.2. Modelo de ranking</h4>
+<h4 id="_modelo_de_ranking">8.6.2. Modelo de ranking</h4>
 <div class="paragraph">
 <p>El ranking global ordena usuarios por mejor puntuación y aplica criterios de desempate estables. El sistema soporta paginación controlada para evitar respuestas excesivas.</p>
 </div>
@@ -2283,9 +2343,9 @@ El histórico separa partidas 1vsbot y 1vs1 para análisis funcional más claro.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_conceptos_de_bots_y_dificultad">8.4. Conceptos de bots y dificultad</h3>
+<h3 id="_conceptos_de_bots_y_dificultad">8.7. Conceptos de bots y dificultad</h3>
 <div class="sect3">
-<h4 id="_bots_como_capacidad_transversal_del_sistema">8.4.1. Bots como capacidad transversal del sistema</h4>
+<h4 id="_bots_como_capacidad_transversal_del_sistema">8.7.1. Bots como capacidad transversal del sistema</h4>
 <div class="paragraph">
 <p>El motor Gamey expone bots como un servicio HTTP, desacoplando la estrategia de juego de la capa de presentación. Esto habilita:</p>
 </div>
@@ -2350,9 +2410,9 @@ El histórico separa partidas 1vsbot y 1vs1 para análisis funcional más claro.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_conceptos_de_datos_y_despliegue">8.5. Conceptos de datos y despliegue</h3>
+<h3 id="_conceptos_de_datos_y_despliegue">8.8. Conceptos de datos y despliegue</h3>
 <div class="sect3">
-<h4 id="_persistencia_local_vs_despliegue">8.5.1. Persistencia local vs despliegue</h4>
+<h4 id="_persistencia_local_vs_despliegue">8.8.1. Persistencia local vs despliegue</h4>
 <div class="paragraph">
 <p>Se distinguen dos escenarios operativos:</p>
 </div>
@@ -2368,9 +2428,9 @@ El contenedor MySQL es una comodidad de desarrollo e integración, no una obliga
 </div>
 </div>
 <div class="sect2">
-<h3 id="_conceptos_de_desarrollo_y_operación">8.6. Conceptos de desarrollo y operación</h3>
+<h3 id="_conceptos_de_desarrollo_y_operación">8.9. Conceptos de desarrollo y operación</h3>
 <div class="sect3">
-<h4 id="_reproducibilidad_y_observabilidad">8.6.1. Reproducibilidad y observabilidad</h4>
+<h4 id="_reproducibilidad_y_observabilidad">8.9.1. Reproducibilidad y observabilidad</h4>
 <div class="paragraph">
 <p>El sistema prioriza entorno reproducible con contenedores y añade piezas de monitorización para operación:</p>
 </div>
@@ -2381,7 +2441,7 @@ Separación de componentes para facilitar pruebas, despliegue y mantenimiento.</
 </div>
 </div>
 <div class="sect3">
-<h4 id="_calidad_y_pruebas_como_concepto_transversal">8.6.2. Calidad y pruebas como concepto transversal</h4>
+<h4 id="_calidad_y_pruebas_como_concepto_transversal">8.9.2. Calidad y pruebas como concepto transversal</h4>
 <div class="paragraph">
 <p>La estructura de pruebas cubre frontend, backend Node y backend Rust, incluyendo pruebas de integración y e2e. Esto refuerza la trazabilidad entre decisiones de arquitectura y comportamiento real del sistema.</p>
 </div>
@@ -2480,6 +2540,12 @@ Se documentan únicamente decisiones aceptadas y aplicadas en el repositorio act
 <td class="tableblock halign-left valign-top"><p class="tableblock">Mantener varias estrategias de bot y mapear dificultad funcional a bots concretos.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Cumplimiento de requisito de múltiples estrategias seleccionables.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADR-10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Separar la documentación de las APIs a un contenedor aparte</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aceptada</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejorar el rendimiento de las APIs liberándolas de la carga de servir las documentaciones.</p></td>
 </tr>
 </tbody>
 </table>
@@ -2664,6 +2730,33 @@ Coste operativo adicional asumido por el valor en diagnóstico.</p>
 Extensible a nuevos bots sin rediseñar la UI.
 Necesidad de mantener coherencia entre nomenclatura de dificultad y bot real disponible.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_adr_10_separar_documentación_de_apis_a_un_contenedor_aparte">9.13. ADR-10. Separar documentación de APIs a un contenedor aparte</h3>
+<div class="paragraph">
+<div class="title">Contexto</div>
+<p>Las APIs actuales manejan tanto el tráfico de producción como las consultas a la documentación interactiva (Swagger UI/OpenAPI). Esta carga adicional impacta negativamente en el rendimiento de las APIs, especialmente cuando desarrolladores y usuarios realizan pruebas frecuentes desde la interfaz de documentación.</p>
+</div>
+<div class="paragraph">
+<div class="title">Decisión</div>
+<p>Desplegar la documentación de las APIs (Swagger UI) en un contenedor separado e independiente, sirviendo los archivos de especificación OpenAPI desde este nuevo contenedor.</p>
+</div>
+<div class="paragraph">
+<div class="title">Consecuencias</div>
+<p>Mejora de rendimiento: Las APIs ya no procesan peticiones de documentación ni ejecuciones de prueba desde Swagger UI, liberando recursos para peticiones de producción</p>
+</div>
+<div class="paragraph">
+<p>Escalabilidad independiente: La documentación puede escalarse según demanda (ej. durante onboarding de nuevos desarrolladores) sin afectar las APIs de producción</p>
+</div>
+<div class="paragraph">
+<p>Despliegues desacoplados: Actualizaciones a la documentación no requieren redesplegar las APIs, y viceversa.</p>
+</div>
+<div class="paragraph">
+<p>Mayor modularidad: Facilita la gestión y evolución independiente de la documentación técnica</p>
+</div>
+<div class="paragraph">
+<p>Requiere gestión de un contenedor adicional en la infraestructura.</p>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -2726,7 +2819,7 @@ concrete and measurable.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Árbol%20de%20calidad.png" alt="Árbol de calidad" width="937" height="2360">
+<img src="./images/Árbol%20de%20calidad.png" alt="Árbol de calidad" width="730" height="2292">
 </div>
 </div>
 </div>
@@ -2747,7 +2840,7 @@ concrete and measurable.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Usage scenarios (also called application scenarios or use case scenarios) describe the system’s runtime reaction to a certain stimulus. This also includes scenarios that describe the system’s efficiency or performance. Example: The system reacts to a user’s request within one second.</p>
+<p>Usage scenarios (also called application scenarios or use case scenarios) describe the system&#8217;s runtime reaction to a certain stimulus. This also includes scenarios that describe the system&#8217;s efficiency or performance. Example: The system reacts to a user&#8217;s request within one second.</p>
 </li>
 <li>
 <p>Change scenarios describe a modification of the system or of its immediate environment. Example: Additional functionality is implemented or requirements for a quality attribute change.</p>
@@ -2901,7 +2994,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">QU02</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando termina una partida, el usuario identifica de forma inmediata si ha ganado, perdido o empatado.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cuando termina una partida, el usuario identifica de forma inmediata si ha ganado o perdido.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">QU03</p></td>
@@ -3007,7 +3100,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <td class="tableblock halign-left valign-top"><p class="tableblock">Cuando se introduce una nueva implementación de un bot, no es necesario reescribir la lógica central.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">QC04</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QC02</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Si se sustituyera la base de datos empleada, el front-end no se vería afectado.</p></td>
 </tr>
 <tr>

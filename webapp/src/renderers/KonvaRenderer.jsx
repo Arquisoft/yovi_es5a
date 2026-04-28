@@ -108,6 +108,7 @@ export default memo(function KonvaRenderer({
               id={`cell-${cell.q}-${cell.r}`}
               data-testid={`cell-${cell.q}-${cell.r}`}
               data-state={cell.state ?? 'empty'}
+              role="presentation"
               style={{
                 position: 'absolute',
                 left: screenX - HEX_SIZE,

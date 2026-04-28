@@ -80,8 +80,8 @@ node "Azure VM (Linux Ubuntu 24.04)" <<device>> as AzureVM {
         artifact "Gamey\n(Rust Game Engine)"   as Gamey
         
         node "Database" as Database{
-            artifact "Database"                  as Database
-            artifact "db_data"                   as Volume <<volume>>
+            artifact "MySQL"                   as MySQL
+            artifact "db_data"                 as Volume <<volume>>
         }
     }
 }
@@ -89,8 +89,8 @@ node "Azure VM (Linux Ubuntu 24.04)" <<device>> as AzureVM {
 Navegador   --   WebApp      : <<interaccón UI>>
 WebApp      -->  Users       : <<HTTP/REST>>
 WebApp      -->  Gamey       : <<HTTP/REST>>
-Users       --   Database    : <<MySQL>>
-Database    --   Volume      : <<mount>>
+Users       --   MySQL       : <<MySQL>>
+MySQL       --   Volume      : <<mount>>
 
 @enduml
 ----
@@ -98,10 +98,10 @@ Database    --   Volume      : <<mount>>
 Descripción::
 
 La aplicación se despliega sobre un servidor de Azure, en el que cada módulo que constituye el sistema se encuentra encapsulado en un contenedor de Docker. 
-
++
 El usuario interactua con el sistema a través del módulo WebApp, que no es más que una interfaz gráfica diseñada en React. El front-end a su vez se comunica con los dos back-ends del sistema mediante peticiones HTTP: Users y Gamey. 
 Cada uno de ellos expone una serie de endpoints para realizar diferentes tareas, ya sea consultar la base de datos y almacenar/devolver la información relevante de nuestro sistema (módulo Users) o actuar como motor de juego (módulo Rust).
-
++
 A su vez, el módulo Users mantiene una comunicación directa con nuestra base de datos relacional MySQL. La base de datos tiene un volumen asociado para permitir que los datos de nuestro sistema persistan una vez se despliegue el mismo.   
 
 Características de calidad/rendimiento::
@@ -109,7 +109,7 @@ Características de calidad/rendimiento::
 El hecho de emplear Docker para encapsular cada uno de los módulos del sistema en distintos contenedores permite que el sistema sea escalable y portable. Además, la separación de las distintas partes en distintos contenedores
 facilita el mantenimiento y la extensibilidad. Además, aumenta el rendimiento en comparación con emplear un contendor aislado, ya que se permite aislar las dependencias de cada módulo. Por otro lado, el uso de Docker permite el despliegue
 continuo de nuestra aplicación.
-
++
 El despliegue automático desde GitHub Actions favorece tiempos de entrega cortos (en comparación al empleo de otras tecnologías) y una actualización uniforme de los servicios desplegados.
 
 Mapeo de los bloques de construcción a infraestructura::
@@ -162,7 +162,7 @@ node "Azure VM (Linux Ubuntu 24.04)" <<device>> as AzureVM {
         artifact "Swagger"                       as Swagger
 
         node "Database" as Database{
-            artifact "Database"                  as Database
+            artifact "MySQL"                     as MySQL
             artifact "db_data"                   as Volume <<volume>>
         }
         
@@ -173,13 +173,13 @@ node "Azure VM (Linux Ubuntu 24.04)" <<device>> as AzureVM {
     }
 }
 
-Navegador   --   WebApp      : <<interaccón UI>>
+Navegador   --   WebApp      
 WebApp      -->  Users       : <<HTTP/REST>>
 WebApp      -->  Gamey       : <<HTTP/REST>>
-Users       --   Database    : <<MySQL>>
-Database    --   Volume      : <<mount>>
-Prometheus  ..>  Users       : <<HTTP>>
-Prometheus  ..>  Gamey       : <<HTTP>>
+Users       --   MySQL       
+MySQL       --   Volume      : <<mount>>
+Prometheus  ..>  Users       
+Prometheus  ..>  Gamey       
 Grafana     -->  Prometheus  : <<datasource>>
 @enduml
 ----
@@ -187,25 +187,24 @@ Grafana     -->  Prometheus  : <<datasource>>
 Descripción::
 
 En este nivel de infraestructura aparecen los módulos destinados a la monitorización del sistema, concretamente, los módulos Grafana y Prometheus.
-
++
 El módulo Prometheus observa constantemente las APIs REST de los back-ends del sistema con el fin de recopilar estadísticas acerca del número de peticiones que reciben cada una de estas en cada instante, el tiempo de respuesta, ...
 Todos estos datos se alamcenan en bases de datos volátiles que crea y elimina el propio Prometheus cuando el sistema se sistema se levanta o se tumba respectivamente; por lo tanto, la información no persiste.
-
++
 Por otro lado, el contenedor Grafana accede a los datos extraidos por el módulo Prometheus con el fin de reprensentarlos gráficamente y poder comprender de manera visual el comportamiento de las diferentes APIs del sistema.
-
-Además, es necesario mencionar la existencia del contenedor Swagger, destinado a desplegar la documentación sobre las diferentes APIs mencionadas anteriormente: endpoints existentes en cada una, acción asociada a cada uno de estos, URLs, ...
++
+Además, es necesario mencionar la existencia del contenedor Swagger, destinado a desplegar la documentación sobre las diferentes APIs mencionadas anteriormente: endpoints existentes en cada una, acción asociada a cada uno de estos, URLs, ... 
 De esta manera, los desarrollados no tienen que acudir directamente al código (y desperdiciar demasiado tiempo comprendiendo el mismo) para enteder el funcionamiento de las mismas y los distintos servicios que ofrecen.
 
 Características de calidad/rendimiento::
 
 La presencia de Prometheus y Grafana añade observabilidad al entorno, permitiendo monitorizar el comportamiento de la aplicación y detectar incidencias de forma más rápida.
-
++
 Por otro lado, la inclusión de Swagger centraliza la documentación de las APIs de Users y Gamey, reduciendo la fricción durante el desarrollo y facilitando la incorporación de nuevos miembros al equipo.
 
 Mapeo de los bloques de construcción a infraestructura::
 
-[cols="1,2,2" options="header"]
-
+[cols="1,2" options="header"]
 |===
 
 | **Nombre** | **Descripción**
@@ -214,6 +213,7 @@ Mapeo de los bloques de construcción a infraestructura::
 
 | Grafana | Herramienta de visualización que consume Prometheus como datasource para mostrar dashboards con las métricas del sistema.
 
-| Swagger | Contenedor destinado a mostrar la documentación asociada a cada una de las APIs del sistema (Users y Gamey)
+| Swagger | Contenedor destinado a mostrar la documentación asociada a cada una de las APIs del sistema (Users y Gamey).
 
 |===
+

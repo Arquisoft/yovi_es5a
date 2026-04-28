@@ -31,7 +31,7 @@ export default defineConfig([
       },
     },
     rules: {
-      // Usas TypeScript, así que desactivas PropTypes
+      // Usamos TypeScript, así que desactivamos PropTypes
       'react/prop-types': 'off',
     },
   },

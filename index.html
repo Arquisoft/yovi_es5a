@@ -535,6 +535,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_deuda_técnica_priorizada">11.3. Deuda Técnica (priorizada)</a></li>
 </ul>
 </li>
+<li><a href="#section-testing">12. Informe de Pruebas</a>
+<ul class="sectlevel2">
+<li><a href="#_12_1_tests_unitarios">12.1. 12.1. Tests Unitarios</a></li>
+<li><a href="#_12_2_tests_end_to_end_e2e">12.2. 12.2. Tests End-to-End (E2E)</a></li>
+<li><a href="#_12_3_tests_de_carga">12.3. 12.3. Tests de Carga</a></li>
+</ul>
+</li>
+<li><a href="#section-glossary">13. Glosario</a></li>
 </ul>
 </div>
 </div>
@@ -2595,24 +2603,8 @@ Facilita integración de clientes externos.</p>
 <div class="paragraph">
 <p>Webapp: experiencia de usuario y flujo de interacción.
 Users: autenticación, perfil, historial, ranking y persistencia.
-Gamey: validación de jugadas, estado de partida y bots.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>En el módulo Users se mantiene la capa de entrada (<code>users-service</code>), la capa de negocio (<code>services/<strong></code>), los repositorios (<code>repositories/</strong></code>) y la persistencia (<code>xDb.js</code>).</p>
-</li>
-<li>
-<p>En la Webapp React se usan <code>pages/<strong></code>, <code>components/</strong></code>, <code>services/<strong></code>, <code>parsers/</strong></code> y <code>renderers/*</code> para separar presentación, datos y visualización del tablero.</p>
-</li>
-<li>
-<p>El control del juego se realiza en el cliente, mientras que el backend se usa para validación y consultas de bots.</p>
-</li>
-<li>
-<p>YEN se adopta como notación común para intercambiar información de partidas entre módulos.
+Gamey: validación de jugadas, estado de partida y bots.
 .Consecuencias</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
 <p>Escalado y despliegue por componente.
@@ -2647,16 +2639,6 @@ Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntri
 <div class="title">Decisión</div>
 <p>Versionar los endpoints del motor de juego (prefijo v1) y soportar petición de movimiento con bot explícito o por defecto, manteniendo compatibilidad evolutiva.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>El uso de rutas <code>v1</code> permite que los bots e integraciones externas sigan funcionando aunque el sistema evolucione.</p>
-</li>
-<li>
-<p>Se han creado múltiples estrategias de bots para cumplir con los requisitos de dificultad ajustable.</p>
-</li>
-</ul>
-</div>
 <div class="paragraph">
 <div class="title">Consecuencias</div>
 <p>Contrato más estable para terceros.
@@ -2673,13 +2655,6 @@ Requiere disciplina de versionado en iteraciones posteriores.</p>
 <div class="paragraph">
 <div class="title">Decisión</div>
 <p>Aplicar autenticación basada en token de acceso y token de refresco, con rotación/revocación de refresh en el servicio de autenticación.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Implementar JWT con acceso corto, token de refresco rotativo y revocación de sesiones.</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
 <div class="title">Consecuencias</div>
@@ -3345,17 +3320,741 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </tbody>
 </table>
 <div style="page-break-after: always;"></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="section-testing">12. Informe de Pruebas</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_12_1_tests_unitarios">12.1. 12.1. Tests Unitarios</h3>
 <div class="paragraph">
-<p>Unresolved directive in index.adoc - include::src/12_glossary.adoc[]</p>
+<p>Los tests unitarios verifican el comportamiento correcto de cada componente, helper y módulo de forma aislada, proporcionando seguridad, consistencia y confianza durante el desarrollo.</p>
+</div>
+<div class="sect3">
+<h4 id="_webapp_vitest_react_testing_library">12.1.1. Webapp (Vitest + React Testing Library)</h4>
+<div class="paragraph">
+<p>La webapp cubre la interfaz de usuario, los formularios de autenticación, el flujo de juego, la lógica de estado y las llamadas a servicios.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 50%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Archivo de test</th>
+<th class="tableblock halign-left valign-top">Qué verifica</th>
+<th class="tableblock halign-left valign-top">Casos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>App.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Renderizado de las acciones globales, visibilidad de botones según sesión, apertura/cierre de ayuda y logout.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AuthPage.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Validación de login y registro, mensajes de error en pantalla, transiciones de flujo y comportamiento tras credenciales inválidas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>GameBoard.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gestión de clics en el tablero, validaciones de movimiento, modos 1vs1 y 1vsbot, errores de backend y visualización de VictoryMenu.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">54</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LanguageSelector.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cambio de idioma mediante el selector y reflejo de la selección en la interfaz.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>authApi.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Requests a <code>/auth/*</code>: login, registro, refresh y logout; serialización de peticiones, headers y errores del servidor.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">28</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boardStore.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estado de juego: inicialización de tablero, clamp de tamaño, avance de turnos, gestión de tiempo y snapshots de tablero.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">56</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamePlayApi.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Validación de peticiones de juego a backend, gestión de estado de partida y manejo de errores HTTP.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">26</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>GlobalActionsBar.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Barra superior de la aplicación: botones de logout, ayuda y cambios globales de estado.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Header.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Representación del encabezado principal, rutas de navegación y visualización de usuario autenticado.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>KonvaRenderer.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Renderizado del tablero con Konva y marcado de celdas, animaciones y escalado visual.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>leaderboardApi.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones de ranking: parámetros de filtro, paginación y respuestas de leaderboard.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LeaderboardPage.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Página de ranking: carga de datos, paginación, búsqueda de usuarios y ordenación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">26</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>PaginationControls.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Controles de paginación: navegación entre páginas, botones prev/next y cambio de tamaño de página.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>PlayerBadge.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Visualización de la información del jugador, iconos de estado y notificaciones de ganador.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sessionStore.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gestión de sesión en el frontend: persistencia, expiración y restauración de credenciales.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>StartGameForm.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Formulario de inicio de partida: selección de modo, dificultad, número de jugadores y validación de entradas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>useDebouncedSearch.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hook de búsqueda con debounce: llamadas diferidas, cancelación y resultados esperados.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UserProfilePage.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Visualización y edición del perfil de usuario, datos de estadísticas y pestañas de historial.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">62</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UserSearchBar.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Búsqueda de usuarios en el frontend: sugerencias, filtrado y debounce.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">25</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usersScoreApi.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones de puntuaciones de usuario: lista de puntuación, filtrado por usuario y errores de backend.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VictoryMenu.test.jsx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Menú de victoria: opciones de reinicio, compartir resultado y estadísticas finales.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>yenParser.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parser de notación: conversión de movimientos y validación de entrada de tablero.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">27</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>apiErrorHelper.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Gestión de errores en llamadas a API: manejo de respuestas de error y mensajes de error.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_users_service_vitest_supertest">12.1.2. Users Service (Vitest + Supertest)</h4>
+<div class="paragraph">
+<p>El servicio users tiene <strong>23 archivos de test</strong> en <code>users/<em>tests</em></code>, probando la lógica de negocio, los endpoints de la API, la persistencia y las validaciones de dominio.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Archivo de test</th>
+<th class="tableblock halign-left valign-top">Qué verifica</th>
+<th class="tableblock halign-left valign-top">Casos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>auth_tokens.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rotación y revocación de refresh tokens, refresh con token inválido y permisos de acceso a endpoints protegidos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>api_register.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registro de usuario: datos obligatorios, contraseñas no coincidentes, email duplicado y errores esperados.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>api_login.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Login: campos obligatorios, usuario inexistente, contraseña incorrecta y validación de tipos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>recordFinishedMatch.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia de partidas 1vs1 y 1vsbot, validaciones de payload y rollback en errores de base de datos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>leaderboardService.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Paginación, sugerencias de usuario, ranking y ejecución de historial con datos simulados.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userProfileEndpoints.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints de perfil: obtención de datos públicos, historial paginado y leaderboard centrado.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gameService_userVsUser.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Partida usuario vs usuario: gestión de estados, turnos y finalización.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userService.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lógica de usuario: autenticación, autorización y validaciones del dominio.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>api_auth_endpoints.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Autenticación por token: acceso a endpoints protegidos, permisos y expiración.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>api_createuser.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Creación de usuario: validación de payload y respuesta de la API.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>api_finishedmatch.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registro de partida finalizada: cálculo de puntuaciones y actualización de histórico.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>api_leaderboard.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Obtención de ranking desde API: filtros, paginación y formato de respuesta.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>createUser.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lógica de creación de usuario, hashing de contraseña y reglas de unicidad.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>db.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Conexión y manejo de errores de base de datos en el entorno de tests.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>finishGame.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Finalización de partidas: cálculo de resultado, persistencia y notificaciones.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gameDb.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Operaciones CRUD en el repositorio de partidas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">14</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gameRepo.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Integración de repositorios: acceso y combinación de datos de usuarios y partidas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">19</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gameService_botVsBot.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Partida bot vs bot: lógica de juego automatizada y turnos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gameService_userVsBot.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Partida usuario vs bot: lógica de movimiento, dificultad y respuesta del bot.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>rankingPaginationLegacyData.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compatibilidad de paginación con datos antiguos y estructura de respuesta.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>repositoryWrappers.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Encapsulación de acceso a repositorios para testeo y aislamientos de datos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>scoreService.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cálculo de puntuaciones y métricas de jugador.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userDb.test.js</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Operaciones de usuario en la base de datos: creación, consulta y actualización.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Los tests de <code>users</code> ejercitan la lógica de los servicios y la capa de datos con mocks, manteniendo cada caso aislado sin depender de una base de datos real.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_gamey_rust_cargo_test">12.1.3. GameY (Rust — cargo test)</h4>
+<div class="paragraph">
+<p>El motor Rust se prueba con <code>cargo test</code>, combinando tests de integración en <code>gamey/tests</code> y tests unitarios inline en los módulos de código fuente. Además cabe destacar que cada módulo de la lógica incluye en la parte inferior unas pruebas unitarias que comprueban el funcionamiento del módulo.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 50%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Archivo de test</th>
+<th class="tableblock halign-left valign-top">Qué verifica</th>
+<th class="tableblock halign-left valign-top">Casos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamey/tests/core_tests.rs</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reglas de juego, tablero, alternancia de turnos y condiciones de victoria.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">43</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamey/tests/bot_server_tests.rs</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints HTTP del servidor Axum: <code>move</code>, <code>reset</code>, <code>surrender</code>, <code>difficulties</code>, <code>history</code> y <code>stats</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">14</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamey/tests/cli_tests.rs</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Línea de comandos: parseo de argumentos, modos de juego y salida de ayuda.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">54</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_12_2_tests_end_to_end_e2e">12.2. 12.2. Tests End-to-End (E2E)</h3>
+<div class="paragraph">
+<p>Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada.</p>
+</div>
+<div class="paragraph">
+<p>La suite E2E de la webapp reside en <code>webapp/test/e2e/features</code> y <code>webapp/test/e2e/steps</code>, y actualmente cubre los siguientes escenarios:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Registro exitoso</strong> — <code>register.feature</code> valida el formulario de registro y comprueba el mensaje de confirmación tras enviar datos válidos.</p>
+</li>
+<li>
+<p><strong>Login exitoso</strong> — <code>auth.feature</code> valida el flujo de autenticación y la navegación a la página principal tras credenciales correctas.</p>
+</li>
+<li>
+<p><strong>Partida completa contra jugador local</strong> — <code>game.feature</code> comprueba que el usuario puede iniciar y finalizar una partida contra otro jugador local y ver el menú de victoria.</p>
+</li>
+<li>
+<p><strong>Partida completa contra bot Easy/Medium/Hard</strong> — <code>game.feature</code> valida partidas completas contra los bots Easy, Medium y Hard, comprobando la finalización correcta del flujo y la visualización del resultado.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_12_3_tests_de_carga">12.3. 12.3. Tests de Carga</h3>
+<div class="paragraph">
+<p>Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.</p>
+</div>
+<div class="paragraph">
+<p>Para la realización de estas pruebas se ha utilizado <strong>Gatling</strong> (Java + Maven), siguiendo las directrices del Laboratorio 9 de la asignatura.</p>
+</div>
+<div class="sect3">
+<h4 id="_escenario_de_prueba">12.3.1. Escenario de prueba</h4>
+<div class="paragraph">
+<p>El escenario simula el flujo completo de un usuario jugando una partida:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Login</strong> — autenticación y obtención de JWT</p>
+</li>
+<li>
+<p><strong>Reset de partida</strong> — inicialización del tablero (tamaño 6, dificultad Easy)</p>
+</li>
+<li>
+<p><strong>Movimiento 1</strong> — el jugador coloca una ficha (cellIndex: 3)</p>
+</li>
+<li>
+<p><strong>Movimiento 2</strong> — el jugador coloca una segunda ficha (cellIndex: 8)</p>
+</li>
+<li>
+<p><strong>Rendición</strong> — el jugador se rinde y se persiste la derrota en MongoDB</p>
+</li>
+<li>
+<p><strong>Consulta de historial</strong> — el usuario consulta sus partidas anteriores</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_configuración_de_carga">12.3.2. Configuración de carga</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Escenario</th>
+<th class="tableblock halign-left valign-top">Configuración</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Carga sostenida</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>rampUsers(10).during(30)</code> + <code>constantUsersPerSec(2).during(60)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Subida progresiva a 10 usuarios en 30 segundos, manteniendo 2 usuarios/segundo durante 1 minuto.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pico de carga</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>nothingFor(10)</code> + <code>rampUsers(25).during(15)</code> + <code>constantUsersPerSec(4).during(30)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pausa de 10 segundos seguida de rampa rápida a 25 usuarios en 15 segundos.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Los <strong>thresholds</strong> de aceptación definidos son:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>p95 de tiempo de respuesta &lt; 500ms</p>
+</li>
+<li>
+<p>Porcentaje de peticiones exitosas &gt; 95%</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_resultados">12.3.3. Resultados</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Métrica</th>
+<th class="tableblock halign-left valign-top">Carga sostenida (10 VUs)</th>
+<th class="tableblock halign-left valign-top">Pico de carga (25 VUs)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones totales</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">780</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.650</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">780 (100%)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.650 (100%)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error rate</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latencia mínima</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latencia media</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">43ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">41ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 50 (p50)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">37ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">37ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 75 (p75)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">75ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">76ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 95 (p95)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">116ms ✓</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">109ms ✓</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 99 (p99)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">136ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">124ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latencia máxima</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">441ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">157ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Throughput medio</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8.21 req/s</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11 req/s</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Duración total</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">94s</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">149s</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_conclusiones_de_las_pruebas_de_carga">12.3.4. Conclusiones de las pruebas de carga</h4>
+<div class="paragraph">
+<p>El sistema YoVi supera en ambos escenarios los thresholds de calidad definidos. Con 25 usuarios concurrentes ejecutando flujos completos de partida, el p95 de latencia es de 109ms, muy por debajo del límite de 500ms. Destacablemente, el sistema escala bien bajo pico de carga: el p95 mejora de 116ms a 109ms al pasar de 10 a 25 usuarios, y el throughput aumenta de 8.21 a 11 req/s. El error rate se mantiene en 0% en ambos escenarios.</p>
+</div>
+<div class="paragraph">
+<p>Esto valida el escenario de calidad <strong>SC-09</strong> (acceso concurrente de múltiples usuarios) definido en la sección 10, donde se exigía un error rate &lt; 1% y latencia media &lt; 500ms.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="./images/12_gatling_response_times.png" alt="12 gatling response times">
+</div>
+<div class="title">Figure 1. Distribución de tiempos de respuesta - Gatling</div>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="section-glossary">13. Glosario</h2>
+<div class="sectionbody">
+<div class="sidebarblock arc42help">
+<div class="content">
+<div class="paragraph">
+<div class="title">Contents</div>
+<p>The most important domain and technical terms that your stakeholders use when discussing the system.</p>
+</div>
+<div class="paragraph">
+<p>You can also see the glossary as source for translations if you work in multi-language teams.</p>
+</div>
+<div class="paragraph">
+<div class="title">Motivation</div>
+<p>You should clearly define your terms, so that all stakeholders</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>have an identical understanding of these terms</p>
+</li>
+<li>
+<p>do not use synonyms and homonyms</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<div class="title">Form</div>
+<p>A table with columns &lt;Term&gt; and &lt;Definition&gt;.</p>
+</div>
+<div class="paragraph">
+<p>Potentially more columns in case you need translations.</p>
+</div>
+<div class="paragraph">
+<div class="title">Further Information</div>
+<p>See <a href="https://docs.arc42.org/section-12/">Glossary</a> in the arc42 documentation.</p>
+</div>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Término</th>
+<th class="tableblock halign-left valign-top">Definición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YOVI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nombre del sistema desarrollado para jugar al juego Y mediante una aplicación web y servicios backend.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego Y</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego abstracto de conexión sobre tablero triangular. Gana quien conecta los tres lados del tablero con fichas de su color.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YEN (Y-game Exchange Notation)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación JSON usada para representar una partida en un instante concreto. Es el formato canónico de intercambio entre servicios.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YGN</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación relacionada con el dominio del juego Y, incluida en el motor como parte del soporte de formatos.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Layout</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Campo de YEN que codifica la disposición de fichas por filas del tablero, usando símbolos de jugador y celdas vacías.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Turn</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Campo de YEN que indica a qué jugador le corresponde realizar el siguiente movimiento.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas baricéntricas</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sistema de coordenadas de tres valores <code>(x,y,z)</code> que expresa la distancia de una celda a cada lado del tablero triangular.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas axiales de UI (<code>q,r</code>)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas usadas en el frontend para identificar celdas del tablero. Se transforman a coordenadas baricéntricas en el backend/motor.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Webapp</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Aplicación cliente desarrollada con React/Vite que gestiona interacción con el usuario, visualización del tablero y llamadas a APIs.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Users Service</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Servicio Node/Express responsable de usuarios, autenticación, persistencia de partidas finalizadas, historial y leaderboard.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Gamey</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Módulo Rust que implementa reglas del juego, validación de jugadas, detección de victoria y APIs de bots.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>API versionada (<code>v1</code>)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Versión de API usada en endpoints del motor de juego/bots para permitir evolución controlada del contrato.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Agente automático que calcula jugadas válidas a partir del estado de una partida.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Estrategia de bot</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Algoritmo concreto usado por un bot para elegir la siguiente jugada.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>random_bot</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de dificultad baja que selecciona movimientos válidos de forma aleatoria.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>medium_bot</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de dificultad media con heurísticas intermedias.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>hard_bot</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de mayor dificultad usado por defecto en la API <code>play</code> cuando no se especifica otro bot.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Dificultad (<code>Facil</code>, <code>Media</code>, <code>Dificil</code>)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nivel seleccionado por el usuario en frontend, mapeado internamente a bots concretos (<code>random_bot</code>, <code>medium_bot</code>, <code>hard_bot</code>).</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>JWT (JSON Web Token)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Mecanismo de autenticación utilizado para proteger endpoints sensibles mediante tokens firmados.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Access Token</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Token JWT de vida corta usado para autorizar peticiones autenticadas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Refresh Token</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Token JWT usado para renovar el access token sin relogin; su uso está sujeto a revocación/rotación de sesión.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Session Store</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Componente que mantiene el estado de sesiones de refresh token. En el estado actual se implementa en memoria del proceso.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>/finished-match</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Endpoint del servicio Users para registrar partidas terminadas y calcular/persistir puntuación.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Score (Puntuación)</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Valor numérico de rendimiento de partida. En el estado actual se calcula como <code>boardSize * 10 + max(0, 50 - turnNumber)</code>.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Leaderboard</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Clasificación global de usuarios ordenada por métricas de puntuación y actividad.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Historial de partidas</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Conjunto de partidas previas de un usuario, incluyendo modos de juego, resultado y métricas asociadas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>OpenAPI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Especificación del contrato HTTP del servicio Users, publicada para facilitar integración y validación.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Swagger UI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Interfaz web para explorar y probar endpoints descritos en OpenAPI.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Docker Compose</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Orquestación local de servicios (webapp, users, gamey, mysql y monitorización) para desarrollo y pruebas reproducibles.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>MySQL local</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos levantada en contenedor para desarrollo e integración en entorno local.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos en Azure</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos usada en despliegue, configurada por variables de entorno y separada del contenedor MySQL local.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Volumen <code>mysql_data</code></em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Volumen Docker que conserva datos de MySQL entre reinicios de contenedores en entorno local.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Prometheus</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sistema de recolección de métricas usado para observabilidad técnica de los servicios.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Grafana</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Herramienta de visualización de métricas y paneles para monitorización operativa.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas unitarias</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de componentes/funciones aisladas en frontend, backend Node y motor Rust.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de integración</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de interacción entre módulos o capas (por ejemplo, endpoint + servicio + repositorio).</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas e2e</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas extremo a extremo que validan flujos completos desde perspectiva de usuario.</em></p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-16 17:31:26 +0100
+Last updated 2026-04-29 01:22:43 +0200
 </div>
 </div>
 </body>

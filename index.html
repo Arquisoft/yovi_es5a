@@ -535,7 +535,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_deuda_técnica_priorizada">11.3. Deuda Técnica (priorizada)</a></li>
 </ul>
 </li>
-<li><a href="#section-glossary">12. Glosario</a></li>
 </ul>
 </div>
 </div>
@@ -2596,8 +2595,24 @@ Facilita integración de clientes externos.</p>
 <div class="paragraph">
 <p>Webapp: experiencia de usuario y flujo de interacción.
 Users: autenticación, perfil, historial, ranking y persistencia.
-Gamey: validación de jugadas, estado de partida y bots.
+Gamey: validación de jugadas, estado de partida y bots.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>En el módulo Users se mantiene la capa de entrada (<code>users-service</code>), la capa de negocio (<code>services/<strong></code>), los repositorios (<code>repositories/</strong></code>) y la persistencia (<code>xDb.js</code>).</p>
+</li>
+<li>
+<p>En la Webapp React se usan <code>pages/<strong></code>, <code>components/</strong></code>, <code>services/<strong></code>, <code>parsers/</strong></code> y <code>renderers/*</code> para separar presentación, datos y visualización del tablero.</p>
+</li>
+<li>
+<p>El control del juego se realiza en el cliente, mientras que el backend se usa para validación y consultas de bots.</p>
+</li>
+<li>
+<p>YEN se adopta como notación común para intercambiar información de partidas entre módulos.
 .Consecuencias</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>Escalado y despliegue por componente.
@@ -2632,6 +2647,16 @@ Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntri
 <div class="title">Decisión</div>
 <p>Versionar los endpoints del motor de juego (prefijo v1) y soportar petición de movimiento con bot explícito o por defecto, manteniendo compatibilidad evolutiva.</p>
 </div>
+<div class="ulist">
+<ul>
+<li>
+<p>El uso de rutas <code>v1</code> permite que los bots e integraciones externas sigan funcionando aunque el sistema evolucione.</p>
+</li>
+<li>
+<p>Se han creado múltiples estrategias de bots para cumplir con los requisitos de dificultad ajustable.</p>
+</li>
+</ul>
+</div>
 <div class="paragraph">
 <div class="title">Consecuencias</div>
 <p>Contrato más estable para terceros.
@@ -2648,6 +2673,13 @@ Requiere disciplina de versionado en iteraciones posteriores.</p>
 <div class="paragraph">
 <div class="title">Decisión</div>
 <p>Aplicar autenticación basada en token de acceso y token de refresco, con rotación/revocación de refresh en el servicio de autenticación.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Implementar JWT con acceso corto, token de refresco rotativo y revocación de sesiones.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <div class="title">Consecuencias</div>
@@ -3313,217 +3345,17 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </tbody>
 </table>
 <div style="page-break-after: always;"></div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="section-glossary">12. Glosario</h2>
-<div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
 <div class="paragraph">
-<div class="title">Contents</div>
-<p>The most important domain and technical terms that your stakeholders use when discussing the system.</p>
-</div>
-<div class="paragraph">
-<p>You can also see the glossary as source for translations if you work in multi-language teams.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>You should clearly define your terms, so that all stakeholders</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>have an identical understanding of these terms</p>
-</li>
-<li>
-<p>do not use synonyms and homonyms</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>A table with columns &lt;Term&gt; and &lt;Definition&gt;.</p>
-</div>
-<div class="paragraph">
-<p>Potentially more columns in case you need translations.</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-12/">Glossary</a> in the arc42 documentation.</p>
+<p>Unresolved directive in index.adoc - include::src/12_glossary.adoc[]</p>
 </div>
 </div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 66.6667%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Término</th>
-<th class="tableblock halign-left valign-top">Definición</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YOVI</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nombre del sistema desarrollado para jugar al juego Y mediante una aplicación web y servicios backend.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego Y</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego abstracto de conexión sobre tablero triangular. Gana quien conecta los tres lados del tablero con fichas de su color.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YEN (Y-game Exchange Notation)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación JSON usada para representar una partida en un instante concreto. Es el formato canónico de intercambio entre servicios.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YGN</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación relacionada con el dominio del juego Y, incluida en el motor como parte del soporte de formatos.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Layout</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Campo de YEN que codifica la disposición de fichas por filas del tablero, usando símbolos de jugador y celdas vacías.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Turn</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Campo de YEN que indica a qué jugador le corresponde realizar el siguiente movimiento.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas baricéntricas</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sistema de coordenadas de tres valores <code>(x,y,z)</code> que expresa la distancia de una celda a cada lado del tablero triangular.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas axiales de UI (<code>q,r</code>)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Coordenadas usadas en el frontend para identificar celdas del tablero. Se transforman a coordenadas baricéntricas en el backend/motor.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Webapp</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Aplicación cliente desarrollada con React/Vite que gestiona interacción con el usuario, visualización del tablero y llamadas a APIs.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Users Service</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Servicio Node/Express responsable de usuarios, autenticación, persistencia de partidas finalizadas, historial y leaderboard.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Gamey</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Módulo Rust que implementa reglas del juego, validación de jugadas, detección de victoria y APIs de bots.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>API versionada (<code>v1</code>)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Versión de API usada en endpoints del motor de juego/bots para permitir evolución controlada del contrato.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Agente automático que calcula jugadas válidas a partir del estado de una partida.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Estrategia de bot</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Algoritmo concreto usado por un bot para elegir la siguiente jugada.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>random_bot</code></em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de dificultad baja que selecciona movimientos válidos de forma aleatoria.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>medium_bot</code></em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de dificultad media con heurísticas intermedias.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>hard_bot</code></em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot de mayor dificultad usado por defecto en la API <code>play</code> cuando no se especifica otro bot.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Dificultad (<code>Facil</code>, <code>Media</code>, <code>Dificil</code>)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Nivel seleccionado por el usuario en frontend, mapeado internamente a bots concretos (<code>random_bot</code>, <code>medium_bot</code>, <code>hard_bot</code>).</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>JWT (JSON Web Token)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Mecanismo de autenticación utilizado para proteger endpoints sensibles mediante tokens firmados.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Access Token</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Token JWT de vida corta usado para autorizar peticiones autenticadas.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Refresh Token</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Token JWT usado para renovar el access token sin relogin; su uso está sujeto a revocación/rotación de sesión.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Session Store</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Componente que mantiene el estado de sesiones de refresh token. En el estado actual se implementa en memoria del proceso.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em><code>/finished-match</code></em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Endpoint del servicio Users para registrar partidas terminadas y calcular/persistir puntuación.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Score (Puntuación)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Valor numérico de rendimiento de partida. En el estado actual se calcula como <code>boardSize * 10 + max(0, 50 - turnNumber)</code>.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Leaderboard</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Clasificación global de usuarios ordenada por métricas de puntuación y actividad.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Historial de partidas</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Conjunto de partidas previas de un usuario, incluyendo modos de juego, resultado y métricas asociadas.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>OpenAPI</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Especificación del contrato HTTP del servicio Users, publicada para facilitar integración y validación.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Swagger UI</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Interfaz web para explorar y probar endpoints descritos en OpenAPI.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Docker Compose</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Orquestación local de servicios (webapp, users, gamey, mysql y monitorización) para desarrollo y pruebas reproducibles.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>MySQL local</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos levantada en contenedor para desarrollo e integración en entorno local.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos en Azure</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Base de datos usada en despliegue, configurada por variables de entorno y separada del contenedor MySQL local.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Volumen <code>mysql_data</code></em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Volumen Docker que conserva datos de MySQL entre reinicios de contenedores en entorno local.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Prometheus</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sistema de recolección de métricas usado para observabilidad técnica de los servicios.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Grafana</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Herramienta de visualización de métricas y paneles para monitorización operativa.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas unitarias</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de componentes/funciones aisladas en frontend, backend Node y motor Rust.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de integración</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas de interacción entre módulos o capas (por ejemplo, endpoint + servicio + repositorio).</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas e2e</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Pruebas extremo a extremo que validan flujos completos desde perspectiva de usuario.</em></p></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-03-16 18:10:57 +0100
+Last updated 2026-02-16 17:31:26 +0100
 </div>
 </div>
 </body>

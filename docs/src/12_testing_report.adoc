@@ -1,0 +1,351 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-testing]]
+== Informe de Pruebas
+
+=== 12.1. Tests Unitarios
+
+Los tests unitarios verifican el comportamiento correcto de cada componente, helper y módulo de forma aislada, proporcionando seguridad, consistencia y confianza durante el desarrollo.
+
+==== Webapp (Vitest + React Testing Library)
+
+La webapp cubre la interfaz de usuario, los formularios de autenticación, el flujo de juego, la lógica de estado y las llamadas a servicios.
+
+[cols="1,2,1", options="header"]
+|===
+|Archivo de test |Qué verifica |Casos
+
+|`App.test.jsx`
+|Renderizado de las acciones globales, visibilidad de botones según sesión, apertura/cierre de ayuda y logout.
+|4
+
+|`AuthPage.test.jsx`
+|Validación de login y registro, mensajes de error en pantalla, transiciones de flujo y comportamiento tras credenciales inválidas.
+|5
+
+|`GameBoard.test.jsx`
+|Gestión de clics en el tablero, validaciones de movimiento, modos 1vs1 y 1vsbot, errores de backend y visualización de VictoryMenu.
+|54
+
+|`LanguageSelector.test.jsx`
+|Cambio de idioma mediante el selector y reflejo de la selección en la interfaz.
+|1
+
+|`authApi.test.js`
+|Requests a `/auth/*`: login, registro, refresh y logout; serialización de peticiones, headers y errores del servidor.
+|28
+
+|`boardStore.test.js`
+|Estado de juego: inicialización de tablero, clamp de tamaño, avance de turnos, gestión de tiempo y snapshots de tablero.
+|56
+
+|`gamePlayApi.test.js`
+|Validación de peticiones de juego a backend, gestión de estado de partida y manejo de errores HTTP.
+|26
+
+|`GlobalActionsBar.test.jsx`
+|Barra superior de la aplicación: botones de logout, ayuda y cambios globales de estado.
+|5
+
+|`Header.test.jsx`
+|Representación del encabezado principal, rutas de navegación y visualización de usuario autenticado.
+|4
+
+|`KonvaRenderer.test.jsx`
+|Renderizado del tablero con Konva y marcado de celdas, animaciones y escalado visual.
+|9
+
+|`leaderboardApi.test.js`
+|Peticiones de ranking: parámetros de filtro, paginación y respuestas de leaderboard.
+|5
+
+|`LeaderboardPage.test.jsx`
+|Página de ranking: carga de datos, paginación, búsqueda de usuarios y ordenación.
+|26
+
+|`PaginationControls.test.jsx`
+|Controles de paginación: navegación entre páginas, botones prev/next y cambio de tamaño de página.
+|2
+
+|`PlayerBadge.test.jsx`
+|Visualización de la información del jugador, iconos de estado y notificaciones de ganador.
+|5
+
+|`sessionStore.test.js`
+|Gestión de sesión en el frontend: persistencia, expiración y restauración de credenciales.
+|3
+
+|`StartGameForm.test.jsx`
+|Formulario de inicio de partida: selección de modo, dificultad, número de jugadores y validación de entradas.
+|7
+
+|`useDebouncedSearch.test.js`
+|Hook de búsqueda con debounce: llamadas diferidas, cancelación y resultados esperados.
+|1
+
+|`UserProfilePage.test.jsx`
+|Visualización y edición del perfil de usuario, datos de estadísticas y pestañas de historial.
+|62
+
+|`UserSearchBar.test.jsx`
+|Búsqueda de usuarios en el frontend: sugerencias, filtrado y debounce.
+|25
+
+|`usersScoreApi.test.js`
+|Peticiones de puntuaciones de usuario: lista de puntuación, filtrado por usuario y errores de backend.
+|6
+
+|`VictoryMenu.test.jsx`
+|Menú de victoria: opciones de reinicio, compartir resultado y estadísticas finales.
+|5
+
+|`yenParser.test.js`
+|Parser de notación: conversión de movimientos y validación de entrada de tablero.
+|27
+
+|`apiErrorHelper.test.js`
+|Gestión de errores en llamadas a API: manejo de respuestas de error y mensajes de error.
+|3
+
+|===
+
+[cols="1,2,1", options="header"]
+==== Users Service (Vitest + Supertest)
+
+El servicio users tiene *23 archivos de test* en `users/__tests__`, probando la lógica de negocio, los endpoints de la API, la persistencia y las validaciones de dominio.
+|===
+|Archivo de test |Qué verifica |Casos
+
+|`auth_tokens.test.js`
+|Rotación y revocación de refresh tokens, refresh con token inválido y permisos de acceso a endpoints protegidos.
+|4
+
+|`api_register.test.js`
+|Registro de usuario: datos obligatorios, contraseñas no coincidentes, email duplicado y errores esperados.
+|4
+
+|`api_login.test.js`
+|Login: campos obligatorios, usuario inexistente, contraseña incorrecta y validación de tipos.
+|4
+
+|`recordFinishedMatch.test.js`
+|Persistencia de partidas 1vs1 y 1vsbot, validaciones de payload y rollback en errores de base de datos.
+|6
+
+|`leaderboardService.test.js`
+|Paginación, sugerencias de usuario, ranking y ejecución de historial con datos simulados.
+|6
+
+|`userProfileEndpoints.test.js`
+|Endpoints de perfil: obtención de datos públicos, historial paginado y leaderboard centrado.
+|3
+
+|`gameService_userVsUser.test.js`
+|Partida usuario vs usuario: gestión de estados, turnos y finalización.
+|4
+
+|`userService.test.js`
+|Lógica de usuario: autenticación, autorización y validaciones del dominio.
+|6
+
+|`api_auth_endpoints.test.js`
+|Autenticación por token: acceso a endpoints protegidos, permisos y expiración.
+|6
+
+|`api_createuser.test.js`
+|Creación de usuario: validación de payload y respuesta de la API.
+|5
+
+|`api_finishedmatch.test.js`
+|Registro de partida finalizada: cálculo de puntuaciones y actualización de histórico.
+|12
+
+|`api_leaderboard.test.js`
+|Obtención de ranking desde API: filtros, paginación y formato de respuesta.
+|8
+
+|`createUser.test.js`
+|Lógica de creación de usuario, hashing de contraseña y reglas de unicidad.
+|3
+
+|`db.test.js`
+|Conexión y manejo de errores de base de datos en el entorno de tests.
+|2
+
+|`finishGame.test.js`
+|Finalización de partidas: cálculo de resultado, persistencia y notificaciones.
+|4
+
+|`gameDb.test.js`
+|Operaciones CRUD en el repositorio de partidas.
+|14
+
+|`gameRepo.test.js`
+|Integración de repositorios: acceso y combinación de datos de usuarios y partidas.
+|19
+
+|`gameService_botVsBot.test.js`
+|Partida bot vs bot: lógica de juego automatizada y turnos.
+|2
+
+|`gameService_userVsBot.test.js`
+|Partida usuario vs bot: lógica de movimiento, dificultad y respuesta del bot.
+|2
+
+|`rankingPaginationLegacyData.test.js`
+|Compatibilidad de paginación con datos antiguos y estructura de respuesta.
+|2
+
+|`repositoryWrappers.test.js`
+|Encapsulación de acceso a repositorios para testeo y aislamientos de datos.
+|2
+
+|`scoreService.test.js`
+|Cálculo de puntuaciones y métricas de jugador.
+|3
+
+|`userDb.test.js`
+|Operaciones de usuario en la base de datos: creación, consulta y actualización.
+|8
+
+|===
+
+Los tests de `users` ejercitan la lógica de los servicios y la capa de datos con mocks, manteniendo cada caso aislado sin depender de una base de datos real.
+
+==== GameY (Rust — cargo test)
+
+El motor Rust se prueba con `cargo test`, combinando tests de integración en `gamey/tests` y tests unitarios inline en los módulos de código fuente. Además cabe destacar que cada módulo de la lógica incluye en la parte inferior unas pruebas unitarias que comprueban el funcionamiento del módulo.
+
+[cols="1,2,1", options="header"]
+|===
+|Archivo de test |Qué verifica |Casos
+
+|`gamey/tests/core_tests.rs`
+|Reglas de juego, tablero, alternancia de turnos y condiciones de victoria.
+|43
+
+|`gamey/tests/bot_server_tests.rs`
+|Endpoints HTTP del servidor Axum: `move`, `reset`, `surrender`, `difficulties`, `history` y `stats`.
+|14
+
+|`gamey/tests/cli_tests.rs`
+|Línea de comandos: parseo de argumentos, modos de juego y salida de ayuda.
+|54
+
+|===
+
+=== 12.2. Tests End-to-End (E2E)
+
+Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada.
+
+La suite E2E de la webapp reside en `webapp/test/e2e/features` y `webapp/test/e2e/steps`, y actualmente cubre los siguientes escenarios:
+
+. *Registro exitoso* — `register.feature` valida el formulario de registro y comprueba el mensaje de confirmación tras enviar datos válidos.
+
+. *Login exitoso* — `auth.feature` valida el flujo de autenticación y la navegación a la página principal tras credenciales correctas.
+
+. *Partida completa contra jugador local* — `game.feature` comprueba que el usuario puede iniciar y finalizar una partida contra otro jugador local y ver el menú de victoria.
+
+. *Partida completa contra bot Easy/Medium/Hard* — `game.feature` valida partidas completas contra los bots Easy, Medium y Hard, comprobando la finalización correcta del flujo y la visualización del resultado.
+
+El archivo `webapp/test/e2e/features/users.feature` existe en el repositorio pero está comentado, por lo que no forma parte de la suite activa.
+
+=== 12.3. Tests de Carga
+
+Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.
+
+Para la realización de estas pruebas se ha utilizado *Gatling* (Java + Maven), siguiendo las directrices del Laboratorio 9 de la asignatura.
+
+==== Escenario de prueba
+
+El escenario simula el flujo completo de un usuario jugando una partida:
+
+. *Login* — autenticación y obtención de JWT
+. *Reset de partida* — inicialización del tablero (tamaño 6, dificultad Easy)
+. *Movimiento 1* — el jugador coloca una ficha (cellIndex: 3)
+. *Movimiento 2* — el jugador coloca una segunda ficha (cellIndex: 8)
+. *Rendición* — el jugador se rinde y se persiste la derrota en MongoDB
+. *Consulta de historial* — el usuario consulta sus partidas anteriores
+
+==== Configuración de carga
+
+[cols="1,2,2", options="header"]
+|===
+|Escenario |Configuración |Descripción
+
+|Carga sostenida
+|`rampUsers(10).during(30)` + `constantUsersPerSec(2).during(60)`
+|Subida progresiva a 10 usuarios en 30 segundos, manteniendo 2 usuarios/segundo durante 1 minuto.
+
+|Pico de carga
+|`nothingFor(10)` + `rampUsers(25).during(15)` + `constantUsersPerSec(4).during(30)`
+|Pausa de 10 segundos seguida de rampa rápida a 25 usuarios en 15 segundos.
+|===
+
+Los *thresholds* de aceptación definidos son:
+
+* p95 de tiempo de respuesta < 500ms
+* Porcentaje de peticiones exitosas > 95%
+
+==== Resultados
+
+[cols="1,1,1", options="header"]
+|===
+|Métrica |Carga sostenida (10 VUs) |Pico de carga (25 VUs)
+
+|Peticiones totales
+|780
+|1.650
+
+|Peticiones OK
+|780 (100%)
+|1.650 (100%)
+
+|Error rate
+|0%
+|0%
+
+|Latencia mínima
+|2ms
+|2ms
+
+|Latencia media
+|43ms
+|41ms
+
+|Percentil 50 (p50)
+|37ms
+|37ms
+
+|Percentil 75 (p75)
+|75ms
+|76ms
+
+|Percentil 95 (p95)
+|116ms ✓
+|109ms ✓
+
+|Percentil 99 (p99)
+|136ms
+|124ms
+
+|Latencia máxima
+|441ms
+|157ms
+
+|Throughput medio
+|8.21 req/s
+|11 req/s
+
+|Duración total
+|94s
+|149s
+|===
+
+==== Conclusiones de las pruebas de carga
+
+El sistema YoVi supera en ambos escenarios los thresholds de calidad definidos. Con 25 usuarios concurrentes ejecutando flujos completos de partida, el p95 de latencia es de 109ms, muy por debajo del límite de 500ms. Destacablemente, el sistema escala bien bajo pico de carga: el p95 mejora de 116ms a 109ms al pasar de 10 a 25 usuarios, y el throughput aumenta de 8.21 a 11 req/s. El error rate se mantiene en 0% en ambos escenarios.
+
+Esto valida el escenario de calidad *SC-09* (acceso concurrente de múltiples usuarios) definido en la sección 10, donde se exigía un error rate < 1% y latencia media < 500ms.
+
+image::12_gatling_response_times.png[align="center", title="Distribución de tiempos de respuesta - Gatling"]

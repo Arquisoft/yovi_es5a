@@ -133,14 +133,13 @@ export default memo(function KonvaRenderer({
           const screenY = groupY + y;
 
           return (
-            <button
+            <div
               key={cell.id}
-              type="button"
               id={`cell-${cell.q}-${cell.r}`}
               data-testid={`cell-${cell.q}-${cell.r}`}
-              data-state={cell.state ?? "empty"}
+              data-state={cell.state ?? 'empty'}
               aria-label={`Celda ${cell.q}, ${cell.r}`}
-              onClick={() => onCellClick?.(cell.id)}
+              role="presentation"
               style={{
                 position: "absolute",
                 left: screenX - HEX_SIZE,
@@ -154,6 +153,7 @@ export default memo(function KonvaRenderer({
                 padding: 0,
                 margin: 0,
               }}
+              onClick={() => onCellClick && onCellClick(cell.id)}
             />
           );
         })}

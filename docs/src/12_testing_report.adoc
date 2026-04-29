@@ -225,7 +225,7 @@ El motor Rust se prueba con `cargo test`, combinando tests de integración en `g
 |43
 
 |`gamey/tests/bot_server_tests.rs`
-|Endpoints HTTP del servidor Axum: `move`, `reset`, `surrender`, `difficulties`, `history` y `stats`.
+|Para probar la correcta interación con los bots mediante peticiones HTTP.
 |14
 
 |`gamey/tests/cli_tests.rs`
@@ -251,9 +251,11 @@ La suite E2E de la webapp reside en `webapp/test/e2e/features` y `webapp/test/e2
 
 === Tests de Carga
 
-Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.
+Los tests de carga miden el rendimiento del sistema ante una entrada de muchos usuarios al mismo tiempo, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales. En nuestro caso, 
+dado que el sistema no deja de ser un producto con fines didacticos, las pruebas no contemplan un número de usuarios muy elevado en comparación con los sistemas existentes en la web.
 
-Para la realización de estas pruebas se ha utilizado *Gatling* en su versión "gatling-charts-highcharts-bundle-3.15.0" (Java + Maven), siguiendo las directrices del Laboratorio 9 de la asignatura.
+Para la realización de estas pruebas se ha utilizado *Gatling* en su versión "gatling-charts-highcharts-bundle-3.15.0" (Java + Maven). Para realizar correctamente las pruebas, hemos usado : las instrucciones ofrecidas en el archivo .pdf
+correspondiente a la sesión 9 de prácticas, la documentación oficial de Gatling y el repositorio github en inglés ofrecido por los profesores para explicar el funcionamiento de las mismas.
 
 ==== Escenario de prueba
 
@@ -272,12 +274,12 @@ durante la prueba en el directorio webapp/test/load/requests/.
 ==== Configuración de carga
 
 Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 15 usuarios ficticios (archivo webapp/test/load/usuarios.csv).
-+
+
 De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segundos, con un retraso de 2 segundos entre cada usuario (rampUsers(15).during(30)). 
 
 ==== Resultados
 
-[cols="1,1,1", options="header"]
+[cols="1,1", options="header"]
 |===
 | Métrica | Valor resultante
 
@@ -321,16 +323,16 @@ De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segun
 A continuación se muestran un conjunto de capturas para corroborar los datos obtenidas en las pruebas de carga realizadas.
 En cualquier caso, si se desea consultar los resultados obtenidos, se puede consultar el directorio webapp/test/load/results/.
 
-image::prueba_carga_R1[Rangos de tiempos de respuesta]
+image::prueba_carga_R1.png[Rangos de tiempos de respuesta]
 
-image::prueba_carga_R2[Número de usuarios lanzados por unidad de tiempo]
+image::prueba_carga_R2.png[Número de usuarios lanzados por unidad de tiempo]
 
-image::prueba_carga_R3[Número de usuarios concurrentes]
+image::prueba_carga_R3.png[Número de usuarios concurrentes]
 
-image::prueba_carga_R4[Distribución del tiempo de respuesta]
+image::prueba_carga_R4.png[Distribución del tiempo de respuesta]
 
-image::prueba_carga_R5[Percentiles del tiempo de respuesta]
+image::prueba_carga_R5.png[Percentiles del tiempo de respuesta]
 
-image::prueba_carga_R6[Número de peticiones por segundo]
+image::prueba_carga_R6.png[Número de peticiones por segundo]
 
-image::prueba_carga_R7[Número de respuestas por segundo]
+image::prueba_carga_R7.png[Número de respuestas por segundo]

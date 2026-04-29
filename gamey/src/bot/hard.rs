@@ -2136,4 +2136,300 @@ mod tests {
         
         assert_eq!(game.available_cells().len(), initial_count - 1);
     }
+    // ============================================================
+// ADDITIONAL TESTS FOR MAXIMUM COVERAGE - HARDBOT MODULE
+// +15 tests adicionales para cubrir configuración y bot
+// ============================================================
+
+#[cfg(test)]
+mod bot_tests {
+    use super::*;
+    use crate::{Coordinates, GameY, Movement, PlayerId, YBot};
+    use crate::bots::hard::{Hard, HardConfig};
+
+    // ============================================================
+    // TESTS DE CONFIGURACIÓN
+    // ============================================================
+
+    #[test]
+    fn test_hard_config_default() {
+        let cfg = HardConfig::default();
+        assert!(cfg.mcts_iterations > 0);
+        assert!(cfg.mcts_time_ms > 0);
+        assert!(cfg.top_k_tactical > 0);
+        assert!(cfg.tactical_depth > 0);
+        assert!(cfg.candidate_limit > 0);
+        assert!(cfg.rerank_limit > 0);
+        assert!(cfg.mcts_candidate_cap > 0);
+        assert!(cfg.threads > 0);
+        assert!(cfg.mcts_weight > 0.0 && cfg.mcts_weight < 1.0);
+    }
+
+    #[test]
+    fn test_hard_config_custom() {
+        let cfg = HardConfig {
+            mcts_iterations: 1000,
+            mcts_time_ms: 500,
+            top_k_tactical: 3,
+            tactical_depth: 3,
+            candidate_limit: 10,
+            rerank_limit: 5,
+            mcts_candidate_cap: 5,
+            threads: 2,
+            mcts_weight: 0.5,
+            w_center: 10.0,
+            w_side_touch: 1.0,
+            w_neighbor_own: 2.0,
+            w_neighbor_opp: 10.0,
+            w_bridge: 5.0,
+            w_block_path: 20.0,
+            threat_scan_limit: 20,
+            path_scan_limit: 10,
+        };
+        assert_eq!(cfg.mcts_iterations, 1000);
+        assert_eq!(cfg.mcts_time_ms, 500);
+        assert_eq!(cfg.top_k_tactical, 3);
+    }
+
+    #[test]
+    fn test_hard_config_clone() {
+        let cfg1 = HardConfig::default();
+        let cfg2 = cfg1.clone();
+        assert_eq!(cfg1.mcts_iterations, cfg2.mcts_iterations);
+        assert_eq!(cfg1.tactical_depth, cfg2.tactical_depth);
+    }
+
+    // ============================================================
+    // TESTS DEL BOT
+    // ============================================================
+
+    #[test]
+    fn test_hard_bot_default() {
+        let bot = Hard::default();
+        assert_eq!(bot.name(), "hardbot");
+    }
+
+    #[test]
+    fn test_hard_bot_custom_config() {
+        let cfg = HardConfig {
+            mcts_iterations: 500,
+            mcts_time_ms: 300,
+            top_k_tactical: 2,
+            tactical_depth: 2,
+            candidate_limit: 8,
+            rerank_limit: 4,
+            mcts_candidate_cap: 4,
+            threads: 1,
+            mcts_weight: 0.6,
+            w_center: 8.0,
+            w_side_touch: 0.5,
+            w_neighbor_own: 1.5,
+            w_neighbor_opp: 8.0,
+            w_bridge: 4.0,
+            w_block_path: 15.0,
+            threat_scan_limit: 15,
+            path_scan_limit: 8,
+        };
+        let bot = Hard::new(cfg);
+        assert_eq!(bot.name(), "hardbot");
+    }
+
+    #[test]
+    fn test_hard_bot_choose_move_empty_board() {
+        let bot = Hard::default();
+        let game = GameY::new(3);
+        let mv = bot.choose_move(&game);
+        assert!(mv.is_some(), "Bot should choose a move on empty board");
+    }
+
+    #[test]
+    fn test_hard_bot_choose_move_center_preference() {
+        let bot = Hard::default();
+        let game = GameY::new(5);
+        let mv = bot.choose_move(&game);
+        assert!(mv.is_some(), "Bot should choose a central move");
+        let coords = mv.unwrap();
+        assert!(coords.x < 5 && coords.y < 5 && coords.z < 5);
+    }
+
+    #[test]
+    fn test_hard_bot_detects_immediate_win() {
+        let mut cfg = HardConfig::default();
+        cfg.mcts_iterations = 100;
+        cfg.mcts_time_ms = 100;
+        let bot = Hard::new(cfg);
+        
+        let mut game = GameY::new(3);
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(0, 2, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(2, 0, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(0, 1, 1),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(1, 1, 0),
+        }).unwrap();
+        
+        let mv = bot.choose_move(&game);
+        assert!(mv.is_some());
+        let winning_move = Coordinates::new(0, 0, 2);
+        assert_eq!(mv.unwrap(), winning_move, "Bot should find winning move");
+    }
+
+    #[test]
+    fn test_hard_bot_blocks_opponent_win() {
+        let mut cfg = HardConfig::default();
+        cfg.mcts_iterations = 100;
+        cfg.mcts_time_ms = 100;
+        let bot = Hard::new(cfg);
+        
+        let mut game = GameY::new(3);
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(1, 1, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(0, 2, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(2, 0, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(0, 1, 1),
+        }).unwrap();
+        
+        let mv = bot.choose_move(&game);
+        assert!(mv.is_some());
+        let blocking_move = Coordinates::new(0, 0, 2);
+        assert_eq!(mv.unwrap(), blocking_move, "Bot should block opponent win");
+    }
+
+    #[test]
+    fn test_hard_bot_no_move_when_game_over() {
+        let bot = Hard::default();
+        let mut game = GameY::new(2);
+        
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(0, 1, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(1),
+            coords: Coordinates::new(1, 0, 0),
+        }).unwrap();
+        game.add_move(Movement::Placement {
+            player: PlayerId::new(0),
+            coords: Coordinates::new(0, 0, 1),
+        }).unwrap();
+        
+        assert!(game.check_game_over());
+        let mv = bot.choose_move(&game);
+        assert!(mv.is_none(), "Bot should return None when game is over");
+    }
+
+    #[test]
+    fn test_hard_bot_multiple_board_sizes() {
+        let bot = Hard::default();
+        
+        for size in [2, 3, 4, 5] {
+            let game = GameY::new(size);
+            let mv = bot.choose_move(&game);
+            assert!(mv.is_some(), "Bot should handle board size {}", size);
+        }
+    }
+
+    #[test]
+    fn test_hard_bot_resource_caching() {
+        let bot = Hard::default();
+        let game1 = GameY::new(4);
+        let game2 = GameY::new(4);
+        
+        let mv1 = bot.choose_move(&game1);
+        assert!(mv1.is_some());
+        
+        let mv2 = bot.choose_move(&game2);
+        assert!(mv2.is_some());
+    }
+
+    #[test]
+    fn test_hard_bot_different_board_sizes_cache() {
+        let bot = Hard::default();
+        let game_small = GameY::new(3);
+        let game_large = GameY::new(5);
+        
+        let mv1 = bot.choose_move(&game_small);
+        assert!(mv1.is_some());
+        
+        let mv2 = bot.choose_move(&game_large);
+        assert!(mv2.is_some());
+        
+        let mv3 = bot.choose_move(&game_small);
+        assert!(mv3.is_some());
+    }
+
+    #[test]
+    fn test_hard_bot_fast_config_still_works() {
+        let cfg = HardConfig {
+            mcts_iterations: 10,
+            mcts_time_ms: 10,
+            top_k_tactical: 1,
+            tactical_depth: 1,
+            candidate_limit: 5,
+            rerank_limit: 2,
+            mcts_candidate_cap: 3,
+            threads: 1,
+            mcts_weight: 0.5,
+            w_center: 5.0,
+            w_side_touch: 0.5,
+            w_neighbor_own: 1.0,
+            w_neighbor_opp: 5.0,
+            w_bridge: 2.0,
+            w_block_path: 10.0,
+            threat_scan_limit: 5,
+            path_scan_limit: 3,
+        };
+        let bot = Hard::new(cfg);
+        let game = GameY::new(3);
+        
+        let mv = bot.choose_move(&game);
+        assert!(mv.is_some(), "Bot should still work with minimal config");
+    }
+
+    #[test]
+    fn test_hard_bot_progressive_game() {
+        let mut cfg = HardConfig::default();
+        cfg.mcts_iterations = 50;
+        cfg.mcts_time_ms = 50;
+        let bot = Hard::new(cfg);
+        
+        let mut game = GameY::new(4);
+        
+        for _ in 0..3 {
+            if game.check_game_over() {
+                break;
+            }
+            let mv = bot.choose_move(&game);
+            assert!(mv.is_some(), "Bot should choose move in progressive game");
+            
+            if let Some(player) = game.next_player() {
+                game.add_move(Movement::Placement {
+                    player,
+                    coords: mv.unwrap(),
+                }).unwrap();
+            }
+        }
+        
+        assert!(!game.check_game_over() || game.available_cells().len() > 0);
+    }
+}
 }

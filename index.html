@@ -3717,10 +3717,10 @@ durante la prueba en el directorio webapp/test/load/requests/.</p>
 <div class="sect3">
 <h4 id="_configuración_de_carga">12.3.2. Configuración de carga</h4>
 <div class="paragraph">
-<p>Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 15 usuarios ficticios (archivo webapp/test/load/usuarios.csv).</p>
+<p>Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 100 usuarios ficticios (archivo webapp/test/load/usuarios.csv).</p>
 </div>
 <div class="paragraph">
-<p>De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segundos, con un retraso de 2 segundos entre cada usuario (rampUsers(15).during(30)).</p>
+<p>De esta manera, se lanza cada uno de los usuarios durante un periodo de 100 segundos, con un retraso de 1 segundos entre cada usuario (rampUsers(15).during(30)).</p>
 </div>
 </div>
 <div class="sect3">
@@ -3739,11 +3739,11 @@ durante la prueba en el directorio webapp/test/load/requests/.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones totales</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">525 peticiones</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3500 peticiones</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones OK</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">525 (100%)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3500 (100%)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Porcentaje de error</p></td>
@@ -3751,15 +3751,15 @@ durante la prueba en el directorio webapp/test/load/requests/.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Latencia mínima</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">16ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">14ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Latencia media</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">31ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">30ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Latencia máxima</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">121ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">208ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 50 (p50)</p></td>
@@ -3767,23 +3767,23 @@ durante la prueba en el directorio webapp/test/load/requests/.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 75 (p75)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">37ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">36ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 95 (p95)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">99ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">95ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 99 (p99)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">109ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">105ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Throughput medio</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">8.7.72 req/s</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">25,36 req/s</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Duración total</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">92s</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">164s</p></td>
 </tr>
 </tbody>
 </table>

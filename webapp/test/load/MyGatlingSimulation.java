@@ -174,7 +174,7 @@ public class MyGatlingSimulation extends Simulation {
         .headers(headers_auth)
         .resources(
           http("request_32")
-            .get("/users/${username}/centered-leaderboard?pageSize=25")
+            .get("/users/#{username}/centered-leaderboard?pageSize=25")
             .headers(headers_auth),
           http("request_33")
             .get("/users/#{username}/history?page=1&pageSize=25&botPage=1&botPageSize=25&pvpPage=1&pvpPageSize=25")
@@ -187,7 +187,7 @@ public class MyGatlingSimulation extends Simulation {
 
   {
 	setUp(
-	  scn.injectOpen(rampUsers(15).during(30)) 
+	  scn.injectOpen(rampUsers(100).during(100)) 
 	).protocols(httpProtocol);
   }
 }

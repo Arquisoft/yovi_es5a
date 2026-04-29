@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import "./App.css";
 
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -22,9 +21,6 @@ function RequireAuth({ children }) {
   return children;
 }
 
-RequireAuth.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 function App() {
   return (

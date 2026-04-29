@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-testing]]
 == Informe de Pruebas
 
-=== 12.1. Tests Unitarios
+=== Tests Unitarios
 
 Los tests unitarios verifican el comportamiento correcto de cada componente, helper y módulo de forma aislada, proporcionando seguridad, consistencia y confianza durante el desarrollo.
 
@@ -234,7 +234,7 @@ El motor Rust se prueba con `cargo test`, combinando tests de integración en `g
 
 |===
 
-=== 12.2. Tests End-to-End (E2E)
+=== Tests End-to-End (E2E)
 
 Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada. Estas se ejecutan sobre 3 navegadores distintos de forma concurrente:
  chromium, firefox y webkit. Todo esto con el fin de probar del sistema al completo en diferentes condiciones para garantizar el correcto funcionamiento del mismo en la medida de lo posible.
@@ -249,7 +249,7 @@ La suite E2E de la webapp reside en `webapp/test/e2e/features` y `webapp/test/e2
 
 . *Partida completa contra bot Easy/Medium/Hard* — `game.feature` valida partidas completas contra los bots Easy, Medium y Hard, comprobando la finalización correcta del flujo y la visualización del resultado.
 
-=== 12.3. Tests de Carga
+=== Tests de Carga
 
 Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.
 

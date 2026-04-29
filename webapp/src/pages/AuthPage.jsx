@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { login, register } from "../services/authApi";
 import { useSessionStore } from "../store/sessionStore";
-import LanguageSelector from "../components/LanguageSelector";
+
 import "./AuthPage.css";
 
 function isEmail(value) {
@@ -119,9 +119,7 @@ export default function AuthPage() {
   return (
     <section className="authPage">
       <article className="authCard">
-        <div className="authLanguageWrapper">
-          <LanguageSelector />
-        </div>
+       
         <header className="authHeader">
           <h1 className="authTitle">{t("auth.title")}</h1>
           <p className="authSubtitle">{t("auth.subtitle")}</p>

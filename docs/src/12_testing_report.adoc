@@ -273,9 +273,9 @@ durante la prueba en el directorio webapp/test/load/requests/.
 
 ==== Configuración de carga
 
-Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 15 usuarios ficticios (archivo webapp/test/load/usuarios.csv).
+Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 100 usuarios ficticios (archivo webapp/test/load/usuarios.csv).
 
-De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segundos, con un retraso de 2 segundos entre cada usuario (rampUsers(15).during(30)). 
+De esta manera, se lanza cada uno de los usuarios durante un periodo de 100 segundos, con un retraso de 1 segundos entre cada usuario (rampUsers(15).during(30)). 
 
 ==== Resultados
 
@@ -284,40 +284,40 @@ De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segun
 | Métrica | Valor resultante
 
 | Peticiones totales
-| 525 peticiones
+| 3500 peticiones
 
 | Peticiones OK
-| 525 (100%)
+| 3500 (100%)
 
 | Porcentaje de error
 | 0%
 
 | Latencia mínima
-| 16ms
+| 14ms
 
 | Latencia media
-| 31ms
+| 30ms
 
 | Latencia máxima
-| 121ms
+| 208ms
 
 | Percentil 50 (p50)
 | 22ms
 
 |Percentil 75 (p75)
-| 37ms
+| 36ms
 
 |Percentil 95 (p95)
-| 99ms 
+| 95ms 
 
 | Percentil 99 (p99)
-| 109ms
+| 105ms
 
 | Throughput medio
-| 8.7.72 req/s
+| 25,36 req/s
 
 | Duración total
-| 92s
+| 164s
 |===
 
 A continuación se muestran un conjunto de capturas para corroborar los datos obtenidas en las pruebas de carga realizadas.

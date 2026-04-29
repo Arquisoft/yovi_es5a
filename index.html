@@ -539,8 +539,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_tests_unitarios">12.1. Tests Unitarios</a></li>
 <li><a href="#_tests_end_to_end_e2e">12.2. Tests End-to-End (E2E)</a></li>
-<li><a href="#_pruebas_de_usabilidad">12.3. Pruebas de Usabilidad</a></li>
-<li><a href="#_tests_de_carga">12.4. Tests de Carga</a></li>
+<li><a href="#_tests_de_carga">12.3. Tests de Carga</a></li>
 </ul>
 </li>
 <li><a href="#section-glossary">13. Glosario</a></li>
@@ -2604,24 +2603,8 @@ Facilita integración de clientes externos.</p>
 <div class="paragraph">
 <p>Webapp: experiencia de usuario y flujo de interacción.
 Users: autenticación, perfil, historial, ranking y persistencia.
-Gamey: validación de jugadas, estado de partida y bots.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>En el módulo Users se mantiene la capa de entrada (<code>users-service</code>), la capa de negocio (<code>services/<strong></code>), los repositorios (<code>repositories/</strong></code>) y la persistencia (<code>xDb.js</code>).</p>
-</li>
-<li>
-<p>En la Webapp, dividimos en: <code>pages/<strong></code>, <code>components/</strong></code>, <code>services/<strong></code>, <code>parsers/</strong></code> y <code>renderers/</code> para separar presentación, datos y visualización del tablero.</p>
-</li>
-<li>
-<p>El control del juego se realiza en el cliente, mientras que el backend se usa para validación y consultas de bots.</p>
-</li>
-<li>
-<p>YEN se adopta como notación común para intercambiar información de partidas entre módulos.
+Gamey: validación de jugadas, estado de partida y bots.
 .Consecuencias</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
 <p>Escalado y despliegue por componente.
@@ -2656,16 +2639,6 @@ Necesidad de conversión clara entre coordenadas de UI y coordenadas baricéntri
 <div class="title">Decisión</div>
 <p>Versionar los endpoints del motor de juego (prefijo v1) y soportar petición de movimiento con bot explícito o por defecto, manteniendo compatibilidad evolutiva.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>El uso de rutas <code>v1</code> permite que los bots e integraciones externas sigan funcionando aunque el sistema evolucione.</p>
-</li>
-<li>
-<p>Se han creado múltiples estrategias de bots para cumplir con los requisitos de dificultad ajustable.</p>
-</li>
-</ul>
-</div>
 <div class="paragraph">
 <div class="title">Consecuencias</div>
 <p>Contrato más estable para terceros.
@@ -2682,13 +2655,6 @@ Requiere disciplina de versionado en iteraciones posteriores.</p>
 <div class="paragraph">
 <div class="title">Decisión</div>
 <p>Aplicar autenticación basada en token de acceso y token de refresco, con rotación/revocación de refresh en el servicio de autenticación.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Implementar JWT con acceso corto, token de refresco rotativo y revocación de sesiones.</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
 <div class="title">Consecuencias</div>
@@ -3668,7 +3634,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamey/tests/bot_server_tests.rs</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints HTTP del servidor Axum: <code>move</code>, <code>reset</code>, <code>surrender</code>, <code>difficulties</code>, <code>history</code> y <code>stats</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Para probar la correcta interación con los bots mediante peticiones HTTP.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">14</p></td>
 </tr>
 <tr>
@@ -3683,7 +3649,8 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div class="sect2">
 <h3 id="_tests_end_to_end_e2e">12.2. Tests End-to-End (E2E)</h3>
 <div class="paragraph">
-<p>Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada.</p>
+<p>Los tests end-to-end verifican que los flujos principales funcionan correctamente desde el navegador con la aplicación completa levantada. Estas se ejecutan sobre 3 navegadores distintos de forma concurrente:
+ chromium, firefox y webkit. Todo esto con el fin de probar del sistema al completo en diferentes condiciones para garantizar el correcto funcionamiento del mismo en la medida de lo posible.</p>
 </div>
 <div class="paragraph">
 <p>La suite E2E de la webapp reside en <code>webapp/test/e2e/features</code> y <code>webapp/test/e2e/steps</code>, y actualmente cubre los siguientes escenarios:</p>
@@ -3706,357 +3673,158 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_pruebas_de_usabilidad">12.3. Pruebas de Usabilidad</h3>
+<h3 id="_tests_de_carga">12.3. Tests de Carga</h3>
 <div class="paragraph">
-<p>El objetivo de estas pruebas de usabilidad ha sido evaluar la facilidad de uso de la aplicación “Yovi”. Las pruebas han sido hechas en ordenador y en un único navegador.</p>
+<p>Los tests de carga miden el rendimiento del sistema ante una entrada de muchos usuarios al mismo tiempo, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales. En nuestro caso,
+dado que el sistema no deja de ser un producto con fines didacticos, las pruebas no contemplan un número de usuarios muy elevado en comparación con los sistemas existentes en la web.</p>
+</div>
+<div class="paragraph">
+<p>Para la realización de estas pruebas se ha utilizado <strong>Gatling</strong> en su versión "gatling-charts-highcharts-bundle-3.15.0" (Java + Maven). Para realizar correctamente las pruebas, hemos usado : las instrucciones ofrecidas en el archivo .pdf
+correspondiente a la sesión 9 de prácticas, la documentación oficial de Gatling y el repositorio github en inglés ofrecido por los profesores para explicar el funcionamiento de las mismas.</p>
 </div>
 <div class="sect3">
-<h4 id="_selección_de_usuarios">12.3.1. Selección de usuarios</h4>
-<div class="paragraph">
-<p>Se han seleccionado un total de 5 usuarios. A uno de los 5 usuarios se le ha comentado por encima el uso de la aplicación y lo que se puede hacer. A los otros 4 no se les ha explicado nada para ver cómo se manejan usando la aplicación. A ningún usuario se le comentará nada más, aunque tengan dudas mientras su prueba.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_pruebas">12.3.2. Pruebas</h4>
-<div class="paragraph">
-<p>Para realizar las pruebas hemos estructurado diferentes tareas para ver cómo se desempeñan en cada una.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Registrarse / Iniciar Sesión</p>
-</li>
-<li>
-<p>Jugar vs Jugador</p>
-</li>
-<li>
-<p>Jugar vs bot</p>
-</li>
-<li>
-<p>Jugar vs bot Difícil</p>
-</li>
-<li>
-<p>Ganar / Perder partida</p>
-</li>
-<li>
-<p>Ver historial de partidas propio</p>
-</li>
-<li>
-<p>Ver historial de partidas ajeno</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Con estas tareas creemos que estamos comprobando toda la funcionalidad principal que nuestra aplicación puede llegar a ofrecer a los usuarios. Viendo cómo se desempeñen en las tareas, podremos decidir si hay algo que sea necesario cambiar.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_tabla_de_tareas_por_usuario">12.3.3. Tabla de tareas por usuario</h4>
-<div class="paragraph">
-<p>Se mide si la ejecución fue inmediata o si hubo un "delay" de escaneo visual.</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 16.6666%;">
-<col style="width: 16.6666%;">
-<col style="width: 16.6666%;">
-<col style="width: 16.6666%;">
-<col style="width: 16.6666%;">
-<col style="width: 16.667%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Tarea</th>
-<th class="tableblock halign-left valign-top">Usuario 1</th>
-<th class="tableblock halign-left valign-top">Usuario 2</th>
-<th class="tableblock halign-left valign-top">Usuario 3</th>
-<th class="tableblock halign-left valign-top">Usuario 4</th>
-<th class="tableblock halign-left valign-top">Usuario 5</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Registrarse / Iniciar Sesión</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jugar vs Jugador</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jugar vs Bot Difícil</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Lento*</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rápido</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ganar / Perder partida</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Fluido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Fluido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Duda</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Fluido</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Duda</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ver su historial (Puntuaciones)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Lento*</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Lento*</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ver historial ajeno</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Inmediato</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>Lento*: No llegó a ser un problema importante pero sí creemos que es necesario indicar que se tardó significativamente más que el resto.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_observaciones_durante_las_pruebas">12.3.4. Observaciones durante las pruebas</h4>
-<div class="sect4">
-<h5 id="_usuario_1">Usuario 1</h5>
-<div class="paragraph">
-<p>Este es el usuario al cual ya le hemos dado información previa.</p>
-</div>
-<div class="paragraph">
-<p>Al saber ya dónde están las cosas por la explicación previa, no tuvo ninguna dificultad en realizar ninguna de las tareas pedidas. No tuvo problemas. Sugirió que el botón de "Ayuda" debería ser más llamativo si el juego es complejo.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_usuario_2">Usuario 2</h5>
-<div class="paragraph">
-<p><strong>Configuración</strong> del Bot: Al ser un desplegable (selector de Modo), tardó un segundo extra en darse cuenta de que para cambiar a "Bot" debía interactuar con el menú de "2 jugadores (1vs1)".</p>
-</div>
-<div class="paragraph">
-<p>Puntuaciones: No es que no lo viera, pero comentó: "Mi vista se clavó en el cuadro blanco del centro; tardé un poco en mirar hacia las esquinas superiores porque el contraste del fondo oscuro hace que los botones de arriba parezcan secundarios".</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_usuario_3">Usuario 3</h5>
-<div class="paragraph">
-<p>Reglas de "Y": A pesar de ganar, admitió que al principio solo ponía fichas al azar. Solo entendió la estrategia real cuando, tras dudar, subió a pulsar el botón de "Ayuda" (que está al lado de puntuaciones).</p>
-</div>
-<div class="paragraph">
-<p>Navegación: Le pareció cómodo que el botón de "Cerrar sesión" esté tan a mano, pero se confundió momentáneamente intentando buscar el historial dentro del cuadro de "Configurar partida".</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_usuario_4">Usuario 4</h5>
-<div class="paragraph">
-<p>Input de Tablero: Intentó poner un número muy alto en "Tamaño del tablero" (ej. 50) para ver qué pasaba. Sugirió que la app debería indicar el rango permitido (ej. 5-15) antes de darle a "Iniciar".</p>
-</div>
-<div class="paragraph">
-<p>Puntuaciones: Lo encontró rápido. Su única queja fue estética: los botones de arriba están muy pegados al borde de la pantalla en resoluciones grandes, lo que los aleja del "foco" de atención.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_usuario_5">Usuario 5</h5>
-<div class="paragraph">
-<p>Al igual que el usuario 3, tuvo dudas durante la ejecución de la partida, hasta que no pulsó el botón de “Ayuda”, no acabó de entender qué estaba haciendo.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_conclusiones_del_diseño">12.3.5. Conclusiones del diseño</h4>
-<div class="paragraph">
-<p>Puntuaciones y Ayuda: Los botones son perfectamente visibles, pero al estar fuera del contenedor principal (el cuadro blanco), sufren de una ligera ceguera de banner. El usuario los encuentra, pero después de escanear el centro.</p>
-</div>
-<div class="paragraph">
-<p>Claridad del Juego: El botón de "Ayuda" es clave. La prueba demuestra que los usuarios sin guía previa terminan recurriendo a él tarde o temprano para entender la condición de victoria de la "Y".</p>
-</div>
-<div class="paragraph">
-<p>Configuración: El formulario es limpio y directo. No hubo errores de "no sé qué hacer ahora", lo cual es un éxito de usabilidad para la pantalla de configuración.</p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_tests_de_carga">12.4. Tests de Carga</h3>
-<div class="paragraph">
-<p>Los tests de carga miden el rendimiento del sistema ante carga normal y picos de carga, permitiendo anticipar problemas de rendimiento antes de que afecten a usuarios reales.</p>
-</div>
-<div class="paragraph">
-<p>Para la realización de estas pruebas se ha utilizado <strong>Gatling</strong> (Java + Maven), siguiendo las directrices del Laboratorio 9 de la asignatura.</p>
-</div>
-<div class="sect3">
-<h4 id="_escenario_de_prueba">12.4.1. Escenario de prueba</h4>
+<h4 id="_escenario_de_prueba">12.3.1. Escenario de prueba</h4>
 <div class="paragraph">
 <p>El escenario simula el flujo completo de un usuario jugando una partida:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p><strong>Login</strong> — autenticación y obtención de JWT</p>
+<p><strong>Registro del usuario</strong> — creación de una cuenta con su respectivo nombre, correo y contraseña.</p>
 </li>
 <li>
-<p><strong>Reset de partida</strong> — inicialización del tablero (tamaño 6, dificultad Easy)</p>
+<p><strong>Login</strong> — autenticación del mismo y obtención del token de acceso.</p>
 </li>
 <li>
-<p><strong>Movimiento 1</strong> — el jugador coloca una ficha (cellIndex: 3)</p>
+<p><strong>Comienzo de una partida</strong> - se inicia una partida contra el jugador 111 de manera local.</p>
 </li>
 <li>
-<p><strong>Movimiento 2</strong> — el jugador coloca una segunda ficha (cellIndex: 8)</p>
+<p><strong>Movimientos</strong> - se selecciona una sucesión de celdas (los movimientos están predefinidos).</p>
 </li>
 <li>
-<p><strong>Rendición</strong> — el jugador se rinde y se persiste la derrota en MongoDB</p>
+<p><strong>Victoria</strong> - se comprueba que, en efecto, se ha verificado la autenticidad del token y el usuario ha ganado la partida.</p>
 </li>
 <li>
-<p><strong>Consulta de historial</strong> — el usuario consulta sus partidas anteriores</p>
+<p><strong>Consulta de estadísticas</strong> - se accede al apartado de estádisticas e historial del jugador.</p>
 </li>
 </ol>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_configuración_de_carga">12.4.2. Configuración de carga</h4>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 20%;">
-<col style="width: 40%;">
-<col style="width: 40%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Escenario</th>
-<th class="tableblock halign-left valign-top">Configuración</th>
-<th class="tableblock halign-left valign-top">Descripción</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Carga sostenida</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>rampUsers(10).during(30)</code> + <code>constantUsersPerSec(2).during(60)</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Subida progresiva a 10 usuarios en 30 segundos, manteniendo 2 usuarios/segundo durante 1 minuto.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Pico de carga</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>nothingFor(10)</code> + <code>rampUsers(25).during(15)</code> + <code>constantUsersPerSec(4).during(30)</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Pausa de 10 segundos seguida de rampa rápida a 25 usuarios en 15 segundos.</p></td>
-</tr>
-</tbody>
-</table>
 <div class="paragraph">
-<p>Los <strong>thresholds</strong> de aceptación definidos son:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>p95 de tiempo de respuesta &lt; 500ms</p>
-</li>
-<li>
-<p>Porcentaje de peticiones exitosas &gt; 95%</p>
-</li>
-</ul>
+<p>El código correspondiente al escenario se puede consultar en el archivo archivo webapp/test/load/MyGatlingSimulation.java. También se puede consultar el cuerpo de cada una de las peticiones .json realizadas
+durante la prueba en el directorio webapp/test/load/requests/.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_resultados">12.4.3. Resultados</h4>
+<h4 id="_configuración_de_carga">12.3.2. Configuración de carga</h4>
+<div class="paragraph">
+<p>Para ejecutar las pruebas de carga, se ha creado un archivo .csv con los datos correspondientes a 15 usuarios ficticios (archivo webapp/test/load/usuarios.csv).</p>
+</div>
+<div class="paragraph">
+<p>De esta manera, se lanza cada uno de los usuarios durante un periodo de 30 segundos, con un retraso de 2 segundos entre cada usuario (rampUsers(15).during(30)).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_resultados">12.3.3. Resultados</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
+<col style="width: 50%;">
+<col style="width: 50%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Métrica</th>
-<th class="tableblock halign-left valign-top">Carga sostenida (10 VUs)</th>
-<th class="tableblock halign-left valign-top">Pico de carga (25 VUs)</th>
+<th class="tableblock halign-left valign-top">Valor resultante</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones totales</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">780</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.650</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">525 peticiones</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Peticiones OK</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">780 (100%)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.650 (100%)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">525 (100%)</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Error rate</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Porcentaje de error</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0%</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Latencia mínima</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2ms</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">16ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Latencia media</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">43ms</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">41ms</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 50 (p50)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">37ms</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">37ms</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 75 (p75)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">75ms</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">76ms</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 95 (p95)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">116ms ✓</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">109ms ✓</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 99 (p99)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">136ms</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">124ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">31ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Latencia máxima</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">441ms</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">157ms</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">121ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 50 (p50)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">22ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 75 (p75)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">37ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 95 (p95)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">99ms</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Percentil 99 (p99)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">109ms</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Throughput medio</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">8.21 req/s</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">11 req/s</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8.7.72 req/s</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Duración total</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">94s</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">149s</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">92s</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="sect3">
-<h4 id="_conclusiones_de_las_pruebas_de_carga">12.4.4. Conclusiones de las pruebas de carga</h4>
 <div class="paragraph">
-<p>El sistema YoVi supera en ambos escenarios los thresholds de calidad definidos. Con 25 usuarios concurrentes ejecutando flujos completos de partida, el p95 de latencia es de 109ms, muy por debajo del límite de 500ms. Destacablemente, el sistema escala bien bajo pico de carga: el p95 mejora de 116ms a 109ms al pasar de 10 a 25 usuarios, y el throughput aumenta de 8.21 a 11 req/s. El error rate se mantiene en 0% en ambos escenarios.</p>
+<p>A continuación se muestran un conjunto de capturas para corroborar los datos obtenidas en las pruebas de carga realizadas.
+En cualquier caso, si se desea consultar los resultados obtenidos, se puede consultar el directorio webapp/test/load/results/.</p>
 </div>
-<div class="paragraph">
-<p>Esto valida el escenario de calidad <strong>SC-09</strong> (acceso concurrente de múltiples usuarios) definido en la sección 10, donde se exigía un error rate &lt; 1% y latencia media &lt; 500ms.</p>
-</div>
-<div class="imageblock text-center">
+<div class="imageblock">
 <div class="content">
-<img src="./images/12_gatling_response_times.png" alt="12 gatling response times">
+<img src="./images/prueba_carga_R1.png" alt="Rangos de tiempos de respuesta">
 </div>
-<div class="title">Figure 1. Distribución de tiempos de respuesta - Gatling</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/prueba_carga_R2.png" alt="Número de usuarios lanzados por unidad de tiempo">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/prueba_carga_R3.png" alt="Número de usuarios concurrentes">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/prueba_carga_R4.png" alt="Distribución del tiempo de respuesta">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/prueba_carga_R5.png" alt="Percentiles del tiempo de respuesta">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/prueba_carga_R6.png" alt="Número de peticiones por segundo">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/prueba_carga_R7.png" alt="Número de respuestas por segundo">
+</div>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -4270,7 +4038,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-04-29 01:39:24 +0200
+Last updated 2026-04-29 02:01:31 +0200
 </div>
 </div>
 </body>

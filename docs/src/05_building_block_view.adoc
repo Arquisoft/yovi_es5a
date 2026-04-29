@@ -163,9 +163,8 @@ frame "App" {
   node "WebApp"
   node "user-service"
   node "Users"
+  node "Database"
 }
-
-node "Database"
 
 frame "Game Engine" {
   node "Bot"
@@ -178,14 +177,14 @@ frame "Game Engine" {
 "Usuario" <--> "WebApp" : Interactúa
 "WebApp" <--> "user-service" : Comunicarse con el back Node
 "user-service" <--> "Users" : Comunicarse con el front
+"Users" <--> "Database" : Almacena\extrae
 
-"Usuario" <--> "Database" : Almacena\extrae
 "WebApp" <--> "BotServer" : Comunicarse con los bots
 "WebApp" <--> "GameServer" : Comunicarse con el validador de movimientos
+"Bot" <--> "Notation" : Usa YEN
 "Core" <--> "Notation" : Usa YEN
 "BotServer" <--> "Bot" : Usar la lógica de los bots
-"Core" <--> "BotServer" : Arrancar el servidor del bot
-"Core" <--> "GameServer" : Arrancar el servidor del juego
+"Core" <--> "GameServer" : Usar la lógica de juego
 
 @enduml
 ----
@@ -201,7 +200,7 @@ Componentes::
 
 | WebApp | Expone una interfaz de usuario para que el usuario interacciona con el sistema.
 
-| OpenApi | Comunica el front-end (WebApp) con el back-end Node (Users).
+| user-service | Comunica el front-end (WebApp) con el back-end Node (Users).
 
 | Users | Gestiona la interacción con la base de datos.
 
@@ -292,6 +291,7 @@ frame "WebApp" {
 }
 
 frame "Users" {
+  node "user-service"
   node "auth"
   node "database"
   node "middleware"
@@ -306,7 +306,6 @@ frame "Game Engine" {
   node "core"
   node "game_server"
   node "notation"
-  node "tests"
 }
 
 "Usuario" <--> "pages" : Navegación e interacción
@@ -316,19 +315,20 @@ frame "Game Engine" {
 "services" <--> "parsers" : Conversión a formato YEN
 "components" <--> "header" : Cabeceras de las páginas
 
-"Users" <--> "auth" : Autenticación y autorización
-"Users" <--> "database" : Esquema de la base de datos
-"Users" <--> "middleware" : Control de peticiones
-"Users" <--> "repositories" : Acceso a datos
-"Users" <--> "services" : Interacción con la base de datos
-"Users" <--> "monitoring" : Observabilidad
+"services" <--> "user-service" : Comunicación con el back-end Node.js
+"user-service" <--> "auth" : Autenticación y autorización
+"user-service" <--> "database" : Esquema de la base de datos
+"user-service" <--> "middleware" : Control de peticiones
+"user-service" <--> "repositories" : Acceso a datos
+"user-service" <--> "services" : Interacción con la base de datos
+"user-service" <--> "monitoring" : Observabilidad
 
-"Game Engine" <--> "bot" : Lógica de bots
-"Game Engine" <--> "bot_server" : Exposición de bot
-"Game Engine" <--> "core" : Reglas y estado
-"Game Engine" <--> "game_server" : Exposición de juego
-"Game Engine" <--> "notation" : Notación YEN
-"Game Engine" <--> "tests" : Validación del core, bot_server y el juego por línea de comandos
+"services" <--> "bot_server" : Comunicación con el bot
+"services" <--> "game_server" : Comunicación con el motor de juego
+"bot_server" <--> "bot" : Lógica de bots
+"game_server" <--> "core" : Reglas y estado
+"core" <--> "notation" : Notación YEN
+"bot" <--> "notation" : Notación YEN
 
 @enduml
 ----
@@ -356,11 +356,11 @@ Componentes::
 
 | parsers | Transforma el estado de una partida a formato YEN.
 
-| header | Define la cabecera común de navegación y estructura visual.
+| header | Define la cabeceras de las distintas páginas diseñadas en React.
 
 | auth | Gestiona autenticación y registro de usuarios en el sistema.
 
-| database | Define el esquema de la base de datos del sistema.
+| database | Define el esquema y gestiona las conexiones con la base de datos del sistema.
 
 | middleware | Intercepta peticiones para validación, seguridad y control de flujo.
 
@@ -376,10 +376,8 @@ Componentes::
 
 | core | Implementa las reglas del juego, el estado y la validación de movimientos.
 
-| game_server | Expone las operaciones principales del motor de juego.
+| game_server | Expone las operaciones principales para validar movimientos.
 
 | notation | Convierte y procesa la notación YEN.
-
-| tests | Verifica el comportamiento del core y del servidor del bot.
 
 |===

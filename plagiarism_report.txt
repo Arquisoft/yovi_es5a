@@ -1,0 +1,368 @@
+================================================================================
+          PLAGIARISM DETECTION REPORT — Arquisoft yovi_* Repos
+================================================================================
+
+Repos analysed : 25
+Similarity threshold: 0.8
+Shingle size: 5 tokens
+Max tokens per file: 10000
+
+================================================================================
+  SECTION 1: TOP SUSPICIOUS REPO PAIRS (score = 0.6*file_ratio + 0.4*bulk)
+================================================================================
+Rank  Repo A         Repo B           Score   File%   Bulk%  SimFiles  CommonFiles
+--------------------------------------------------------------------------------
+1     yovi_en1c      yovi_en3c        0.623   0.778   0.391        28           36
+2     yovi_en3c      yovi_es3c        0.613   0.765   0.385        26           34
+3     yovi_es2b      yovi_es4c        0.603   0.727   0.416        24           33
+4     yovi_es1a      yovi_es4c        0.589   0.765   0.325        26           34
+5     yovi_es1a      yovi_es2b        0.580   0.750   0.326        24           32
+6     yovi_en1a      yovi_en3c        0.580   0.743   0.337        26           35
+7     yovi_en3c      yovi_es3b        0.571   0.706   0.368        24           34
+8     yovi_en3a      yovi_es1a        0.570   0.727   0.334        24           33
+9     yovi_en3b      yovi_en3c        0.568   0.788   0.237        26           33
+10    yovi_en3c      yovi_es4d        0.567   0.818   0.190        27           33
+11    yovi_es2a      yovi_es2b        0.565   0.697   0.368        23           33
+12    yovi_en3c      yovi_es4c        0.554   0.800   0.185        28           35
+13    yovi_en3b      yovi_es3c        0.550   0.781   0.203        25           32
+14    yovi_en3c      yovi_es2b        0.548   0.788   0.187        26           33
+15    yovi_es2a      yovi_es4c        0.545   0.667   0.363        24           36
+16    yovi_en3a      yovi_es4c        0.545   0.694   0.321        25           36
+17    yovi_en3a      yovi_es2b        0.544   0.697   0.315        23           33
+18    yovi_en3c      yovi_es5b        0.542   0.676   0.341        23           34
+19    yovi_en3a      yovi_es2a        0.541   0.657   0.367        23           35
+20    yovi_es1a      yovi_es2a        0.537   0.639   0.384        23           36
+21    yovi_en3c      yovi_es1a        0.533   0.788   0.151        26           33
+22    yovi_en1c      yovi_es3c        0.527   0.694   0.276        25           36
+23    yovi_en1a      yovi_es3c        0.522   0.706   0.247        24           34
+24    yovi_en1c      yovi_en3b        0.522   0.735   0.201        25           34
+25    yovi_es2b      yovi_es5a        0.519   0.625   0.360        20           32
+26    yovi_en1a      yovi_es4d        0.516   0.750   0.166        24           32
+27    yovi_en2a      yovi_en3c        0.515   0.743   0.173        26           35
+28    yovi_es2b      yovi_es3b        0.513   0.750   0.158        24           32
+29    yovi_en1a      yovi_en3b        0.513   0.727   0.191        24           33
+30    yovi_en1c      yovi_es1a        0.512   0.758   0.143        25           33
+31    yovi_en1c      yovi_es4d        0.511   0.735   0.174        25           34
+32    yovi_es3c      yovi_es4c        0.510   0.743   0.161        26           35
+33    yovi_es4c      yovi_es4d        0.508   0.765   0.124        26           34
+34    yovi_es4c      yovi_es5a        0.508   0.606   0.361        20           33
+35    yovi_en1a      yovi_es4c        0.508   0.743   0.155        26           35
+36    yovi_en3c      yovi_es3a        0.508   0.606   0.360        20           33
+37    yovi_en3b      yovi_es1a        0.505   0.758   0.127        25           33
+38    yovi_en1a      yovi_es3b        0.505   0.676   0.248        23           34
+39    yovi_en1a      yovi_es1a        0.505   0.750   0.138        24           32
+40    yovi_en3c      yovi_es2c        0.503   0.639   0.298        23           36
+41    yovi_en3b      yovi_es3b        0.502   0.706   0.197        24           34
+42    yovi_en3b      yovi_es2b        0.502   0.750   0.129        24           32
+43    yovi_en3c      yovi_es2a        0.501   0.714   0.180        25           35
+44    yovi_en1c      yovi_es2b        0.500   0.727   0.159        24           33
+45    yovi_en3b      yovi_es4d        0.499   0.735   0.145        25           34
+46    yovi_en3b      yovi_es4c        0.499   0.743   0.133        26           35
+47    yovi_en1a      yovi_en2b        0.498   0.759   0.108        22           29
+48    yovi_en1c      yovi_es4c        0.491   0.711   0.163        27           38
+49    yovi_es1a      yovi_es4d        0.489   0.735   0.120        25           34
+50    yovi_en3a      yovi_en3c        0.488   0.714   0.149        25           35
+
+================================================================================
+  SECTION 2: BULK SIMILARITY HEAT MAP (Jaccard on combined shingles)
+  (rows = repo A, cols = repo B, values = Jaccard * 100)
+================================================================================
+            en1a   en1b   en1c   en2a   en2b   en2c   en3a   en3b   en3c   es1a   es1b   es1c   es2a   es2b   es2c   es3a   es3b   es3c   es4a   es4b   es4c   es4d   es5a   es5b   es5c
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+en1a       100    18.6   26.1   15.2   10.8   13.4   13.7   19.1   33.7   13.8   11.1    9.3   15.0   14.9   21.1   24.0   24.8   24.7   12.9   14.2   15.5   16.6   13.2   22.5   19.3 
+en1b       18.6   100    20.0   13.4    9.9   11.9   11.9   16.0   23.9   11.8   10.1    8.8   13.0   12.8   17.5   19.1   19.4   20.0   11.7   12.9   12.9   14.2   11.8   17.8   16.1 
+en1c       26.1   20.0   100    16.2   10.9   13.7   14.1   20.1   39.1   14.3   11.5    9.5   15.9   15.9   23.1   26.4   28.0   27.6   13.6   14.9   16.3   17.4   13.6   24.7   21.1 
+en2a       15.2   13.4   16.2   100     9.5   11.0   11.0   13.9   17.3   11.0    9.3    8.7   11.6   11.2   14.7   15.4   16.1   16.2   10.7   11.4   11.6   12.9   10.7   14.6   13.8 
+en2b       10.8    9.9   10.9    9.5   100     9.0    9.1   10.0   10.8    8.8    7.4    7.6    8.6    8.5    9.8   10.6   11.1   11.1    8.2    8.5    9.1   10.0    8.3   10.1   10.1 
+en2c       13.4   11.9   13.7   11.0    9.0   100    10.1   12.0   13.4   10.3    8.6    8.6   10.4   10.1   12.4   13.1   13.5   13.4   10.1   10.5   10.6   12.2    9.6   12.2   12.4 
+en3a       13.7   11.9   14.1   11.0    9.1   10.1   100    12.4   14.9   33.4   25.3    7.7   36.7   31.5   12.5   13.5   13.9   14.2    9.8   10.2   32.1   11.7   28.2   12.9   12.5 
+en3b       19.1   16.0   20.1   13.9   10.0   12.0   12.4   100    23.7   12.7   10.3    9.2   13.4   12.9   17.3   19.0   19.7   20.3   11.8   12.6   13.3   14.5   11.8   18.1   16.7 
+en3c       33.7   23.9   39.1   17.3   10.8   13.4   14.9   23.7   100    15.1   11.7    9.0   18.0   18.7   29.8   36.0   36.8   38.5   14.3   16.6   18.5   19.0   14.8   34.1   24.7 
+es1a       13.8   11.8   14.3   11.0    8.8   10.3   33.4   12.7   15.1   100    26.0    7.8   38.4   32.6   12.4   13.6   14.1   15.0    9.7   10.0   32.5   12.0   29.0   13.3   12.6 
+es1b       11.1   10.1   11.5    9.3    7.4    8.6   25.3   10.3   11.7   26.0   100     7.1   28.2   32.0   10.5   11.2   11.4   11.9    8.5    8.7   31.6   10.0   28.8   10.9   10.4 
+es1c        9.3    8.8    9.5    8.7    7.6    8.6    7.7    9.2    9.0    7.8    7.1   100     7.7    7.7    9.2    9.1    9.3    9.6    7.9    8.4    8.3    8.8    7.8    8.7    9.2 
+es2a       15.0   13.0   15.9   11.6    8.6   10.4   36.7   13.4   18.0   38.4   28.2    7.7   100    36.8   14.4   15.5   15.7   16.6   10.5   10.8   36.3   12.3   31.7   14.7   13.5 
+es2b       14.9   12.8   15.9   11.2    8.5   10.1   31.5   12.9   18.7   32.6   32.0    7.7   36.8   100    14.3   15.3   15.8   16.2   10.2   10.6   41.6   12.1   36.0   15.0   13.2 
+es2c       21.1   17.5   23.1   14.7    9.8   12.4   12.5   17.3   29.8   12.4   10.5    9.2   14.4   14.3   100    21.8   22.1   22.9   13.0   14.4   15.3   15.0   12.5   20.7   18.6 
+es3a       24.0   19.1   26.4   15.4   10.6   13.1   13.5   19.0   36.0   13.6   11.2    9.1   15.5   15.3   21.8   100    25.6   25.9   13.1   14.2   15.6   16.7   13.3   23.4   19.6 
+es3b       24.8   19.4   28.0   16.1   11.1   13.5   13.9   19.7   36.8   14.1   11.4    9.3   15.7   15.8   22.1   25.6   100    27.2   13.2   14.7   15.8   17.3   13.6   24.1   20.6 
+es3c       24.7   20.0   27.6   16.2   11.1   13.4   14.2   20.3   38.5   15.0   11.9    9.6   16.6   16.2   22.9   25.9   27.2   100    13.8   14.9   16.1   17.8   14.0   24.8   20.9 
+es4a       12.9   11.7   13.6   10.7    8.2   10.1    9.8   11.8   14.3    9.7    8.5    7.9   10.5   10.2   13.0   13.1   13.2   13.8   100    10.5   10.4   11.4    9.6   12.5   12.0 
+es4b       14.2   12.9   14.9   11.4    8.5   10.5   10.2   12.6   16.6   10.0    8.7    8.4   10.8   10.6   14.4   14.2   14.7   14.9   10.5   100    11.4   11.8    9.9   13.6   13.3 
+es4c       15.5   12.9   16.3   11.6    9.1   10.6   32.1   13.3   18.5   32.5   31.6    8.3   36.3   41.6   15.3   15.6   15.8   16.1   10.4   11.4   100    12.4   36.1   14.9   14.1 
+es4d       16.6   14.2   17.4   12.9   10.0   12.2   11.7   14.5   19.0   12.0   10.0    8.8   12.3   12.1   15.0   16.7   17.3   17.8   11.4   11.8   12.4   100    11.2   15.8   15.2 
+es5a       13.2   11.8   13.6   10.7    8.3    9.6   28.2   11.8   14.8   29.0   28.8    7.8   31.7   36.0   12.5   13.3   13.6   14.0    9.6    9.9   36.1   11.2   100    13.0   11.9 
+es5b       22.5   17.8   24.7   14.6   10.1   12.2   12.9   18.1   34.1   13.3   10.9    8.7   14.7   15.0   20.7   23.4   24.1   24.8   12.5   13.6   14.9   15.8   13.0   100    18.8 
+es5c       19.3   16.1   21.1   13.8   10.1   12.4   12.5   16.7   24.7   12.6   10.4    9.2   13.5   13.2   18.6   19.6   20.6   20.9   12.0   13.3   14.1   15.2   11.9   18.8   100  
+
+================================================================================
+  SECTION 3: MOST COPIED FILES
+  (files present in ≥3 repos with ≥50% of pairs above threshold)
+================================================================================
+ Repos  SimPairs%  File Path
+--------------------------------------------------------------------------------
+    25     100.0%  gamey/src/core/render_options.rs
+    25     100.0%  gamey/src/core/player.rs
+    25     100.0%  gamey/src/notation/mod.rs
+    25     100.0%  gamey/tests/core_tests.rs
+    25      99.7%  gamey/src/core/movement.rs
+    25      99.0%  gamey/src/gamey_error.rs
+    25      99.0%  gamey/src/core/action.rs
+    25      92.0%  gamey/benches/gamey_benchmarks.rs
+    25      92.0%  gamey/src/core/coord.rs
+    25      92.0%  gamey/src/core/player_set.rs
+    25      92.0%  gamey/tests/cli_tests.rs
+    25      83.0%  gamey/src/notation/yen.rs
+    25      77.0%  gamey/src/core/mod.rs
+    25      77.0%  gamey/src/bot/ybot_registry.rs
+    25      63.3%  gamey/src/bot/ybot.rs
+    25      62.3%  gamey/src/main.rs
+    25      50.3%  gamey/src/lib.rs
+    25      50.0%  gamey/src/cli.rs
+    24      91.7%  gamey/src/bot_server/version.rs
+    24      91.3%  webapp/eslint.config.js
+    24      82.6%  gamey/src/bot_server/error.rs
+    24      68.1%  gamey/src/bot_server/state.rs
+    22      82.3%  gamey/src/bot/random.rs
+
+================================================================================
+  SECTION 4: SUSPICIOUS FILE PAIRS (similarity ≥ 0.8)
+================================================================================
+   Sim  Repo A         Repo B          File
+--------------------------------------------------------------------------------
+ 1.000  yovi_en1c      yovi_en3c       webapp/vite.config.ts
+ 1.000  yovi_en1c      yovi_es2a       webapp/vite.config.ts
+ 1.000  yovi_en1c      yovi_es2b       webapp/vite.config.ts
+ 1.000  yovi_en3c      yovi_es2a       webapp/vite.config.ts
+ 1.000  yovi_en3c      yovi_es2b       webapp/vite.config.ts
+ 1.000  yovi_es2a      yovi_es2b       webapp/vite.config.ts
+ 1.000  yovi_en1a      yovi_en1c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_en2a       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_en2c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_en3a       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_en3b       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_en3c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en1a      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_en2a       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_en2c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_en3a       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_en3b       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_en3c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en1c      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_en2c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_en3a       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_en3b       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_en3c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en2a      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_en3a       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_en3b       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_en3c       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en2c      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_en3b       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_en3c       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en3a      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_en3c       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en3b      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es1a       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_en3c      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es1b       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es1a      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es1c       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es1b      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es2a       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es1c      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es2b       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es2a      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es2c       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es2b      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es3b       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es2c      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es3c       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es5b       webapp/eslint.config.js
+ 1.000  yovi_es3b      yovi_es5c       webapp/eslint.config.js
+ 1.000  yovi_es3c      yovi_es4a       webapp/eslint.config.js
+ 1.000  yovi_es3c      yovi_es4b       webapp/eslint.config.js
+ 1.000  yovi_es3c      yovi_es4c       webapp/eslint.config.js
+ 1.000  yovi_es3c      yovi_es4d       webapp/eslint.config.js
+ 1.000  yovi_es3c      yovi_es5b       webapp/eslint.config.js
+  ... and 5910 more pairs (truncated)
+
+================================================================================
+  SECTION 5: PER-REPO SUMMARY
+================================================================================
+Repo             Files  TopSimilarPair                   Score
+----------------------------------------------------------------------
+yovi_en1a           55  yovi_en3c                        0.580
+yovi_en1b           98  yovi_en3c                        0.466
+yovi_en1c           60  yovi_en3c                        0.623
+yovi_en2a          173  yovi_en3c                        0.515
+yovi_en2b          262  yovi_en1a                        0.498
+yovi_en2c          193  yovi_en3b                        0.464
+yovi_en3a          221  yovi_es1a                        0.570
+yovi_en3b          129  yovi_en3c                        0.568
+yovi_en3c           36  yovi_en1c                        0.623
+yovi_es1a          135  yovi_es4c                        0.589
+yovi_es1b          148  yovi_es2b                        0.488
+yovi_es1c          290  yovi_en3c                        0.392
+yovi_es2a          106  yovi_es2b                        0.565
+yovi_es2b          170  yovi_es4c                        0.603
+yovi_es2c           80  yovi_en3c                        0.503
+yovi_es3a           74  yovi_en3c                        0.508
+yovi_es3b           76  yovi_en3c                        0.571
+yovi_es3c           89  yovi_en3c                        0.613
+yovi_es4a          151  yovi_es4d                        0.446
+yovi_es4b           97  yovi_es3c                        0.485
+yovi_es4c          105  yovi_es2b                        0.603
+yovi_es4d          111  yovi_en3c                        0.567
+yovi_es5a          134  yovi_es2b                        0.519
+yovi_es5b           76  yovi_en3c                        0.542
+yovi_es5c          105  yovi_en3c                        0.487
+
+================================================================================
+  END OF REPORT
+================================================================================
